@@ -1,8 +1,13 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
+import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
-export default function Layout() {
+function LayoutContent() {
+  const { isExpanded, isPinned } = useSidebar();
+  const sidebarWidth = (isExpanded || isPinned) ? 256 : 64; // 64px = w-16, 256px = w-64
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar - hidden on mobile */}
@@ -11,8 +16,14 @@ export default function Layout() {
       </div>
 
       {/* Main content */}
-      {/* Remove left margin on mobile, keep on desktop. Add bottom padding on mobile for nav bar */}
-      <main className="flex-1 lg:ml-64 p-4 pb-20 lg:p-6 lg:pb-6">
+      <main
+        className={cn(
+          "flex-1 p-4 pb-20 lg:p-6 lg:pb-6 transition-all duration-300 ease-in-out"
+        )}
+        style={{
+          marginLeft: window.innerWidth >= 1024 ? `${sidebarWidth}px` : '0px'
+        }}
+      >
         <Outlet />  {/* Renders nested routes */}
       </main>
 
@@ -20,4 +31,12 @@ export default function Layout() {
       <BottomNav />
     </div>
   );
-};
+}
+
+export default function Layout() {
+  return (
+    <SidebarProvider>
+      <LayoutContent />
+    </SidebarProvider>
+  );
+}
