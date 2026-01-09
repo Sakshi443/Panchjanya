@@ -1,0 +1,117 @@
+name: CI - Build & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: 🏗️ Build project
+        run: npm run build
+        env:
+          # Use placeholder values for build (real values in deployment)
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY || 'dummy-key-for-build' }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN || 'dummy.firebaseapp.com' }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID || 'dummy-project' }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET || 'dummy.appspot.com' }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID || '123456' }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID || '1:123456:web:abc' }}
+          VITE_GOOGLE_MAPS_KEY: ${{ secrets.VITE_GOOGLE_MAPS_KEY || 'dummy-maps-key' }}
+
+      - name: 📊 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.node-version }}
+          path: dist/
+          retention-days: 7
+
+      - name: ✅ Build Status
+        run: echo "✅ Build completed successfully!"
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 TypeScript Check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: 📏 Check code formatting
+        run: |
+          echo "Code formatting check would go here"
+          echo "Consider adding Prettier in the future"
+        continue-on-error: true
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔒 Run security audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: 🔍 Check for secrets in code
+        run: |
+          echo "Checking for accidental secrets in code..."
+          if grep -r "AIza" src/ 2>/dev/null; then
+            echo "⚠️ Warning: Found potential API key in source code!"
+            exit 1
+          fi
+          if grep -r "firebase.*adminsdk" src/ 2>/dev/null; then
+            echo "⚠️ Warning: Found potential Firebase admin key!"
+            exit 1
+          fi
+          echo "✅ No secrets found in source code"
+        continue-on-error: true

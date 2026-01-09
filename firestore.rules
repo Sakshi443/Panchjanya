@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- USERS COLLECTION (Optional if you track users) ----
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Only the authenticated user can write to their own document
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ---- TEMPLES COLLECTION ----
+    match /temples/{templeId} {
+      
+      // Everyone can read temple info publicly
+      allow read: if true;
+
+      // Only Admins can write (add/update/delete)
+      allow write: if isAdmin();
+    }
+
+    // ---- HOTSPOTS COLLECTION (If nested under temples) ----
+    match /temples/{templeId}/hotspots/{hotspotId} {
+      
+      // Everyone can read
+      allow read: if true;
+
+      // Only Admins can modify hotspots
+      allow write: if isAdmin();
+    }
+
+    // ---- DEFAULT RULE FOR EVERYTHING ELSE ----
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
+
+// ---- FUNCTION TO CHECK ADMIN ROLE ----
+function isAdmin() {
+  return request.auth != null
+    && request.auth.token.admin == true;
+}
