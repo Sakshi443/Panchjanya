@@ -16,8 +16,14 @@ export default {
       fontFamily: {
         heading: ["Playfair Display", "serif"],
         body: ["Inter", "sans-serif"],
+        "noto-serif": ["Noto Serif", "serif"],
+        "work-sans": ["Work Sans", "sans-serif"],
       },
       colors: {
+        "landing-primary": "#0d3c82",
+        "landing-bg-light": "#fcf9f3",
+        "landing-bg-dark": "#1b222d",
+        "accent-gold": "#D4AF37",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
+  { name: "Dashboard", href: "/", icon: Home },
   { name: "Explore Sthanas", href: "/explore", icon: Map },
   { name: "Swami's Yatra", href: "/share", icon: Compass },
   { name: "About Panchajanya", href: "/about", icon: BookOpen },
@@ -29,11 +29,8 @@ export const Sidebar = () => {
         {/* Logo */}
         <div className="h-24 flex items-center justify-center px-4 border-b border-sidebar-border/50 relative">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/20 border-2 border-accent flex-shrink-0">
-              <svg viewBox="0 0 24 24" className="w-6 h-6 text-primary-foreground" fill="currentColor">
-                <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.18l5.5 3.44v6.76L12 17.82l-5.5-3.44V7.62L12 4.18z" />
-                <circle cx="12" cy="12" r="2" />
-              </svg>
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/20 border-2 border-accent flex-shrink-0 overflow-hidden">
+              <img src="/logo.png" alt="Panchajanya Logo" className="w-full h-full object-cover" />
             </div>
             <span
               className={cn(

@@ -12,6 +12,7 @@ export interface Temple {
     description?: string;
     sthana?: string; // Sthana Purana
     leela?: string; // Leela
+    history?: string; // Temple history
     images?: string[];
     architectureImage?: string; // For architecture view
     hotspots?: any[]; // For architecture view

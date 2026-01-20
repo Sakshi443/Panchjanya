@@ -1,9 +1,12 @@
-import { X, ChevronLeft, ChevronRight, Navigation, Compass, BookOpen } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Navigation, Compass, BookOpen, Bookmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { Temple } from "@/types";
+import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TempleDetailsProps {
   isOpen: boolean;
@@ -14,9 +17,12 @@ interface TempleDetailsProps {
 export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) => {
   // 1. Move ALL hooks to the top level, unconditionally.
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cloudinaryImages, setCloudinaryImages] = useState<string[]>([]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // 2. useEffect is a hook, must be unconditional
   useEffect(() => {
@@ -28,6 +34,57 @@ export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) =
       setCloudinaryImages([]);
     }
   }, [temple]);
+
+  // Check if temple is saved
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      if (!user || !temple) {
+        setIsSaved(false);
+        return;
+      }
+
+      try {
+        const savedRef = doc(db, `users/${user.uid}/savedTemples/${temple.id}`);
+        const savedDoc = await getDoc(savedRef);
+        setIsSaved(savedDoc.exists());
+      } catch (error) {
+        console.error("Error checking saved status:", error);
+        setIsSaved(false);
+      }
+    };
+
+    checkIfSaved();
+  }, [user, temple]);
+
+  // Toggle save/unsave
+  const toggleSave = async () => {
+    if (!user || !temple || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const savedRef = doc(db, `users/${user.uid}/savedTemples/${temple.id}`);
+
+      if (isSaved) {
+        // Unsave
+        await deleteDoc(savedRef);
+        setIsSaved(false);
+      } else {
+        // Save
+        await setDoc(savedRef, {
+          templeId: temple.id,
+          savedAt: new Date(),
+          templeName: temple.name,
+          templeCity: temple.city || temple.address || "",
+          templeImage: temple.images?.[0] || ""
+        });
+        setIsSaved(true);
+      }
+    } catch (error) {
+      console.error("Error toggling save:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // 3. Helper functions (not hooks, but good to keep here)
   const images = cloudinaryImages.length > 0
@@ -109,6 +166,20 @@ export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) =
               </div>
             </div>
             <div className="flex gap-2 sm:gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleSave}
+                disabled={isSaving || !user}
+                className={cn(
+                  "rounded-full border-border/50 h-9 w-9 sm:h-10 sm:w-10 transition-all active:scale-95",
+                  isSaved
+                    ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
+                    : "hover:bg-amber-50 hover:text-amber-600 hover:border-amber-500"
+                )}
+              >
+                <Bookmark className={cn("w-5 h-5 sm:w-5 sm:h-5", isSaved && "fill-current")} />
+              </Button>
               <Button
                 variant="outline"
                 size="icon"

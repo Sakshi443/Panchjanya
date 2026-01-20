@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
+  const { language, setLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
+
+  const [notifications, setNotifications] = useState({
+    enabled: true,
+    festivals: true,
+    newTemples: true,
+    updates: false,
+  });
+
+  const [mapSettings, setMapSettings] = useState({
+    showNames: true,
+    autoCenter: true,
+  });
+
+  const handleSave = () => {
+    toast({
+      title: "Settings Saved",
+      description: "Your preferences have been updated successfully.",
+    });
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-8 text-primary">Settings</h1>
+      <h1 className="text-4xl font-bold mb-8 text-primary">{t("settings.title")}</h1>
 
       <div className="space-y-6">
         {/* Language Settings */}
@@ -24,10 +51,10 @@ const Settings = () => {
             </div>
             <div className="flex-1 space-y-4">
               <div>
-                <h3 className="font-semibold text-lg mb-1">Language</h3>
-                <p className="text-sm text-muted-foreground">Choose your preferred language</p>
+                <h3 className="font-semibold text-lg mb-1">{t("settings.language")}</h3>
+                <p className="text-sm text-muted-foreground">{t("settings.languageDesc")}</p>
               </div>
-              <Select defaultValue="marathi">
+              <Select value={language} onValueChange={(value: any) => setLanguage(value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -50,23 +77,38 @@ const Settings = () => {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">Notifications</h3>
-                  <p className="text-sm text-muted-foreground">Manage notification preferences</p>
+                  <h3 className="font-semibold text-lg mb-1">{t("settings.notifications")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("settings.notificationsDesc")}</p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={notifications.enabled}
+                  onCheckedChange={(checked) => setNotifications({ ...notifications, enabled: checked })}
+                />
               </div>
               <div className="space-y-3 pl-0">
                 <div className="flex items-center justify-between py-2">
                   <Label className="text-sm cursor-pointer">Temple festivals</Label>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={notifications.festivals}
+                    onCheckedChange={(checked) => setNotifications({ ...notifications, festivals: checked })}
+                    disabled={!notifications.enabled}
+                  />
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <Label className="text-sm cursor-pointer">New temples added</Label>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={notifications.newTemples}
+                    onCheckedChange={(checked) => setNotifications({ ...notifications, newTemples: checked })}
+                    disabled={!notifications.enabled}
+                  />
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <Label className="text-sm cursor-pointer">Updates and announcements</Label>
-                  <Switch />
+                  <Switch
+                    checked={notifications.updates}
+                    onCheckedChange={(checked) => setNotifications({ ...notifications, updates: checked })}
+                    disabled={!notifications.enabled}
+                  />
                 </div>
               </div>
             </div>
@@ -80,16 +122,22 @@ const Settings = () => {
               <Map className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">Map Preferences</h3>
-              <p className="text-sm text-muted-foreground mb-4">Customize map display</p>
+              <h3 className="font-semibold text-lg mb-1">{t("settings.mapPreferences")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t("settings.mapPreferencesDesc")}</p>
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2">
                   <Label className="text-sm cursor-pointer">Show temple names</Label>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={mapSettings.showNames}
+                    onCheckedChange={(checked) => setMapSettings({ ...mapSettings, showNames: checked })}
+                  />
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <Label className="text-sm cursor-pointer">Auto-center on location</Label>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={mapSettings.autoCenter}
+                    onCheckedChange={(checked) => setMapSettings({ ...mapSettings, autoCenter: checked })}
+                  />
                 </div>
               </div>
             </div>
@@ -105,10 +153,13 @@ const Settings = () => {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">Dark Mode</h3>
-                  <p className="text-sm text-muted-foreground">Toggle dark theme</p>
+                  <h3 className="font-semibold text-lg mb-1">{t("settings.darkMode")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("settings.darkModeDesc")}</p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={theme === "dark"}
+                  onCheckedChange={toggleTheme}
+                />
               </div>
             </div>
           </div>
@@ -116,8 +167,10 @@ const Settings = () => {
 
         {/* Save Button */}
         <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline">Cancel</Button>
-          <Button className="bg-accent hover:bg-accent/90">Save Changes</Button>
+          <Button variant="outline">{t("common.cancel")}</Button>
+          <Button className="bg-accent hover:bg-accent/90" onClick={handleSave}>
+            {t("settings.saveChanges")}
+          </Button>
         </div>
       </div>
     </div>
