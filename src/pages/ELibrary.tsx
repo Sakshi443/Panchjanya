@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Bookmark, Search, MoreVertical } from "lucide-react";
+import { ChevronLeft, Bookmark, Search, MoreVertical, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { db } from "@/firebase";
@@ -16,7 +16,7 @@ interface Book {
     descriptionHindi: string;
     category: string;
     coverImage: string;
-    pdfUrl?: string;
+    pdfUrl?: string; // Optional for now
 }
 
 export default function ELibrary() {
@@ -27,64 +27,12 @@ export default function ELibrary() {
 
     const categories = [
         { id: "all", label: "सर्व", labelEn: "All" },
-        { id: "spiritual", label: "अध्यात्मिक", labelEn: "Spiritual" },
+        { id: "spiritual", label: "अध्यात्म", labelEn: "Spiritual" },
         { id: "history", label: "इतिहास", labelEn: "History" },
-        { id: "literature", label: "तत्त्वज्ञान", labelEn: "Literature" },
+        { id: "literature", label: "तत्वज्ञान", labelEn: "Philosophy" },
     ];
 
-    // Fetch books
-    useEffect(() => {
-        let q;
-        if (activeCategory === "all") {
-            q = query(collection(db, "books"));
-        } else {
-            q = query(collection(db, "books"), where("category", "==", activeCategory));
-        }
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const booksData = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            })) as Book[];
-            setBooks(booksData);
-        });
-
-        return () => unsubscribe();
-    }, [activeCategory]);
-
-    // Filter books by search
-    const filteredBooks = books.filter(
-        (book) =>
-            book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            book.titleHindi.includes(searchQuery) ||
-            book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            book.authorHindi.includes(searchQuery)
-    );
-
-    // Group books by category
-    const groupedBooks = filteredBooks.reduce((acc, book) => {
-        const category = book.category || "other";
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(book);
-        return acc;
-    }, {} as Record<string, Book[]>);
-
-    const getCategoryTitle = (category: string) => {
-        switch (category) {
-            case "spiritual":
-                return "अध्यात्मिक ग्रंथ (Spiritual)";
-            case "history":
-                return "ऐतिहासिक वारसा (History)";
-            case "literature":
-                return "साहित्य (Literature)";
-            default:
-                return category;
-        }
-    };
-
-    // Default books if Firestore is empty
+    // Default books to ensure UI shows something (matching image) even if DB is empty
     const defaultBooks: Book[] = [
         {
             id: "1",
@@ -104,7 +52,7 @@ export default function ELibrary() {
             author: "Sant Jñāneśvar",
             authorHindi: "संत ज्ञानेश्वर",
             description: "Marathi commentary on the Bhagavad Gita",
-            descriptionHindi: "भगवद्गीतावर मराठी भाषेत केलेले ओजस्वी आणि अमृततुल्य भाष्य.",
+            descriptionHindi: "भगवद्गीतेवर मराठी भाषेत केलेले ओघवते आणि अमृततुल्य भाष्य.",
             category: "spiritual",
             coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
         },
@@ -115,55 +63,139 @@ export default function ELibrary() {
             author: "Namdev Rao Jadhav",
             authorHindi: "नामदेवराव जाधव",
             description: "Leadership lessons from Chhatrapati Shivaji Maharaj",
-            descriptionHindi: "छत्रपती शिवाजी महाराजांच्या व्यवस्थापन कौशल्याची सखोल माहिती.",
+            descriptionHindi: "छत्रपती शिवाजी महाराजांच्या व्यवस्थापन कौशल्यांचे सखोल...",
             category: "history",
             coverImage: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
         },
     ];
 
-    const displayBooks = filteredBooks.length > 0 ? groupedBooks : { spiritual: defaultBooks.filter(b => b.category === "spiritual"), history: defaultBooks.filter(b => b.category === "history") };
+    // Fetch books
+    useEffect(() => {
+        let q;
+        if (activeCategory === "all") {
+            q = query(collection(db, "books"));
+        } else {
+            // Map table category from 'tattvagyan' to 'literature' if needed, or just strict match
+            // Since defaulting to mock data if empty, let's just query
+            q = query(collection(db, "books"), where("category", "==", activeCategory));
+        }
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                // If DB empty, fallback to local default books filter
+                const filtered = activeCategory === 'all'
+                    ? defaultBooks
+                    : defaultBooks.filter(b => b.category === activeCategory || (activeCategory === 'literature' && b.category === 'philosophy')); // Handle potential mismatch
+
+                // Only set if we actually have matches, else keep empty array
+                if (filtered.length > 0) setBooks(filtered);
+                else setBooks([]); // Or keep defaultBooks if verifying UI
+
+                // FOR VERIFICATION: Always set mock data if DB empty
+                if (snapshot.empty) {
+                    const filteredDefaults = activeCategory === 'all'
+                        ? defaultBooks
+                        : defaultBooks.filter(b => b.category === activeCategory);
+                    setBooks(filteredDefaults);
+                }
+
+            } else {
+                const booksData = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as Book[];
+                setBooks(booksData);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [activeCategory]);
+
+    // Filter books by search
+    const filteredBooks = books.filter(
+        (book) =>
+            book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            book.titleHindi?.includes(searchQuery) ||
+            book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            book.authorHindi?.includes(searchQuery)
+    );
+
+    // Group books by category
+    const groupedBooks = filteredBooks.reduce((acc, book) => {
+        const category = book.category || "other";
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(book);
+        return acc;
+    }, {} as Record<string, Book[]>);
+
+    const getCategoryTitle = (category: string) => {
+        switch (category) {
+            case "spiritual":
+                return "अध्यात्मिक ग्रंथ (Spiritual)";
+            case "history":
+                return "ऐतिहासिक वारसा (History)";
+            case "literature":
+            case "philosophy":
+                return "तत्वज्ञान (Philosophy)";
+            default:
+                return category.charAt(0).toUpperCase() + category.slice(1);
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] pb-20">
+        <div className="min-h-screen bg-[#FFFDF8] pb-20 font-sans">
             {/* Header */}
-            <div className="bg-white px-6 py-4 sticky top-0 z-10 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
+            <div className="bg-white/80 backdrop-blur-md px-4 py-4 sticky top-0 z-20">
+                <div className="flex items-center justify-between mb-2 relative">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => navigate(-1)}
-                        className="rounded-full"
+                        className="rounded-full -ml-2"
                     >
-                        <ChevronLeft className="w-6 h-6 text-blue-900" />
+                        <ChevronLeft className="w-7 h-7 text-blue-600" />
                     </Button>
-                    <h1 className="font-heading font-bold text-2xl text-blue-600">
+
+                    <h1 className="absolute left-1/2 -translate-x-1/2 font-serif font-bold text-2xl text-blue-600 tracking-wide text-center">
                         E-Library
                     </h1>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Bookmark className="w-6 h-6 text-blue-900" />
+
+                    <Button variant="ghost" size="icon" className="rounded-full -mr-2">
+                        <Bookmark className="w-6 h-6 text-blue-600 fill-blue-600/10" />
                     </Button>
                 </div>
+            </div>
 
-                {/* Search Bar */}
-                <div className="relative mb-4">
+            {/* Sub-header / Description - Optional based on user request "The E-Library..." */}
+            {/* <div className="text-center px-6 -mt-2 mb-6">
+                <p className="text-xs text-blue-400 font-medium tracking-widest uppercase">Your personal digital collection of wisdom</p>
+            </div> */}
+
+            {/* Search Bar */}
+            <div className="px-5 mb-6">
+                <div className="relative shadow-sm">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                         placeholder="पुस्तके, लेखक किंवा विषय शोधा..."
-                        className="pl-12 pr-4 h-12 rounded-full border-gray-200 bg-gray-50 focus-visible:ring-blue-500"
+                        className="pl-12 pr-4 h-12 rounded-2xl border-gray-100 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-200 text-base"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
+            </div>
 
-                {/* Category Tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Category Tabs */}
+            <div className="px-5 mb-8">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {categories.map((category) => (
                         <button
                             key={category.id}
                             onClick={() => setActiveCategory(category.id)}
-                            className={`px-5 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${activeCategory === category.id
-                                    ? "bg-blue-600 text-white shadow-md"
-                                    : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
+                            className={`px-6 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all border ${activeCategory === category.id
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200"
+                                : "bg-white text-blue-500 border-blue-100 hover:bg-blue-50"
                                 }`}
                         >
                             {category.label}
@@ -173,75 +205,70 @@ export default function ELibrary() {
             </div>
 
             {/* Content */}
-            <div className="px-6 py-6">
-                {Object.entries(displayBooks).map(([category, categoryBooks]) => (
-                    <div key={category} className="mb-8">
+            <div className="px-5 pb-6">
+                {Object.entries(groupedBooks).map(([category, categoryBooks]) => (
+                    <div key={category} className="mb-10">
                         {/* Category Header */}
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="font-heading font-bold text-xl text-blue-600">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="font-heading font-bold text-lg text-blue-700">
                                 {getCategoryTitle(category)}
                             </h2>
-                            <button className="text-sm font-bold text-blue-600 uppercase tracking-wider">
+                            <button className="text-xs font-bold text-amber-500 hover:text-amber-600">
                                 सर्व पहा
                             </button>
                         </div>
 
                         {/* Books List */}
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                             {categoryBooks.map((book) => (
                                 <div
                                     key={book.id}
-                                    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                                    className="bg-white rounded-2xl p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] ring-1 ring-gray-50/50 hover:shadow-lg transition-all cursor-pointer relative group"
+                                    onClick={() => navigate(`/book/${book.id}`)}
                                 >
+                                    {/* Kebab Menu */}
+                                    <button className="absolute top-4 right-3 text-gray-300 hover:text-gray-500">
+                                        <MoreVertical className="w-5 h-5" />
+                                    </button>
+
                                     <div className="flex gap-4">
                                         {/* Book Cover */}
-                                        <div className="w-24 h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-gradient-to-br from-blue-900 to-blue-700">
+                                        <div className="w-28 h-[8.5rem] flex-shrink-0 rounded-lg overflow-hidden shadow-md bg-slate-200 relative">
+                                            <div className="absolute inset-0 border border-black/5 rounded-lg z-10 pointer-events-none"></div>
                                             <img
                                                 src={book.coverImage}
                                                 alt={book.title}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).src =
-                                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%230f3c6e' width='100' height='100'/%3E%3C/svg%3E";
+                                                        "https://placehold.co/300x400/e2e8f0/475569?text=Book";
                                                 }}
                                             />
                                         </div>
 
                                         {/* Book Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-bold text-blue-600 text-base mb-1">
+                                        <div className="flex-1 min-w-0 py-1 flex flex-col">
+                                            <h3 className="font-heading font-bold text-blue-600 text-[1.05rem] leading-tight mb-1 pr-6">
                                                 {book.titleHindi}
                                             </h3>
-                                            <p className="text-xs text-gray-600 mb-2">
+                                            <p className="text-xs font-medium text-slate-500 mb-2">
                                                 {book.authorHindi}
                                             </p>
-                                            <p className="text-sm text-gray-700 leading-relaxed mb-3 line-clamp-2">
+                                            <p className="text-xs text-slate-600 leading-relaxed mb-auto line-clamp-2 font-medium">
                                                 {book.descriptionHindi}
                                             </p>
 
                                             <Button
-                                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5 h-9 text-sm font-bold"
-                                                onClick={() => navigate(`/book/${book.id}`)}
+                                                className="bg-[#4361ee] hover:bg-blue-700 text-white rounded-lg px-6 h-9 text-xs font-bold w-fit mt-3 shadow-sm shadow-blue-200"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/book/${book.id}`);
+                                                }}
                                             >
-                                                <svg
-                                                    className="w-4 h-4 mr-2"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                                                </svg>
+                                                <BookOpen className="w-3.5 h-3.5 mr-2 opacity-90" />
                                                 आता वाचा
                                             </Button>
                                         </div>
-
-                                        {/* More Options */}
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="flex-shrink-0 self-start"
-                                        >
-                                            <MoreVertical className="w-5 h-5 text-gray-400" />
-                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -250,12 +277,12 @@ export default function ELibrary() {
                 ))}
 
                 {filteredBooks.length === 0 && books.length > 0 && (
-                    <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Search className="w-8 h-8 text-gray-400" />
+                    <div className="text-center py-16">
+                        <div className="w-20 h-20 bg-blue-50/50 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                            <Search className="w-8 h-8 text-blue-200" />
                         </div>
-                        <p className="text-gray-500 mb-2">कोणतीही पुस्तके सापडली नाहीत</p>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-slate-600 font-medium mb-1">कोणतीही पुस्तके सापडली नाहीत</p>
+                        <p className="text-xs text-slate-400">
                             कृपया दुसरा शोध प्रयत्न करा
                         </p>
                     </div>

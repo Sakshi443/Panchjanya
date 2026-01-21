@@ -75,7 +75,7 @@ const Dashboard = () => {
                     </Card>
                 </Link>
 
-                {/* Literature */}
+                {/* Literature (Audio/Video) */}
                 <Link to="/literature" className="group">
                     <Card className="h-full p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-300 border-sky-100 bg-sky-50/30 group-hover:bg-sky-50/50">
                         <div className="flex justify-start">
@@ -134,7 +134,7 @@ const Dashboard = () => {
             </div>
 
             {/* E-Library Banner */}
-            <Link to="/literature" className="block group">
+            <Link to="/e-library" className="block group">
                 <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white shadow-xl group-hover:shadow-2xl transition-all duration-300">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
