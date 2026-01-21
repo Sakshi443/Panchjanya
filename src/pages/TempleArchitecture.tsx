@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { X, MapPin, Compass, Share2, Navigation, Bookmark } from "lucide-react";
+import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -112,7 +112,7 @@ export default function TempleArchitecture() {
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
+        // alert("Link copied to clipboard!");
       }
     } catch (err) {
       console.error("Error sharing:", err);
@@ -212,7 +212,7 @@ export default function TempleArchitecture() {
             alt={temple.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>';
+              (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>';
             }}
           />
 
@@ -247,7 +247,7 @@ export default function TempleArchitecture() {
             onClick={handleArchitectureView}
           >
             <Compass className="w-4 h-4" />
-            Sthana Architecture
+            STHANA ARCHITECTURE
           </Button>
           <Button
             size="icon"
@@ -271,33 +271,63 @@ export default function TempleArchitecture() {
       </div>
 
       {/* Information Sections */}
-      <div className="px-6 space-y-6">
-        {/* स्थानांची माहिती (Temple Information) */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <h3 className="text-lg font-bold text-blue-900">स्थानांची माहिती</h3>
-            <div className="h-[1px] flex-1 bg-amber-200/50"></div>
+      <div className="px-6 space-y-8">
+
+        {/* 1. General Description (Archive Overview) */}
+        <div className="space-y-4 group">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">📜</span>
+            <h3 className="font-heading text-xl font-bold text-blue-900">
+              {temple.description_title || "General Description"}
+            </h3>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-            <p className="font-serif text-slate-700 leading-relaxed italic text-sm">
-              {temple.sthana ||
-                temple.description ||
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
+            <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2">
+              {temple.description_text || temple.description || "No description available."}
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Sthana Info */}
+        <div className="space-y-4 group">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">🕉️</span>
+            <h3 className="font-heading text-xl font-bold text-blue-900">
+              {temple.sthana_info_title || "स्थानांची माहिती"}
+            </h3>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/10"></div>
+            <p className="font-serif text-slate-700 leading-relaxed italic text-sm whitespace-pre-wrap pl-2">
+              {temple.sthana_info_text ||
+                temple.sthana ||
                 `${temple.name} हे महाराष्ट्रातील एक प्राचीन व पवित्र स्थान आहे. येथील वास्तुकला आणि ऐतिहासिक महत्त्व अद्वितीय आहे.`}
             </p>
           </div>
         </div>
 
-        {/* जाण्याचा मार्ग (Directions) */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <h3 className="text-lg font-bold text-blue-900">जाण्याचा मार्ग</h3>
-            <div className="h-[1px] flex-1 bg-amber-200/50"></div>
+        {/* 3. Directions */}
+        <div className="space-y-4 group">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">🧭</span>
+            <h3 className="font-heading text-xl font-bold text-blue-900">
+              {temple.directions_title || "जाण्याचा मार्ग"}
+            </h3>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-green-500/10"></div>
+            {temple.directions_text ? (
+              <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap mb-4 pl-2">
+                {temple.directions_text}
+              </p>
+            ) : null}
+
             {temple.latitude && temple.longitude ? (
-              <div className="space-y-3">
+              <div className="space-y-3 pl-2">
                 <p className="text-sm text-slate-600">
                   या स्थानापर्यंत पोहोचण्यासाठी खालील बटणावर क्लिक करा:
                 </p>
@@ -310,23 +340,26 @@ export default function TempleArchitecture() {
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center italic">
-                दिशानिर्देश लवकरच उपलब्ध होतील
-              </p>
+              !temple.directions_text && (
+                <p className="text-sm text-slate-500 text-center italic pl-2">
+                  दिशानिर्देश लवकरच उपलब्ध होतील
+                </p>
+              )
             )}
           </div>
         </div>
 
-        {/* Additional Info (if available) */}
+        {/* Additional Info (History) */}
         {temple.history && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold text-blue-900">इतिहास</h3>
-              <div className="h-[1px] flex-1 bg-amber-200/50"></div>
+          <div className="space-y-4 group">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">⏳</span>
+              <h3 className="font-heading text-xl font-bold text-blue-900">इतिहास</h3>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-              <p className="font-serif text-slate-700 leading-relaxed text-sm">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-amber-500/10"></div>
+              <p className="font-serif text-slate-700 leading-relaxed text-sm pl-2">
                 {temple.history}
               </p>
             </div>

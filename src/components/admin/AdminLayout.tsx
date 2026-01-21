@@ -1,4 +1,3 @@
-// /src/components/admin/AdminLayout.tsx
 import React from "react";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
@@ -9,12 +8,14 @@ interface Props {
 
 export default function AdminLayout({ children }: Props) {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen overflow-hidden bg-[#F3F4F6] font-[Manrope]">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopbar />
-        <main className="flex-1 overflow-auto">{children}</main>
-      </div>
+        <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

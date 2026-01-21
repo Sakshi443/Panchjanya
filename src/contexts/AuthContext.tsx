@@ -27,8 +27,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (currentUser) {
         // Check if user is admin based on email
-        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
-        setIsAdmin(currentUser.email === adminEmail);
+        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "admin@example.com";
+        const isUserAdmin = currentUser.email === adminEmail;
+
+        console.log(`👤 Auth State Change: ${currentUser.email} (Admin: ${isUserAdmin})`);
+        if (!import.meta.env.VITE_ADMIN_EMAIL) {
+          console.warn("⚠️ VITE_ADMIN_EMAIL not set in .env, using default: admin@example.com");
+        }
+
+        setIsAdmin(isUserAdmin);
       } else {
         setIsAdmin(false);
       }

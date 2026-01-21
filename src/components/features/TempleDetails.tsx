@@ -298,9 +298,30 @@ export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) =
               {/* 5. Information Sections */}
               <div className="space-y-10">
                 {[
-                  { id: 'overview', title: 'Archive Overview', content: temple.description, icon: '📜' },
-                  { id: 'history', title: 'Sthana Information', content: temple.sthana, icon: '🕉️' },
-                  { id: 'leela', title: 'Sacred Leelas', content: temple.leela, icon: '🌟' }
+                  {
+                    id: 'overview',
+                    title: temple.description_title || 'Archive Overview',
+                    content: temple.description_text || temple.description,
+                    icon: '📜'
+                  },
+                  {
+                    id: 'history',
+                    title: temple.sthana_info_title || 'Sthana Information',
+                    content: temple.sthana_info_text || temple.sthana,
+                    icon: '🕉️'
+                  },
+                  {
+                    id: 'directions',
+                    title: temple.directions_title || 'Directions',
+                    content: temple.directions_text,
+                    icon: '🧭'
+                  },
+                  {
+                    id: 'leela',
+                    title: 'Sacred Leelas',
+                    content: temple.leela,
+                    icon: '🌟'
+                  }
                 ].map((section) => section.content && (
                   <div key={section.id} className="relative group">
                     <div className="flex items-center gap-4 mb-5">
@@ -311,7 +332,7 @@ export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) =
                     </div>
                     <div className="relative">
                       <div className="absolute -left-4 top-0 bottom-0 w-[2px] bg-gradient-to-b from-border to-transparent" />
-                      <p className="text-foreground/70 leading-[1.8] text-lg font-body pl-2">
+                      <p className="text-foreground/70 leading-[1.8] text-lg font-body pl-2 whitespace-pre-wrap">
                         {section.content}
                       </p>
                     </div>

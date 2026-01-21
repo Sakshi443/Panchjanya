@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
@@ -38,6 +39,7 @@ import HelpCenter from "@/pages/HelpCenter";
 // Admin Pages
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import SthanaDirectory from "@/pages/admin/SthanaDirectory";
 
 import AdminAddTemple from "@/pages/admin/AdminAddTemple";
 import AdminTempleEdit from "@/pages/admin/AdminTempleEdit";
@@ -48,129 +50,138 @@ import ManageYatra from "@/pages/admin/ManageYatra";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
 
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ThemeProvider>
-          <LanguageProvider>
-            <AuthProvider>
-              <Routes>
-                {/* ---------------------- ADMIN AUTH ---------------------- */}
-                <Route path="/admin/login" element={<AdminLogin />} />
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ThemeProvider>
+            <LanguageProvider>
+              <AuthProvider>
+                <Routes>
+                  {/* ---------------------- ADMIN AUTH ---------------------- */}
+                  <Route path="/admin/login" element={<AdminLogin />} />
 
-                {/* ---------------------- ADMIN PROTECTED ROUTES ---------------------- */}
-                <Route
-                  path="/admin"
-                  element={
+                  {/* ---------------------- ADMIN PROTECTED ROUTES ---------------------- */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <PrivateRoute adminRequired={true} >
+                        <AdminDashboard />
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route path="/admin/dashboard" element={
                     <PrivateRoute adminRequired={true} >
                       <AdminDashboard />
                     </PrivateRoute>
                   }
-                />
+                  />
 
-                <Route path="/admin/dashboard" element={
-                  <PrivateRoute adminRequired={true} >
-                    <AdminDashboard />
-                  </PrivateRoute>
-                }
-                />
-
-                <Route
-                  path="/admin/temples/add"
-                  element={
+                  <Route path="/admin/sthana-directory" element={
                     <PrivateRoute adminRequired={true} >
-                      <AdminAddTemple />
+                      <SthanaDirectory />
                     </PrivateRoute>
                   }
-                />
+                  />
 
-                <Route
-                  path="/admin/temples/edit/:id"
-                  element={
-                    <PrivateRoute adminRequired={true} >
-                      <AdminTempleEdit />
-                    </PrivateRoute>
-                  }
-                />
+                  <Route
+                    path="/admin/temples/add"
+                    element={
+                      <PrivateRoute adminRequired={true} >
+                        <AdminAddTemple />
+                      </PrivateRoute>
+                    }
+                  />
 
-                <Route
-                  path="/admin/csv-import"
-                  element={
-                    <PrivateRoute adminRequired={true}>
-                      <AdminCsvImport />
-                    </PrivateRoute>
-                  }
-                />
+                  <Route
+                    path="/admin/temples/edit/:id"
+                    element={
+                      <PrivateRoute adminRequired={true} >
+                        <AdminTempleEdit />
+                      </PrivateRoute>
+                    }
+                  />
 
-                <Route
-                  path="/admin/manage-yatra"
-                  element={
-                    <PrivateRoute adminRequired={true}>
-                      <ManageYatra />
-                    </PrivateRoute>
-                  }
-                />
+                  <Route
+                    path="/admin/csv-import"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <AdminCsvImport />
+                      </PrivateRoute>
+                    }
+                  />
 
-                <Route
-                  path="/admin/csv-upload"
-                  element={
-                    <PrivateRoute adminRequired={true}>
-                      <AdminCsvUpload />
-                    </PrivateRoute>
-                  }
-                />
+                  <Route
+                    path="/admin/manage-yatra"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <ManageYatra />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* ---------------------- USER ROUTES WITH LAYOUT ---------------------- */}
-                <Route element={<Layout />}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/dashboard/sthana-vandan" element={<SthanaVandan />} />
-                  <Route path="/yatra" element={<SwamiYatra />} />
-                  <Route path="/explore" element={<Explore />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/share" element={<Share />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/saved" element={<Saved />} />
-                  <Route path="/literature" element={<Literature />} />
-                  <Route path="/vandan-history" element={<VandanHistory />} />
-                  <Route path="/whats-new" element={<WhatsNew />} />
-                  <Route path="/jigyasa" element={<Jigyasa />} />
-                  <Route path="/e-library" element={<ELibrary />} />
-                  <Route path="/help-center" element={<HelpCenter />} />
-                </Route>
+                  <Route
+                    path="/admin/csv-upload"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <AdminCsvUpload />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* ---------------------- MEDIA PLAYERS (FULLSCREEN) ---------------------- */}
-                <Route path="/audio/:id" element={<AudioPlayer />} />
-                <Route path="/video/:id" element={<VideoPlayer />} />
+                  {/* ---------------------- USER ROUTES WITH LAYOUT ---------------------- */}
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/dashboard/sthana-vandan" element={<SthanaVandan />} />
+                    <Route path="/yatra" element={<SwamiYatra />} />
+                    <Route path="/explore" element={<Explore />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/share" element={<Share />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/saved" element={<Saved />} />
+                    <Route path="/literature" element={<Literature />} />
+                    <Route path="/vandan-history" element={<VandanHistory />} />
+                    <Route path="/whats-new" element={<WhatsNew />} />
+                    <Route path="/jigyasa" element={<Jigyasa />} />
+                    <Route path="/e-library" element={<ELibrary />} />
+                    <Route path="/help-center" element={<HelpCenter />} />
+                  </Route>
 
-                {/* ---------------------- TEMPLE ARCHITECTURE (USER) ---------------------- */}
-                <Route path="/temple/:id/architecture" element={<TempleArchitecture />} />
-                <Route path="/temple/:id/architecture-view" element={<ArchitectureViewer />} />
+                  {/* ---------------------- MEDIA PLAYERS (FULLSCREEN) ---------------------- */}
+                  <Route path="/audio/:id" element={<AudioPlayer />} />
+                  <Route path="/video/:id" element={<VideoPlayer />} />
 
-                {/* ---------------------- ADMIN ARCHITECTURE ---------------------- */}
-                <Route
-                  path="/admin/architecture/:id"
-                  element={
-                    <PrivateRoute adminRequired={true}>
-                      <TempleArchitectureAdmin />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* ---------------------- TEMPLE ARCHITECTURE (USER) ---------------------- */}
+                  <Route path="/temple/:id/architecture" element={<TempleArchitecture />} />
+                  <Route path="/temple/:id/architecture-view" element={<ArchitectureViewer />} />
 
-                {/* ---------------------- 404 ---------------------- */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </Router>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+                  {/* ---------------------- ADMIN ARCHITECTURE ---------------------- */}
+                  <Route
+                    path="/admin/architecture/:id"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <TempleArchitectureAdmin />
+                      </PrivateRoute>
+                    }
+                  />
+
+                  {/* ---------------------- 404 ---------------------- */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AuthProvider>
+            </LanguageProvider>
+          </ThemeProvider>
+        </Router>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

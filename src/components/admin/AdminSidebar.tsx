@@ -1,48 +1,101 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, PlusCircle, FileSpreadsheet } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Landmark,
+  BookOpen,
+  Library,
+  Settings,
+  BarChart3,
+  PlusCircle,
+  FileSpreadsheet
+} from "lucide-react";
 
 export default function AdminSidebar() {
+  const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
+    { icon: Users, label: "User Management", path: "/admin/users" },
+    { icon: Landmark, label: "Sthana Directory", path: "/admin/sthana-directory" },
+    { icon: BookOpen, label: "Literature Hub", path: "/admin/literature" },
+    { icon: Library, label: "E-Library", path: "/admin/e-library" },
+  ];
+
+  const systemItems = [
+    { icon: Settings, label: "Platform Settings", path: "/admin/settings" },
+    { icon: BarChart3, label: "Analytics & Reports", path: "/admin/analytics" },
+  ];
+
   return (
-    <aside className="w-64 bg-white border-r flex flex-col h-full">
-      <div className="p-6 border-b">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <LayoutDashboard className="w-6 h-6" />
-          Admin Panel
-        </h2>
+    <aside className="w-72 bg-[#111827] text-white flex flex-col shrink-0 border-r border-white/5 font-[Manrope]">
+      {/* Branding */}
+      <div className="p-6 flex items-center gap-3">
+        <div className="w-10 h-10 bg-[#1E3A8A]/20 rounded-lg flex items-center justify-center p-1.5 border border-[#1E3A8A]/30 text-[#1E3A8A]">
+          {/* Placeholder for Logo or Icon */}
+          <LayoutDashboard className="w-full h-full text-[#1E3A8A]" />
+        </div>
+        <div>
+          <h1 className="text-lg font-extrabold tracking-tight text-white">Panchajanya</h1>
+          <p className="text-[10px] text-[#C9A961] font-bold uppercase tracking-widest">Admin Console</p>
+        </div>
       </div>
-      <nav className="flex-1 p-4 space-y-2">
-        <NavLink
-          to="/admin/dashboard"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? "bg-primary/10 text-primary font-medium" : "text-gray-600 hover:bg-gray-100"
-            }`
-          }
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/admin/temples/add"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? "bg-primary/10 text-primary font-medium" : "text-gray-600 hover:bg-gray-100"
-            }`
-          }
-        >
-          <PlusCircle className="w-5 h-5" />
-          Add Temple
-        </NavLink>
-        <NavLink
-          to="/admin/csv-import"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? "bg-primary/10 text-primary font-medium" : "text-gray-600 hover:bg-gray-100"
-            }`
-          }
-        >
-          <FileSpreadsheet className="w-5 h-5" />
-          Import CSV
-        </NavLink>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 mt-4 space-y-1">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive
+                ? "bg-[#1E3A8A] text-white"
+                : "text-slate-400 hover:text-white hover:bg-white/10"
+              }`
+            }
+          >
+            <item.icon className="w-5 h-5" />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+
+        <div className="pt-4 pb-2 px-4">
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">System</p>
+        </div>
+
+        {systemItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive
+                ? "bg-[#1E3A8A] text-white"
+                : "text-slate-400 hover:text-white hover:bg-white/10"
+              }`
+            }
+          >
+            <item.icon className="w-5 h-5" />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+
+        {/* Existing Functional Links (hidden or integrated?) 
+            Keeping them accessible effectively as 'Tools' or similar if needed. 
+            For now, sticking to the visual mock, but I'll add the functional 'Add Temple' etc in Dashboard content or as extra items.
+        */}
       </nav>
+
+      {/* User Profile */}
+      <div className="p-4 mt-auto border-t border-white/5">
+        <div className="bg-white/5 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#C9A961] flex items-center justify-center text-[#111827] font-bold">JD</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate text-white">Janardana Dasa</p>
+              <p className="text-xs text-slate-500 truncate">Super Admin</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }

@@ -10,7 +10,13 @@ export interface Temple {
     latitude: number;
     longitude: number;
     description?: string;
-    sthana?: string; // Sthana Purana
+    description_title?: string;
+    description_text?: string;
+    sthana?: string; // Sthana Purana (Legacy)
+    sthana_info_title?: string;
+    sthana_info_text?: string;
+    directions_title?: string;
+    directions_text?: string;
     leela?: string; // Leela
     history?: string; // Temple history
     images?: string[];

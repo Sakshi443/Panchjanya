@@ -27,15 +27,24 @@ export default function TempleForm({ templeId }: TempleFormProps) {
 
     // Form State
     const [name, setName] = useState("");
-    const [address, setAddress] = useState(""); // New field
+    const [address, setAddress] = useState("");
     const [city, setCity] = useState("");
-    const [taluka, setTaluka] = useState(""); // New field
+    const [taluka, setTaluka] = useState("");
     const [district, setDistrict] = useState("");
     const [latitude, setLatitude] = useState("");
     const [longitude, setLongitude] = useState("");
-    const [description, setDescription] = useState("");
-    const [sthana, setSthana] = useState("");
-    const [leela, setLeela] = useState("");
+
+    // New Fields
+    const [descriptionTitle, setDescriptionTitle] = useState("Description");
+    const [descriptionText, setDescriptionText] = useState("");
+
+    const [sthanaInfoTitle, setSthanaInfoTitle] = useState("स्थानांची माहिती");
+    const [sthanaInfoText, setSthanaInfoText] = useState("");
+
+    const [directionsTitle, setDirectionsTitle] = useState("जाण्याचा मार्ग");
+    const [directionsText, setDirectionsText] = useState("");
+
+    const [leela, setLeela] = useState(""); // Keeping for legacy/compatibility
     const [images, setImages] = useState<string[]>([]);
     const [hasArchitecture, setHasArchitecture] = useState(false);
 
@@ -56,8 +65,17 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     setDistrict(data.district || "");
                     setLatitude(String(data.latitude ?? data.location?.lat ?? ""));
                     setLongitude(String(data.longitude ?? data.location?.lng ?? ""));
-                    setDescription(data.description || "");
-                    setSthana(data.sthana || "");
+
+                    // Populate new fields with fallbacks to old fields if they exist
+                    setDescriptionTitle(data.description_title || "Description");
+                    setDescriptionText(data.description_text || data.description || "");
+
+                    setSthanaInfoTitle(data.sthana_info_title || "स्थानांची माहिती");
+                    setSthanaInfoText(data.sthana_info_text || data.sthana || "");
+
+                    setDirectionsTitle(data.directions_title || "जाण्याचा मार्ग");
+                    setDirectionsText(data.directions_text || "");
+
                     setLeela(data.leela || "");
                     setImages(data.images || []);
                     setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
@@ -94,19 +112,50 @@ export default function TempleForm({ templeId }: TempleFormProps) {
             const latNum = parseFloat(latitude);
             const lngNum = parseFloat(longitude);
 
+            if (isNaN(latNum) || isNaN(lngNum) || (latNum === 0 && lngNum === 0)) {
+                toast({
+                    title: "Invalid Coordinates",
+                    description: "Please enter valid Latitude and Longitude values.",
+                    variant: "destructive",
+                });
+                setLoading(false);
+                return;
+            }
+
+            if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+                toast({
+                    title: "Invalid Coordinates",
+                    description: "Latitude must be between -90 and 90. Longitude between -180 and 180.",
+                    variant: "destructive",
+                });
+                setLoading(false);
+                return;
+            }
+
             const templeData = {
                 name,
                 address,
                 city,
                 taluka,
                 district,
-                description,
-                sthana,
+
+                // New Fields
+                description_title: descriptionTitle,
+                description_text: descriptionText,
+                description: descriptionText, // Backward comp.
+
+                sthana_info_title: sthanaInfoTitle,
+                sthana_info_text: sthanaInfoText,
+                sthana: sthanaInfoText, // Backward comp.
+
+                directions_title: directionsTitle,
+                directions_text: directionsText,
+
                 leela,
                 images,
-                latitude: isNaN(latNum) ? 0 : latNum,
-                longitude: isNaN(lngNum) ? 0 : lngNum,
-                location: { lat: isNaN(latNum) ? 0 : latNum, lng: isNaN(lngNum) ? 0 : lngNum },
+                latitude: latNum,
+                longitude: lngNum,
+                location: { lat: latNum, lng: lngNum },
                 updatedAt: Timestamp.now(),
                 updatedBy: user.uid,
             };
@@ -234,13 +283,30 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                                 />
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
 
+                {/* 1. General Description Section */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Description Section</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="descTitle">Section Title</Label>
+                            <Input
+                                id="descTitle"
+                                value={descriptionTitle}
+                                onChange={(e) => setDescriptionTitle(e.target.value)}
+                                placeholder="e.g. Description"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Content</Label>
                             <Textarea
                                 id="description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                value={descriptionText}
+                                onChange={(e) => setDescriptionText(e.target.value)}
                                 rows={4}
                                 placeholder="General description of the temple..."
                             />
@@ -248,9 +314,65 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     </CardContent>
                 </Card>
 
+                {/* 2. Sthana Info Section */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Location</CardTitle>
+                        <CardTitle>Sthana Info Section</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sthanaTitle">Section Title</Label>
+                            <Input
+                                id="sthanaTitle"
+                                value={sthanaInfoTitle}
+                                onChange={(e) => setSthanaInfoTitle(e.target.value)}
+                                placeholder="e.g. स्थानांची माहिती"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sthanaInfo">Content</Label>
+                            <Textarea
+                                id="sthanaInfo"
+                                value={sthanaInfoText}
+                                onChange={(e) => setSthanaInfoText(e.target.value)}
+                                rows={4}
+                                placeholder="Details about the Sthana..."
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 3. Directions Section */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Directions Section</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="dirTitle">Section Title</Label>
+                            <Input
+                                id="dirTitle"
+                                value={directionsTitle}
+                                onChange={(e) => setDirectionsTitle(e.target.value)}
+                                placeholder="e.g. जाण्याचा मार्ग"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="dirText">Content</Label>
+                            <Textarea
+                                id="dirText"
+                                value={directionsText}
+                                onChange={(e) => setDirectionsText(e.target.value)}
+                                rows={4}
+                                placeholder="Instructions on how to reach..."
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Location Coordinates</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -282,34 +404,6 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                         <p className="text-sm text-muted-foreground">
                             You can get coordinates from Google Maps (Right click &gt; First option).
                         </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Spiritual Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="sthana">Sthana Purana (History/Significance)</Label>
-                            <Textarea
-                                id="sthana"
-                                value={sthana}
-                                onChange={(e) => setSthana(e.target.value)}
-                                rows={4}
-                                placeholder="Mythological history of the place..."
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="leela">Leela (Divine Plays)</Label>
-                            <Textarea
-                                id="leela"
-                                value={leela}
-                                onChange={(e) => setLeela(e.target.value)}
-                                rows={4}
-                                placeholder="Stories of divine plays associated with this temple..."
-                            />
-                        </div>
                     </CardContent>
                 </Card>
 
