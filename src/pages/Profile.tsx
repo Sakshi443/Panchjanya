@@ -89,17 +89,17 @@ const Profile = () => {
                     {userData.isVerified && (
                         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white rounded-full px-3 py-1 shadow-md border border-gray-200 flex items-center gap-1">
                             <CheckCircle className="w-4 h-4 text-amber-500 fill-amber-500" />
-                            <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Verified Seva</span>
+                            <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Verified</span>
                         </div>
                     )}
                 </div>
 
                 {/* User Name and Join Date */}
                 <h2 className="text-2xl font-heading font-bold text-[#0f3c6e] mt-6 mb-1">{userData.name}</h2>
-                <p className="text-sm text-gray-500">Dharma Guardian since {userData.joinDate}</p>
+                <p className="text-sm text-gray-500">Panchajanya Explorer since {userData.joinDate}</p>
 
                 {/* Stats */}
-                <div className="flex items-center gap-8 mt-6">
+                <div className="flex items-center gap-12 mt-6">
                     <div className="text-center">
                         <div className="text-2xl font-bold text-[#0f3c6e]">{userData.stats.sthanas}</div>
                         <div className="text-xs text-gray-500 uppercase tracking-wider">Sthanas</div>
@@ -109,11 +109,6 @@ const Profile = () => {
                         <div className="text-2xl font-bold text-[#0f3c6e]">{userData.stats.yatras}</div>
                         <div className="text-xs text-gray-500 uppercase tracking-wider">Yatras</div>
                     </div>
-                    <div className="w-px h-10 bg-gray-300"></div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-[#0f3c6e]">{userData.stats.karma}</div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wider">Karma</div>
-                    </div>
                 </div>
             </div>
 
@@ -122,7 +117,7 @@ const Profile = () => {
                 <h3 className="text-sm font-bold text-[#0f3c6e] uppercase tracking-wider mb-3">Spiritual Journey</h3>
 
                 {/* My Saved Sthanas */}
-                <Card className="mb-3 p-4 bg-white shadow-sm border-none rounded-xl hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/saved")}>
+                <Card className="mb-3 p-4 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/saved")}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <Bookmark className="w-5 h-5 text-[#0f3c6e]" />
@@ -136,7 +131,7 @@ const Profile = () => {
                 </Card>
 
                 {/* Completed Yatras */}
-                <Card className="p-4 bg-white shadow-sm border-none rounded-xl hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/yatra")}>
+                <Card className="p-4 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/yatra")}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <CheckCircle className="w-5 h-5 text-[#0f3c6e]" />
@@ -155,7 +150,7 @@ const Profile = () => {
                 <h3 className="text-sm font-bold text-[#0f3c6e] uppercase tracking-wider mb-3">Seva & Support</h3>
 
                 {/* Donation History */}
-                <Card className="p-4 bg-white shadow-sm border-none rounded-xl hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/donations")}>
+                <Card className="p-4 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/donations")}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <HandHeart className="w-5 h-5 text-[#0f3c6e]" />
@@ -169,7 +164,7 @@ const Profile = () => {
                 </Card>
 
                 {/* Help Center */}
-                <Card className="mt-3 p-4 bg-white shadow-sm border-none rounded-xl hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/help-center")}>
+                <Card className="mt-3 p-4 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/help-center")}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <HelpCircle className="w-5 h-5 text-[#0f3c6e]" />
@@ -188,7 +183,7 @@ const Profile = () => {
                 <h3 className="text-sm font-bold text-[#0f3c6e] uppercase tracking-wider mb-3">Preferences</h3>
 
                 {/* Settings */}
-                <Card className="p-4 bg-white shadow-sm border-none rounded-xl hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/settings")}>
+                <Card className="p-4 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/settings")}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <SettingsIcon className="w-5 h-5 text-[#0f3c6e]" />
@@ -204,7 +199,7 @@ const Profile = () => {
 
             {/* Log Out Button */}
             <div className="px-6">
-                <Card className="p-4 bg-white shadow-sm border-none rounded-xl hover:shadow-md transition-shadow cursor-pointer" onClick={handleLogout}>
+                <Card className="p-4 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={handleLogout}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <LogOut className="w-5 h-5 text-red-500" />

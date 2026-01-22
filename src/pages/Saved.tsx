@@ -117,7 +117,7 @@ const Saved = () => {
                         {savedTemples.map((temple) => (
                             <Card
                                 key={temple.id}
-                                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                                className="overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer group"
                             >
                                 <div onClick={() => handleTempleClick(temple.templeId)}>
                                     <div className="relative aspect-[4/3] overflow-hidden">

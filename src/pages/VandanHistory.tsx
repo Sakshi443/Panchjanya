@@ -147,7 +147,7 @@ export default function VandanHistory() {
                             vandanEntries.map((entry) => (
                                 <div
                                     key={entry.id}
-                                    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                                    className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl transition-shadow"
                                 >
                                     <div className="flex items-center gap-4">
                                         {/* Temple Image */}

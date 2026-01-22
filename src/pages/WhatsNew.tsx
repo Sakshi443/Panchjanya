@@ -196,7 +196,7 @@ export default function WhatsNew() {
                             notifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                                    className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl transition-shadow"
                                 >
                                     <div className="flex gap-4">
                                         {/* Icon */}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Search, Music, Video, Play, Pause } from "lucide-react";
+import { ChevronLeft, Search, Music, Video, Play, Pause, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -68,9 +68,55 @@ const videoData = [
     }
 ];
 
+// Mock Data for Images
+const imageData = [
+    {
+        id: "1",
+        title: "Shri Swami Samarth",
+        category: "Divine Portraits",
+        resolution: "1920x1080",
+        imageUrl: "https://images.unsplash.com/photo-1604608672516-9c88dc049e49?w=400",
+    },
+    {
+        id: "2",
+        title: "Temple Architecture",
+        category: "Sacred Structures",
+        resolution: "1920x1080",
+        imageUrl: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400",
+    },
+    {
+        id: "3",
+        title: "Ancient Manuscripts",
+        category: "Sacred Texts",
+        resolution: "2400x1600",
+        imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
+    },
+    {
+        id: "4",
+        title: "Deity Shrines",
+        category: "Divine Portraits",
+        resolution: "1920x1200",
+        imageUrl: "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=400",
+    },
+    {
+        id: "5",
+        title: "Sacred Rituals",
+        category: "Devotional Practices",
+        resolution: "1920x1080",
+        imageUrl: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400",
+    },
+    {
+        id: "6",
+        title: "Temple Gopuram",
+        category: "Sacred Structures",
+        resolution: "2560x1440",
+        imageUrl: "https://images.unsplash.com/photo-1548013146-72479768bada?w=400",
+    },
+];
+
 export default function Literature() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<"audio" | "video">("audio");
+    const [activeTab, setActiveTab] = useState<"audio" | "video" | "images">("audio");
     const [searchQuery, setSearchQuery] = useState("");
 
     return (
@@ -112,7 +158,16 @@ export default function Literature() {
                             }`}
                         onClick={() => setActiveTab("video")}
                     >
-                        Video
+                        Videos
+                    </button>
+                    <button
+                        className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "images"
+                            ? "bg-blue-900 text-white shadow-md"
+                            : "text-gray-500 hover:text-blue-900"
+                            }`}
+                        onClick={() => setActiveTab("images")}
+                    >
+                        Images
                     </button>
                 </div>
             </div>
@@ -177,7 +232,7 @@ export default function Literature() {
                             ))}
                         </div>
                     </div>
-                ) : (
+                ) : activeTab === "video" ? (
                     <div>
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="font-heading font-bold text-2xl text-blue-900">
@@ -220,6 +275,57 @@ export default function Literature() {
                                         </h3>
                                         <p className="text-xs font-bold text-amber-600 uppercase tracking-wider">
                                             {video.series}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="font-heading font-bold text-2xl text-blue-900">
+                                Sacred Gallery
+                            </h2>
+                            <button className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+                                View All
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {imageData.map((image) => (
+                                <div
+                                    key={image.id}
+                                    onClick={() => navigate(`/image/${image.id}`)}
+                                    className="group cursor-pointer"
+                                >
+                                    {/* Image Card */}
+                                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2 shadow-md group-hover:shadow-xl transition-all">
+                                        <img
+                                            src={image.imageUrl}
+                                            alt={image.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-center">
+                                                <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
+                                                    <Image className="w-4 h-4 text-blue-900" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="absolute top-2 right-2 bg-black/70 text-white text-[9px] font-bold px-2 py-0.5 rounded">
+                                            {image.resolution}
+                                        </div>
+                                    </div>
+
+                                    {/* Info */}
+                                    <div>
+                                        <h3 className="font-bold text-blue-900 text-sm leading-tight mb-0.5 group-hover:text-blue-700">
+                                            {image.title}
+                                        </h3>
+                                        <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">
+                                            {image.category}
                                         </p>
                                     </div>
                                 </div>

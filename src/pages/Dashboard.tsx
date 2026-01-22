@@ -50,7 +50,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-4 lg:gap-6">
                 {/* Sthaan Vandan */}
                 <Link to="/dashboard/sthana-vandan" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-300 border-amber-100 bg-orange-50/30 group-hover:bg-orange-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-amber-100 bg-orange-50/30 group-hover:bg-orange-50/50">
                         <div className="flex justify-between items-start">
                             <div className="p-3 bg-blue-100/50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform duration-300">
                                 <Map className="w-6 h-6" />
@@ -77,7 +77,7 @@ const Dashboard = () => {
 
                 {/* Literature (Audio/Video) */}
                 <Link to="/literature" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-300 border-sky-100 bg-sky-50/30 group-hover:bg-sky-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-sky-100 bg-sky-50/30 group-hover:bg-sky-50/50">
                         <div className="flex justify-start">
                             <div className="p-3 bg-blue-100/50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform duration-300">
                                 <BookOpen className="w-6 h-6" />
@@ -96,7 +96,7 @@ const Dashboard = () => {
 
                 {/* What's New */}
                 <Link to="/whats-new" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-300 border-yellow-100 bg-yellow-50/30 group-hover:bg-yellow-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-yellow-100 bg-yellow-50/30 group-hover:bg-yellow-50/50">
                         <div className="flex justify-start">
                             <div className="p-3 bg-amber-100/50 rounded-xl text-amber-600 group-hover:scale-110 transition-transform duration-300">
                                 <Sparkles className="w-6 h-6" />
@@ -115,7 +115,7 @@ const Dashboard = () => {
 
                 {/* Jigyasa */}
                 <Link to="/jigyasa" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-300 border-indigo-100 bg-indigo-50/30 group-hover:bg-indigo-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-indigo-100 bg-indigo-50/30 group-hover:bg-indigo-50/50">
                         <div className="flex justify-start">
                             <div className="p-3 bg-blue-100/50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform duration-300">
                                 <BrainCircuit className="w-6 h-6" />

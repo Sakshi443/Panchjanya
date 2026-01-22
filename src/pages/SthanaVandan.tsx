@@ -164,11 +164,12 @@ const SthanaVandan = () => {
             </div>
 
 
-            {/* Heritage Map Section */}
             <div className="space-y-6 pt-2 px-6">
                 <div className="flex items-center justify-between border-l-4 border-amber-600 pl-3">
                     <h2 className="font-heading font-bold text-xl text-blue-900">Heritage Map</h2>
-                    <span className="text-xs font-bold text-amber-600 uppercase tracking-widest cursor-pointer hover:text-amber-700">NEARBY SITES</span>
+                    <Link to="/explore" className="text-xs font-bold text-amber-600 uppercase tracking-widest cursor-pointer hover:text-amber-700">
+                        view all
+                    </Link>
                 </div>
 
                 <div className="h-[500px] w-full rounded-3xl overflow-hidden shadow-inner border border-border/50 bg-amber-50 relative">
@@ -251,7 +252,7 @@ const SthanaVandan = () => {
                     {architectureTemples.length > 0 ? (
                         architectureTemples.map((temple) => (
                             <Link to={`/temple/${temple.id}/architecture`} key={temple.id}>
-                                <Card className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all h-full flex flex-col">
+                                <Card className="overflow-hidden group cursor-pointer shadow-md hover:shadow-xl transition-all h-full flex flex-col">
                                     <div className="h-40 bg-gray-100 relative overflow-hidden">
                                         {temple.architectureImage || temple.images?.[0] ? (
                                             <img

@@ -102,7 +102,7 @@ export default function HelpCenter() {
                 {/* Quick Actions */}
                 <div className="grid grid-cols-3 gap-3 mb-8">
                     <Card
-                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-lg transition-all cursor-pointer"
+                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
                         onClick={() => scrollToSection(faqSectionRef)}
                     >
                         <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
@@ -111,7 +111,7 @@ export default function HelpCenter() {
                         <span className="text-xs font-bold text-gray-700">Guides</span>
                     </Card>
                     <Card
-                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-lg transition-all cursor-pointer"
+                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
                         onClick={handleChatClick}
                     >
                         <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600">
@@ -120,7 +120,7 @@ export default function HelpCenter() {
                         <span className="text-xs font-bold text-gray-700">Chat</span>
                     </Card>
                     <Card
-                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-lg transition-all cursor-pointer"
+                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
                         onClick={() => scrollToSection(supportSectionRef)}
                     >
                         <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-600">
