@@ -103,6 +103,18 @@ export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) =
 
   const getAddress = () => {
     if (!temple) return "";
+
+    // Prefer constructing address from components to ensure no duplication
+    if (temple.city || temple.district) {
+      const city = temple.city?.trim();
+      const district = temple.district?.trim();
+
+      if (city && district && city.toLowerCase() !== district.toLowerCase()) {
+        return `${city}, ${district}`;
+      }
+      return city || district || "";
+    }
+
     if (temple.address) return temple.address;
     if (typeof temple.location === 'object' && temple.location !== null) {
       return (temple.location as any).address || "Sacred Sthana";

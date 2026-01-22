@@ -202,7 +202,15 @@ const SthanaVandan = () => {
                                     </h3>
                                     <p className="text-[11px] lg:text-xs text-muted-foreground truncate flex items-center gap-1">
                                         <MapIcon className="w-3 h-3" />
-                                        {typeof selectedTemple.location === 'string' ? selectedTemple.location : "Ancient Heritage"}
+                                        {(() => {
+                                            const city = selectedTemple.city?.trim();
+                                            const district = selectedTemple.district?.trim();
+                                            if (city && district && city.toLowerCase() !== district.toLowerCase()) {
+                                                return `${city}, ${district}`;
+                                            }
+                                            if (city || district) return city || district;
+                                            return typeof selectedTemple.location === 'string' ? selectedTemple.location : "Ancient Heritage";
+                                        })()}
                                     </p>
                                 </div>
 

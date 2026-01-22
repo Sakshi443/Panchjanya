@@ -147,7 +147,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                             <div className="flex items-start gap-1 text-[10px] text-muted-foreground mb-2">
                                 <MapPin className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
                                 <span className="leading-tight line-clamp-1">
-                                    {temple.city ? `${temple.city}, ` : ""}
+                                    {temple.city && temple.city !== temple.district ? `${temple.city}, ` : ""}
                                     {temple.district || "Maharashtra"}
                                 </span>
                             </div>
