@@ -79,19 +79,15 @@ const Saved = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] font-sans pb-24">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white font-sans pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between shadow-sm">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hover:bg-slate-100 -ml-2 rounded-full"
-                    onClick={() => navigate(-1)}
-                >
-                    <ChevronLeft className="w-6 h-6 text-slate-700" />
+            {/* Header */}
+            <div className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-lg font-heading font-bold text-[#0f3c6e] leading-tight">My Saved Sthanas</h1>
-                <div className="w-10" /> {/* Spacer for alignment */}
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">My Saved Sthanas</h1>
+                <div className="w-10" />
             </div>
 
             {/* Content */}

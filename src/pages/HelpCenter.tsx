@@ -60,45 +60,34 @@ export default function HelpCenter() {
     );
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] pb-20">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-20">
             {/* Header */}
-            <div className="bg-blue-900 px-6 pt-8 pb-12 relative overflow-hidden">
-                {/* Background Decor */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-blue-800 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20 pointer-events-none"></div>
+            {/* Header */}
+            {/* Header */}
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                </Button>
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Help Center</h1>
+                <div className="w-10" />
+            </div>
 
-                <div className="flex items-center justify-between mb-8 relative z-10">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(-1)}
-                        className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </Button>
-                    <h1 className="font-heading font-bold text-2xl text-white">
-                        Help Center
-                    </h1>
-                    <div className="w-10"></div> {/* Spacer for center alignment */}
-                </div>
-
-                {/* Search Box */}
-                <div className="relative z-10">
-                    <h2 className="text-white text-xl font-bold mb-4 text-center">How can we help you?</h2>
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <Input
-                            placeholder="Search for answers..."
-                            className="pl-12 pr-4 h-12 rounded-full border-none bg-white shadow-lg text-gray-800 placeholder:text-gray-400"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+            {/* Search Box Section - Moved below header */}
+            <div className="px-6 py-4 bg-background/50">
+                <h2 className="text-blue-900 text-xl font-bold mb-4 text-center">How can we help you?</h2>
+                <div className="relative shadow-lg rounded-full">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                        placeholder="Search for answers..."
+                        className="pl-12 pr-4 h-12 rounded-full border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 focus-visible:ring-offset-0 focus-visible:ring-amber-500"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
             </div>
 
             {/* Content Container */}
-            <div className="px-6 -mt-6 relative z-10">
+            <div className="px-6 py-6 relative z-10">
                 {/* Quick Actions */}
                 <div className="grid grid-cols-3 gap-3 mb-8">
                     <Card

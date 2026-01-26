@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, Bell, Plus } from "lucide-react";
+import { ChevronLeft, Bell, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { db } from "@/firebase";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
@@ -105,26 +105,18 @@ export default function WhatsNew() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] pb-20">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-20">
             {/* Header */}
-            <div className="bg-white px-6 py-4 sticky top-0 z-10 shadow-sm">
-                <div className="flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(-1)}
-                        className="rounded-full"
-                    >
-                        <Menu className="w-6 h-6 text-blue-900" />
-                    </Button>
-                    <h1 className="font-heading font-bold text-2xl text-blue-900">
-                        Panchajanya
-                    </h1>
-                    <Button variant="ghost" size="icon" className="rounded-full relative">
-                        <Bell className="w-6 h-6 text-blue-900" />
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                    </Button>
-                </div>
+            {/* Header */}
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                </Button>
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Panchajanya</h1>
+                <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5 relative">
+                    <Bell className="w-6 h-6 text-blue-900" />
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
+                </Button>
             </div>
 
             {/* Content */}

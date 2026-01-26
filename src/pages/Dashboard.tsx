@@ -18,21 +18,15 @@ const Dashboard = () => {
     const userName = user?.displayName; // Fallback name from design
 
     return (
-        <div className="max-w-md mx-auto lg:max-w-4xl px-4 lg:px-6 pb-8 lg:pb-0 space-y-8 animate-in fade-in duration-500">
+        <div className="max-w-md mx-auto lg:max-w-4xl px-4 lg:px-6 pb-24 space-y-8 animate-in fade-in duration-500 bg-white min-h-screen">
 
             {/* Top Bar */}
-            <div className="flex items-center justify-between py-4">
-                <div className="w-10 h-10 bg-green-900/10 rounded-full flex items-center justify-center border border-green-900/20">
+            {/* Top Bar */}
+            <div className="relative flex items-center justify-center py-4">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-green-900/10 rounded-full flex items-center justify-center border border-green-900/20">
                     <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain opacity-100" />
                 </div>
                 <h1 className="text-2xl font-heading font-bold text-[#0f3c6e]">Panchajanya</h1>
-                <Link to="/profile" className="cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 rounded-full border-2 border-amber-500 p-0.5">
-                        <div className="w-full h-full bg-amber-100 rounded-full flex items-center justify-center text-amber-800 font-bold">
-                            <User className="w-5 h-5" />
-                        </div>
-                    </div>
-                </Link>
             </div>
 
             {/* Greeting Section */}
@@ -48,36 +42,10 @@ const Dashboard = () => {
 
             {/* Main Grid Navigation */}
             <div className="grid grid-cols-2 gap-4 lg:gap-6">
-                {/* Sthaan Vandan */}
-                <Link to="/dashboard/sthana-vandan" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-amber-100 bg-orange-50/30 group-hover:bg-orange-50/50">
-                        <div className="flex justify-between items-start">
-                            <div className="p-3 bg-blue-100/50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform duration-300">
-                                <Map className="w-6 h-6" />
-                            </div>
-                            <div className="opacity-20 text-orange-300">
-                                {/* Decorative Temple Icon (using SVG or icon) */}
-                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 opacity-20 text-orange-300">
-                                    <path d="M4 22h16a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1z" />
-                                    <path d="M18 18v-8a4 4 0 0 0-1-3l-4-7a2 2 0 0 0-2 0l-4 7a4 4 0 0 0-1 3v8" />
-                                    <path d="M12 2v2" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div className="mt-4 space-y-1">
-                            <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
-                                Sthaan Vandan
-                            </h3>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                                Sacred Salutation to holy sites.
-                            </p>
-                        </div>
-                    </Card>
-                </Link>
 
-                {/* Literature (Audio/Video) */}
+                {/* Literature (Audio/Video) - Top Left */}
                 <Link to="/literature" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-sky-100 bg-sky-50/30 group-hover:bg-sky-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-sky-100 bg-sky-50/50 hover:bg-sky-100/50">
                         <div className="flex justify-start">
                             <div className="p-3 bg-blue-100/50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform duration-300">
                                 <BookOpen className="w-6 h-6" />
@@ -94,9 +62,28 @@ const Dashboard = () => {
                     </Card>
                 </Link>
 
-                {/* What's New */}
+                {/* The Digital Library - Top Right */}
+                <Link to="/e-library" className="group">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-100/50">
+                        <div className="flex justify-start">
+                            <div className="p-3 bg-indigo-100/50 rounded-xl text-indigo-700 group-hover:scale-110 transition-transform duration-300">
+                                <Library className="w-6 h-6" />
+                            </div>
+                        </div>
+                        <div className="mt-4 space-y-1">
+                            <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
+                                The Digital Library
+                            </h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Your personal digital collection.
+                            </p>
+                        </div>
+                    </Card>
+                </Link>
+
+                {/* What's New - Bottom Left */}
                 <Link to="/whats-new" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-yellow-100 bg-yellow-50/30 group-hover:bg-yellow-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-yellow-100 bg-yellow-50/50 hover:bg-yellow-100/50">
                         <div className="flex justify-start">
                             <div className="p-3 bg-amber-100/50 rounded-xl text-amber-600 group-hover:scale-110 transition-transform duration-300">
                                 <Sparkles className="w-6 h-6" />
@@ -113,11 +100,11 @@ const Dashboard = () => {
                     </Card>
                 </Link>
 
-                {/* Jigyasa */}
+                {/* Jigyasa - Bottom Right */}
                 <Link to="/jigyasa" className="group">
-                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 border-indigo-100 bg-indigo-50/30 group-hover:bg-indigo-50/50">
+                    <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-purple-100 bg-purple-50/50 hover:bg-purple-100/50">
                         <div className="flex justify-start">
-                            <div className="p-3 bg-blue-100/50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform duration-300">
+                            <div className="p-3 bg-purple-100/50 rounded-xl text-purple-700 group-hover:scale-110 transition-transform duration-300">
                                 <BrainCircuit className="w-6 h-6" />
                             </div>
                         </div>
@@ -133,20 +120,20 @@ const Dashboard = () => {
                 </Link>
             </div>
 
-            {/* E-Library Banner */}
-            <Link to="/e-library" className="block group">
+            {/* Sthaan Vandan Banner */}
+            <Link to="/dashboard/sthana-vandan" className="block group">
                 <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white shadow-xl group-hover:shadow-2xl transition-all duration-300">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-white/10 rounded-full backdrop-blur-sm">
-                                <Library className="w-8 h-8" />
+                                <Map className="w-8 h-8" />
                             </div>
                             <div>
-                                <h3 className="font-heading font-bold text-xl">The E-Library</h3>
+                                <h3 className="font-heading font-bold text-xl">Sthaan Vandan</h3>
                                 <p className="text-blue-100 text-sm mt-1 max-w-[200px] lg:max-w-none">
-                                    Your personal digital collection of wisdom.
+                                    Sacred Salutation to holy sites.
                                 </p>
                             </div>
                         </div>
@@ -154,6 +141,15 @@ const Dashboard = () => {
                     </div>
 
                     <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-transparent opacity-50" />
+
+                    {/* Decorative Temple Icon Overlay */}
+                    <div className="absolute right-12 bottom-0 opacity-10 pointer-events-none">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-24 h-24 text-white">
+                            <path d="M4 22h16a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1z" />
+                            <path d="M18 18v-8a4 4 0 0 0-1-3l-4-7a2 2 0 0 0-2 0l-4 7a4 4 0 0 0-1 3v8" />
+                            <path d="M12 2v2" />
+                        </svg>
+                    </div>
                 </div>
             </Link>
 
@@ -165,24 +161,24 @@ const Dashboard = () => {
 
                 <div className="space-y-3">
                     <Link to="/help-center">
-                        <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 hover:border-primary/50 hover:bg-orange-50/30 group">
+                        <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-100 text-blue-800 rounded-full">
                                     <HelpCircle className="w-5 h-5" />
                                 </div>
-                                <span className="font-medium text-foreground">Help Center</span>
+                                <span className="font-medium text-foreground">About Panchajanya</span>
                             </div>
                             <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </Link>
 
-                    <Link to="/settings">
-                        <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 hover:border-primary/50 hover:bg-orange-50/30 group">
+                    <Link to="/profile">
+                        <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-100 text-blue-800 rounded-full">
                                     <User className="w-5 h-5" />
                                 </div>
-                                <span className="font-medium text-foreground">Account Preferences</span>
+                                <span className="font-medium text-foreground">My Account</span>
                             </div>
                             <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                         </Button>

@@ -8,7 +8,7 @@ interface Props {
 
 export default function AdminLayout({ children }: Props) {
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F3F4F6] font-[Manrope]">
+    <div className="flex h-screen overflow-hidden bg-white font-[Manrope]">
       <AdminSidebar />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopbar />

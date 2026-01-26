@@ -123,39 +123,25 @@ export default function VideoPlayer() {
     const isYouTube = video.videoUrl.includes("youtube.com/embed");
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0]">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white">
             {/* Video Player Header (Absolute) */}
-            <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
-                <div className="pointer-events-auto">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(-1)}
-                        className="rounded-full text-white hover:bg-white/20"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
+            {/* Video Player Header */}
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 rounded-full" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                </Button>
+                <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="hover:bg-black/5 rounded-full">
+                        <Bookmark className="w-6 h-6 text-blue-900" />
                     </Button>
-                </div>
-                <div className="flex gap-2 pointer-events-auto">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full text-white hover:bg-white/20"
-                    >
-                        <Bookmark className="w-5 h-5" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full text-white hover:bg-white/20"
-                    >
-                        <Share2 className="w-5 h-5" />
+                    <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5 rounded-full">
+                        <Share2 className="w-6 h-6 text-blue-900" />
                     </Button>
                 </div>
             </div>
 
             {/* Video Player Container */}
-            <div className="relative aspect-video bg-black sticky top-0 z-10 w-full">
+            <div className="relative aspect-video bg-black w-full">
                 {isYouTube ? (
                     <iframe
                         src={`${video.videoUrl}?autoplay=1&rel=0`}

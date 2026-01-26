@@ -114,62 +114,54 @@ const imageData = [
     },
 ];
 
-export default function Literature() {
+function Literature() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<"audio" | "video" | "images">("audio");
     const [searchQuery, setSearchQuery] = useState("");
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] pb-20">
+        <div className="min-h-screen bg-background lg:bg-white pb-20">
             {/* Header */}
-            <div className="bg-white px-6 py-4 sticky top-0 z-10 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(-1)}
-                        className="rounded-full"
-                    >
-                        <ChevronLeft className="w-6 h-6 text-blue-900" />
-                    </Button>
-                    <h1 className="font-heading font-bold text-2xl text-blue-900">
-                        Literature
-                    </h1>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Search className="w-6 h-6 text-blue-900" />
-                    </Button>
-                </div>
+            {/* Header */}
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                </Button>
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Literature</h1>
+                <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
+                    <Search className="w-6 h-6 text-blue-900" />
+                </Button>
+            </div>
 
-                {/* Toggle Switch */}
-                <div className="flex p-1 bg-gray-100 rounded-full mb-4">
-                    <button
-                        className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "audio"
-                            ? "bg-blue-900 text-white shadow-md"
-                            : "text-gray-500 hover:text-blue-900"
-                            }`}
-                        onClick={() => setActiveTab("audio")}
-                    >
-                        Audio
-                    </button>
-                    <button
-                        className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "video"
-                            ? "bg-blue-900 text-white shadow-md"
-                            : "text-gray-500 hover:text-blue-900"
-                            }`}
-                        onClick={() => setActiveTab("video")}
-                    >
-                        Videos
-                    </button>
-                    <button
-                        className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "images"
-                            ? "bg-blue-900 text-white shadow-md"
-                            : "text-gray-500 hover:text-blue-900"
-                            }`}
-                        onClick={() => setActiveTab("images")}
-                    >
-                        Images
-                    </button>
-                </div>
+            {/* Toggle Switch */}
+            <div className="flex p-1 bg-gray-100 rounded-full mx-6 mb-4">
+                <button
+                    className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "audio"
+                        ? "bg-blue-900 text-white shadow-md"
+                        : "text-gray-500 hover:text-blue-900"
+                        }`}
+                    onClick={() => setActiveTab("audio")}
+                >
+                    Audio
+                </button>
+                <button
+                    className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "video"
+                        ? "bg-blue-900 text-white shadow-md"
+                        : "text-gray-500 hover:text-blue-900"
+                        }`}
+                    onClick={() => setActiveTab("video")}
+                >
+                    Videos
+                </button>
+                <button
+                    className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "images"
+                        ? "bg-blue-900 text-white shadow-md"
+                        : "text-gray-500 hover:text-blue-900"
+                        }`}
+                    onClick={() => setActiveTab("images")}
+                >
+                    Images
+                </button>
             </div>
 
             {/* Content */}
@@ -334,7 +326,8 @@ export default function Literature() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
+export default Literature;
 

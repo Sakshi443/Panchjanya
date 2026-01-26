@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Compass, Milestone, MapPin, Navigation, Loader2 } from "lucide-react";
+import { Compass, Milestone, MapPin, Navigation, Loader2, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
@@ -50,6 +51,7 @@ const createMarkerIcon = (status: string, number: number) => {
 };
 
 const Share = () => {
+  const navigate = useNavigate();
   const [selectedPoint, setSelectedPoint] = useState<number | null>(null);
   const [yatraRoute, setYatraRoute] = useState<YatraPlace[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,8 +113,17 @@ const Share = () => {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
+    <div className="h-full flex flex-col bg-background lg:bg-white">
+      {/* Standard Header */}
+      <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm border-b border-border">
+        <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+          <ChevronLeft className="w-7 h-7 text-blue-900" />
+        </Button>
+        <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Swami's Yatra</h1>
+        <div className="w-10" />
+      </div>
+
+      {/* Hero Header (kept as content) */}
       <div className="bg-background border-b border-border p-4 sm:p-6 space-y-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-2 mb-2">

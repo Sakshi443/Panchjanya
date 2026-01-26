@@ -145,27 +145,17 @@ export default function ELibrary() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFDF8] pb-20 font-sans">
+        <div className="min-h-screen bg-background lg:bg-white pb-20 font-sans">
             {/* Header */}
-            <div className="bg-white/80 backdrop-blur-md px-4 py-4 sticky top-0 z-20">
-                <div className="flex items-center justify-between mb-2 relative">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(-1)}
-                        className="rounded-full -ml-2"
-                    >
-                        <ChevronLeft className="w-7 h-7 text-blue-600" />
-                    </Button>
-
-                    <h1 className="absolute left-1/2 -translate-x-1/2 font-serif font-bold text-2xl text-blue-600 tracking-wide text-center">
-                        E-Library
-                    </h1>
-
-                    <Button variant="ghost" size="icon" className="rounded-full -mr-2">
-                        <Bookmark className="w-6 h-6 text-blue-600 fill-blue-600/10" />
-                    </Button>
-                </div>
+            {/* Header */}
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                </Button>
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">E-Library</h1>
+                <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
+                    <Bookmark className="w-6 h-6 text-blue-900" />
+                </Button>
             </div>
 
             {/* Sub-header / Description - Optional based on user request "The E-Library..." */}

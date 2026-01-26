@@ -32,10 +32,10 @@ export const BottomNav = () => {
                             </div>
                         </NavLink>
 
-                        {/* Virahan (Yatra) */}
+                        {/* Viharan (Yatra) */}
                         <NavLink to="/yatra" className={({ isActive }) => cn("flex flex-col items-center gap-1 text-gray-400 hover:text-amber-600 transition-colors", isActive && "text-amber-600")}>
                             <Footprints className="w-6 h-6" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Virahan</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Viharan</span>
                         </NavLink>
 
                         {/* Profile */}

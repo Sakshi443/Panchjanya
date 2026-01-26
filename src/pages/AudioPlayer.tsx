@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-    ChevronDown,
+    ChevronLeft,
     Share2,
     Play,
     Pause,
@@ -139,7 +139,7 @@ export default function AudioPlayer() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white flex flex-col relative overflow-hidden">
             {/* Decorative Background Blur */}
             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[40%] bg-blue-100 rounded-full blur-[100px] opacity-50 pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[40%] bg-amber-100 rounded-full blur-[100px] opacity-50 pointer-events-none" />
@@ -148,22 +148,13 @@ export default function AudioPlayer() {
             <audio ref={audioRef} src={audio.audioUrl} />
 
             {/* Header */}
-            <div className="px-6 py-6 flex items-center justify-between z-10">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(-1)}
-                    className="rounded-full w-10 h-10 bg-white/50 hover:bg-white shadow-sm text-blue-900"
-                >
-                    <ChevronDown className="w-6 h-6" />
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-transparent">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 rounded-full" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-
-                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest text-center">
-                    Panchajanya Heritage
-                </p>
-
-                <Button variant="ghost" size="icon" className="rounded-full w-10 h-10 bg-white/50 hover:bg-white shadow-sm text-blue-900">
-                    <Share2 className="w-5 h-5" />
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Panchajanya Heritage</h1>
+                <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5 rounded-full">
+                    <Share2 className="w-6 h-6 text-blue-900" />
                 </Button>
             </div>
 

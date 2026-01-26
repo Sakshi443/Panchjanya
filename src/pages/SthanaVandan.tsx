@@ -126,16 +126,16 @@ const SthanaVandan = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] pb-8 lg:pb-0 font-sans animate-in fade-in duration-500 space-y-10">
+        <div className="min-h-screen bg-background lg:bg-white pb-8 lg:pb-0 font-sans animate-in fade-in duration-500 space-y-10">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-[#F9F6F0]/95 backdrop-blur-sm px-6 py-5 flex items-center justify-between shadow-sm">
-                <Button variant="ghost" size="icon" className="hover:bg-amber-100/50 -ml-2" onClick={() => navigate(-1)}>
-                    <ChevronLeft className="w-6 h-6 text-blue-900" />
+            {/* Header */}
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 absolute left-1/2 -translate-x-1/2">Sthaan Vandan</h1>
-                <div className="p-2 bg-amber-100 rounded-full text-amber-700">
-                    <span className="sr-only">Notifications</span>
-                    <Bell className="w-5 h-5" />
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Sthaan Vandan</h1>
+                <div className="w-10 h-10 bg-[#FDF6E3] rounded-full flex items-center justify-center border border-[#FDF6E3] shadow-sm">
+                    <Bell className="w-5 h-5 text-amber-600 fill-amber-600" />
                 </div>
             </div>
 
@@ -144,7 +144,7 @@ const SthanaVandan = () => {
                 <Card className="p-5 bg-white shadow-sm border-none rounded-3xl overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full blur-2xl -translate-y-10 translate-x-10" />
                     <div className="relative z-10">
-                        <h2 className="font-heading font-bold text-xl text-blue-900 mb-2">Swami Virahan</h2>
+                        <h2 className="font-heading font-bold text-xl text-blue-900 mb-2">Swami Viharan</h2>
                         <p className="text-muted-foreground text-sm mb-6 max-w-[80%] leading-relaxed">
                             Map your spiritual journey across ancient heritage sites with personalized itineraries.
                         </p>
@@ -155,7 +155,7 @@ const SthanaVandan = () => {
                             <div className="p-0.5 bg-amber-500 rounded-full">
                                 <Compass className="w-4 h-4 text-white" />
                             </div>
-                            <span className="font-medium text-base">See the virahan</span>
+                            <span className="font-medium text-base">See the viharan</span>
                         </Button>
                     </div>
                 </Card>

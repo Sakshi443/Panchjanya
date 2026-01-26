@@ -3,7 +3,7 @@ import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc } from "firebase
 import { db } from "@/firebase";
 import { Temple } from "@/types";
 import { useNavigate } from "react-router-dom";
-import { Search, Compass, MapPin, ChevronRight, Filter, X, Bookmark } from "lucide-react";
+import { Search, Compass, MapPin, ChevronRight, Filter, X, Bookmark, ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from "react-leaflet";
@@ -273,49 +273,56 @@ const Explore = () => {
     };
 
     return (
-        <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-[#F9F6F0]">
-            {/* Top Bar with Logo, Search, and Compass in one line */}
-            <div className="absolute top-0 left-0 right-0 z-[400] p-4 lg:p-6 pointer-events-none">
-                <div className="flex items-center gap-3 lg:gap-4 pointer-events-auto">
-                    {/* Logo */}
-                    <h1 className="font-heading font-bold text-xl lg:text-2xl text-blue-900 tracking-tight drop-shadow-sm whitespace-nowrap">
-                        {t("explore.title")}
-                    </h1>
+        <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white">
+            {/* Standard Header */}
+            {/* Transparent Header Container */}
+            <div className="absolute top-0 left-0 right-0 z-[400] px-4 py-4 flex items-center justify-between pointer-events-none">
 
-                    {/* Search Bar - Flexible width */}
-                    <div className="flex-1 relative shadow-xl rounded-full bg-white/95 backdrop-blur-sm border border-gray-100/50">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 lg:w-5 lg:h-5" />
+                {/* Left: Back & Title */}
+                <div className="flex items-center gap-3 pointer-events-auto">
+                    <Button variant="ghost" size="icon" className="-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full shadow-sm" onClick={() => navigate(-1)}>
+                        <ChevronLeft className="w-7 h-7 text-blue-900" />
+                    </Button>
+                    <h1 className="text-xl font-heading font-bold text-blue-900 font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-white/20">
+                        Explore
+                    </h1>
+                </div>
+
+                {/* Center: Search Bar */}
+                <div className="pointer-events-auto w-full max-w-sm mx-4">
+                    <div className="relative shadow-xl rounded-full bg-white/95 backdrop-blur-md border border-white/40 flex items-center">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                         <Input
                             placeholder={t("explore.searchPlaceholder")}
-                            className="pl-10 lg:pl-12 pr-10 lg:pr-12 h-12 lg:h-14 rounded-full border-none bg-transparent focus-visible:ring-0 text-sm lg:text-base"
+                            className="pl-10 pr-10 h-11 rounded-full border-none bg-transparent focus-visible:ring-0 text-sm placeholder:text-gray-400"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 text-blue-900 w-5 h-5 cursor-pointer hover:text-blue-700 transition-colors"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900 w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors"
                         >
                             <div className="relative">
-                                <Filter className="w-4 h-4 lg:w-5 lg:h-5" />
+                                <Filter className="w-4 h-4" />
                                 {activeFiltersCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                    <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] font-bold rounded-full w-3 h-3 flex items-center justify-center">
                                         {activeFiltersCount}
                                     </span>
                                 )}
                             </div>
                         </button>
                     </div>
+                </div>
 
-                    {/* Compass Icon */}
-                    <div className="bg-white/90 backdrop-blur-md p-2 lg:p-2.5 rounded-full shadow-lg border border-white/20 flex-shrink-0">
-                        <Compass className="w-5 h-5 lg:w-6 lg:h-6 text-amber-600" />
-                    </div>
+                {/* Right: Logo */}
+                <div className="bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-sm border border-white/20 flex-shrink-0 pointer-events-auto">
+                    <Compass className="w-6 h-6 text-amber-600" />
                 </div>
             </div>
 
             {/* Filter Panel */}
             {showFilters && (
-                <div className="absolute top-20 lg:top-24 left-4 right-4 lg:left-6 lg:right-6 z-[400] pointer-events-auto">
+                <div className="absolute top-32 left-4 right-4 z-[400] pointer-events-auto">
                     <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-100/50 p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-heading font-bold text-lg text-blue-900">Filters</h3>

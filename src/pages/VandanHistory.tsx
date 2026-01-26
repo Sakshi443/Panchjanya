@@ -71,23 +71,14 @@ export default function VandanHistory() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] pb-20">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-20">
             {/* Header */}
-            <div className="bg-white px-6 py-4 sticky top-0 z-10 shadow-sm">
-                <div className="flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(-1)}
-                        className="rounded-full"
-                    >
-                        <ChevronLeft className="w-6 h-6 text-blue-900" />
-                    </Button>
-                    <h1 className="font-heading font-bold text-2xl text-blue-900 uppercase tracking-wider">
-                        Vandan History
-                    </h1>
-                    <div className="w-10" /> {/* Spacer */}
-                </div>
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
+                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                </Button>
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Vandan History</h1>
+                <div className="w-10" />
             </div>
 
             {/* Content */}

@@ -83,19 +83,6 @@ export default function AdminSidebar() {
             For now, sticking to the visual mock, but I'll add the functional 'Add Temple' etc in Dashboard content or as extra items.
         */}
       </nav>
-
-      {/* User Profile */}
-      <div className="p-4 mt-auto border-t border-white/5">
-        <div className="bg-white/5 rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#C9A961] flex items-center justify-center text-[#111827] font-bold">JD</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate text-white">Janardana Dasa</p>
-              <p className="text-xs text-slate-500 truncate">Super Admin</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }

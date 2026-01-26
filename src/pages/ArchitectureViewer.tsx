@@ -2,10 +2,22 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { X, ZoomIn, ZoomOut, RotateCcw, ArrowRight, Info } from "lucide-react";
+import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
-import HotspotDetail from "@/components/features/HotspotDetail";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Hotspot {
     id: string;
@@ -19,6 +31,20 @@ interface Hotspot {
     historicalContext?: string;
 }
 
+const abbreviations = [
+    "कोणत्या अवतारांची क्रीडा",
+    "लीळाचरित्रातील काळ",
+    "रहिवासाची जागा",
+    "स्थानाचा प्रकार",
+    "कोठून आले (1. - किती वेळा आले)",
+    "मुक्काम किती दिवस (उ. - ली.च. काळ)",
+    "कोठे गेले (1. - जातानाची वेळ)",
+    "उपलब्ध स्थान संख्या",
+    "निर्देशित स्थान संख्या",
+    "अनुपलब्ध स्थान संख्या",
+    "एकूण स्थान संख्या"
+];
+
 export default function ArchitectureViewer() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -26,8 +52,6 @@ export default function ArchitectureViewer() {
     const [temple, setTemple] = useState<Temple | null>(null);
     const [imageUrl, setImageUrl] = useState<string>("");
     const [hotspots, setHotspots] = useState<Hotspot[]>([]);
-    const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
-    const [showDetail, setShowDetail] = useState(false);
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [loading, setLoading] = useState(true);
@@ -96,19 +120,9 @@ export default function ArchitectureViewer() {
 
     const handleMouseUp = () => setIsDragging(false);
 
-    // Handler for Map Pin Click: Selects AND Opens Detail
-    const handlePinClick = (hotspot: Hotspot) => {
-        setSelectedHotspot(hotspot);
-        setShowDetail(true);
-    };
-
-    // Handler for List Item Click: Toggles Selection ONLY (Does not open detail)
-    const handleListClick = (hotspot: Hotspot) => {
-        if (selectedHotspot?.id === hotspot.id) {
-            setSelectedHotspot(null);
-        } else {
-            setSelectedHotspot(hotspot);
-        }
+    // Navigate to Detail Page
+    const handleNavigationToDetail = (hotspot: Hotspot) => {
+        navigate(`/temple/${id}/architecture/sthana/${hotspot.id}`);
     };
 
     if (loading) {
@@ -131,33 +145,44 @@ export default function ArchitectureViewer() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] flex flex-col relative">
-            {/* Detail View Overlay */}
-            {showDetail && selectedHotspot && (
-                <HotspotDetail
-                    hotspot={selectedHotspot}
-                    onClose={() => setShowDetail(false)}
-                />
-            )}
+        <div className="min-h-screen bg-[#F9F6F0] flex flex-col relative pb-10">
 
-            {/* Header */}
-            <div className="bg-[#1e3a8a] text-white px-6 py-4 flex items-center justify-between">
-                <div>
-                    <h1 className="font-heading font-bold text-lg leading-tight">{temple.name}</h1>
-                    <p className="text-xs text-amber-300 uppercase tracking-wider mt-1">Architectural Guide</p>
+            {/* Header: Back, Heading, 'i' */}
+            <div className="bg-[#1e3a8a] text-white px-4 py-3 flex items-center justify-between shadow-md z-20">
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 -ml-2" onClick={() => navigate(-1)}>
+                        <ChevronLeft className="w-6 h-6" />
+                    </Button>
+                    <div>
+                        <h1 className="font-heading font-bold text-lg leading-tight">{temple.name}</h1>
+                        <p className="text-[10px] text-amber-300 uppercase tracking-widest">Architecture View</p>
+                    </div>
                 </div>
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-white hover:bg-white/10"
-                    onClick={() => navigate(-1)}
-                >
-                    <X className="w-6 h-6" />
-                </Button>
+
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button size="icon" variant="ghost" className="text-white hover:bg-white/10 rounded-full">
+                            <span className="font-serif italic text-xl">i</span>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[90%] rounded-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 pt-4">
+                            {abbreviations.map((item, index) => (
+                                <div key={index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
+                                    <span className="font-bold text-amber-600 min-w-[20px]">{index + 1}.</span>
+                                    <span>{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
 
-            {/* Architecture Image Viewer */}
-            <div className="flex-1 relative overflow-hidden bg-gray-100">
+            {/* Image Viewer */}
+            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden border-b border-gray-200">
                 <div
                     className="w-full h-full flex items-center justify-center cursor-move"
                     onMouseDown={handleMouseDown}
@@ -175,167 +200,120 @@ export default function ArchitectureViewer() {
                         <img
                             src={imageUrl}
                             alt={`${temple.name} Architecture`}
-                            className="max-w-full max-h-[60vh] object-contain select-none"
+                            className="max-w-none w-auto h-auto min-w-[100%] min-h-[100%] object-contain select-none"
                             draggable={false}
                         />
 
                         {/* Hotspots */}
-                        {hotspots.map((hotspot) => {
-                            const isActive = selectedHotspot?.id === hotspot.id;
-                            return (
-                                <button
-                                    key={hotspot.id}
-                                    className={`absolute flex flex-col items-center justify-center transition-all duration-300 group
-                                        ${isActive ? 'z-20 scale-125 opacity-100' : 'z-10 scale-90 opacity-60 hover:opacity-90'}`}
-                                    style={{
-                                        left: `${hotspot.x}%`,
-                                        top: `${hotspot.y}%`,
-                                        transform: 'translate(-50%, -50%)'
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation(); // Stop propagation to prevent drag
-                                        handlePinClick(hotspot);
-                                    }}
-                                >
-                                    {isActive ? (
-                                        // Active State: Map Pin with Title
-                                        <>
-                                            <div className="mb-1 px-2 py-1 bg-black/80 text-white text-[10px] rounded backdrop-blur-sm whitespace-nowrap transition-all duration-300 flex items-center gap-1">
-                                                {hotspot.title}
-                                                <Info className="w-3 h-3 text-amber-400" />
-                                            </div>
-                                            <div className="relative flex items-center justify-center">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    fill="#d97706"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="w-8 h-8 drop-shadow-md text-amber-600 dark:text-amber-500"
-                                                >
-                                                    <path d="M20 10c0 6-9 13-9 13s-9-7-9-13a9 9 0 0 1 18 0Z" />
-                                                    <circle cx="12" cy="10" r="4" fill="white" />
-                                                </svg>
-                                                <span className="absolute top-[6px] text-[10px] font-bold text-amber-700">
-                                                    {hotspot.number}
-                                                </span>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        // Inactive State: Yellow Circle with Number (Matching reference image)
-                                        <div className="w-6 h-6 rounded-full bg-[#E4C56B] border border-white/50 flex items-center justify-center shadow-lg hover:scale-110 transition-transform relative">
-                                            {/* Outer subtle glow/ring effect */}
-                                            <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></div>
-                                            <span className="text-[10px] font-bold text-[#3D2D1E] relative z-10">
-                                                {hotspot.number}
-                                            </span>
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
+                        {hotspots.map((hotspot) => (
+                            <button
+                                key={hotspot.id}
+                                className="absolute flex items-center justify-center transition-transform hover:scale-125 z-10"
+                                style={{
+                                    left: `${hotspot.x}%`,
+                                    top: `${hotspot.y}%`,
+                                    transform: 'translate(-50%, -50%)'
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNavigationToDetail(hotspot);
+                                }}
+                            >
+                                <div className="w-8 h-8 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center shadow-lg animate-pulse hover:animate-none">
+                                    <span className="text-xs font-bold text-white">
+                                        {hotspot.number}
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* Zoom Controls */}
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
-                    <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-8 w-8 rounded-full shadow-lg bg-white/90 hover:bg-white text-gray-900"
-                        onClick={handleZoomIn}
-                    >
+                {/* Quick Zoom Controls */}
+                <div className="absolute right-4 bottom-4 flex flex-col gap-2 z-10">
+                    <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-white/90" onClick={handleZoomIn}>
                         <ZoomIn className="w-4 h-4" />
                     </Button>
-                    <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-8 w-8 rounded-full shadow-lg bg-white/90 hover:bg-white text-gray-900"
-                        onClick={handleZoomOut}
-                    >
+                    <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-white/90" onClick={handleZoomOut}>
                         <ZoomOut className="w-4 h-4" />
                     </Button>
-                    <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-8 w-8 rounded-full shadow-lg bg-white/90 hover:bg-white text-gray-900"
-                        onClick={handleResetOrientation}
-                    >
+                    <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-white/90" onClick={handleResetOrientation}>
                         <RotateCcw className="w-4 h-4" />
                     </Button>
                 </div>
             </div>
 
-            {/* स्थान निर्देशिका (Architecture Directory) */}
-            <div className="bg-white px-6 py-6 max-h-[40vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-heading font-bold text-lg text-blue-900">स्थान निर्देशिका</h2>
-                    <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Interactive</span>
+            {/* Content Section */}
+            <div className="px-6 py-6 space-y-6">
+
+                {/* Button - Sthan Pothi (Dropdown) */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button className="w-full bg-blue-900 hover:bg-blue-800 text-white h-12 rounded-xl flex items-center justify-between px-6 shadow-md border border-blue-800">
+                            <div className="flex items-center gap-3">
+                                <BookOpen className="w-5 h-5 text-amber-400" />
+                                <span className="font-heading font-bold uppercase tracking-wider">स्थान पोथी</span>
+                            </div>
+                            <ChevronDown className="w-5 h-5 opacity-70" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[calc(100vw-3rem)] max-w-md max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100">
+                        {hotspots.map((h) => (
+                            <DropdownMenuItem
+                                key={h.id}
+                                className="p-3 focus:bg-amber-50 rounded-lg cursor-pointer border-b border-gray-50 last:border-0"
+                                onClick={() => handleNavigationToDetail(h)}
+                            >
+                                <div className="flex items-center gap-3 w-full">
+                                    <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold border border-amber-200">
+                                        {h.number}
+                                    </div>
+                                    <span className="flex-1 font-medium text-blue-900 truncate">{h.title}</span>
+                                    <span className="text-xs text-muted-foreground">Go to &rarr;</span>
+                                </div>
+                            </DropdownMenuItem>
+                        ))}
+                        {hotspots.length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted-foreground">No sthana available.</div>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Description */}
+                <div className="space-y-2">
+                    <h3 className="font-heading font-bold text-lg text-blue-900 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-amber-600" />
+                        Architecture Description
+                    </h3>
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100/50 text-sm text-slate-600 leading-relaxed font-serif">
+                        {temple.description_text || temple.description || "No description available for this architecture."}
+                    </div>
                 </div>
 
+                {/* Sthana (Hotspot Buttons) */}
                 <div className="space-y-3">
-                    {hotspots.map((hotspot) => (
-                        <button
-                            key={hotspot.id}
-                            className={`w-full text-left p-4 rounded-xl border-2 transition-all ${selectedHotspot?.id === hotspot.id
-                                ? 'border-amber-500 bg-amber-50'
-                                : 'border-gray-200 hover:border-amber-300'
-                                }`}
-                            onClick={() => handleListClick(hotspot)}
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold ${selectedHotspot?.id === hotspot.id
-                                    ? 'bg-amber-500 text-white'
-                                    : 'bg-blue-900 text-white'
-                                    }`}>
+                    <h3 className="font-heading font-bold text-lg text-blue-900">Sthana</h3>
+                    <div className="flex flex-col gap-3">
+                        {hotspots.map((hotspot) => (
+                            <button
+                                key={hotspot.id}
+                                onClick={() => handleNavigationToDetail(hotspot)}
+                                className="w-full flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-amber-400 hover:shadow-md transition-all active:scale-[0.99] group text-left"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-700 font-bold flex items-center justify-center border border-amber-200 shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                                     {hotspot.number}
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-blue-900 mb-1">{hotspot.title}</h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                                        {hotspot.description}
-                                    </p>
-
-                                    {/* Action Link */}
-                                    <div
-                                        role="button"
-                                        className="flex items-center gap-1 text-amber-600 font-bold text-xs mt-2 group hover:underline inline-flex"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handlePinClick(hotspot);
-                                        }}
-                                    >
-                                        VIEW DETAILS <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                                    </div>
-                                </div>
-                                {selectedHotspot?.id === hotspot.id && (
-                                    <span className="px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full uppercase">
-                                        Active
-                                    </span>
-                                )}
-                            </div>
-                        </button>
-                    ))}
-
+                                <span className="font-heading font-bold text-blue-900 line-clamp-1 group-hover:text-amber-700 transition-colors">
+                                    {hotspot.title}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
                     {hotspots.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                            <p>No architectural features marked yet</p>
-                        </div>
+                        <p className="text-sm text-muted-foreground italic">No sthana hotspots found.</p>
                     )}
                 </div>
 
-                {/* Reset Orientation Button */}
-                <div className="mt-6">
-                    <Button
-                        className="w-full bg-[#1e3a8a] hover:bg-[#172554] text-white py-3 rounded-xl flex items-center justify-center gap-2"
-                        onClick={handleResetOrientation}
-                    >
-                        <RotateCcw className="w-4 h-4" />
-                        Reset Orientation
-                    </Button>
-                </div>
             </div>
         </div>
     );

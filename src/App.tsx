@@ -28,6 +28,7 @@ import SwamiYatra from "@/pages/SwamiYatra";
 import Profile from "@/pages/Profile";
 import Saved from "@/pages/Saved";
 import Literature from "@/pages/Literature";
+import SthanaDetail from "@/pages/SthanaDetail";
 import AudioPlayer from "@/pages/AudioPlayer";
 import VideoPlayer from "@/pages/VideoPlayer";
 import VandanHistory from "@/pages/VandanHistory";
@@ -161,6 +162,7 @@ const App = () => {
                   {/* ---------------------- TEMPLE ARCHITECTURE (USER) ---------------------- */}
                   <Route path="/temple/:id/architecture" element={<TempleArchitecture />} />
                   <Route path="/temple/:id/architecture-view" element={<ArchitectureViewer />} />
+                  <Route path="/temple/:id/architecture/sthana/:sthanaId" element={<SthanaDetail />} />
 
                   {/* ---------------------- ADMIN ARCHITECTURE ---------------------- */}
                   <Route
