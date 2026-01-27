@@ -145,14 +145,14 @@ export default function ELibrary() {
     };
 
     return (
-        <div className="min-h-screen bg-background lg:bg-white pb-20 font-sans">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0] pb-20 font-sans">
             {/* Header */}
             {/* Header */}
-            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-[#F9F6F0]/95 lg:bg-[#F9F6F0]/95 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">E-Library</h1>
+                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Digital Library</h1>
                 <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
                     <Bookmark className="w-6 h-6 text-blue-900" />
                 </Button>

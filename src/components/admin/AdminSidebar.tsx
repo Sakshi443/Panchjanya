@@ -18,7 +18,7 @@ export default function AdminSidebar() {
     { icon: Users, label: "User Management", path: "/admin/users" },
     { icon: Landmark, label: "Sthana Directory", path: "/admin/sthana-directory" },
     { icon: BookOpen, label: "Literature Hub", path: "/admin/literature" },
-    { icon: Library, label: "E-Library", path: "/admin/e-library" },
+    { icon: Library, label: "Digital Library", path: "/admin/e-library" },
   ];
 
   const systemItems = [
