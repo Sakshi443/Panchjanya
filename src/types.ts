@@ -2,7 +2,10 @@
 export interface Temple {
     id: string;
     name: string;
+    todaysName?: string; // For "Todays name" subtitle
     address?: string; // New field
+    contactName?: string; // For contact details
+    contactNumber?: string; // For contact details
     city: string;
     taluka?: string; // New field
     district: string;

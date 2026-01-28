@@ -144,7 +144,7 @@ const SthanaVandan = () => {
                 <Card className="p-5 bg-white shadow-sm border-none rounded-3xl overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full blur-2xl -translate-y-10 translate-x-10" />
                     <div className="relative z-10">
-                        <h2 className="font-heading font-bold text-xl text-blue-900 mb-2">Swami Viharan</h2>
+                        <h2 className="font-heading font-bold text-xl text-blue-900 mb-2">Raj Viharan</h2>
                         <p className="text-muted-foreground text-sm mb-6 max-w-[80%] leading-relaxed">
                             Map your spiritual journey across ancient heritage sites with personalized itineraries.
                         </p>

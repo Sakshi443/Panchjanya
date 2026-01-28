@@ -87,12 +87,63 @@ export default function YatraMap({ locations }: YatraMapProps) {
 
                 <MapBounds locations={locations} />
 
-                {/* Route Line */}
+                {/* Route Path made of Arrows (>>>>) */}
                 {routeCoordinates.length > 1 && (
-                    <Polyline
-                        positions={routeCoordinates}
-                        pathOptions={{ color: '#F59E0B', weight: 4, opacity: 0.7, dashArray: '10, 10' }}
-                    />
+                    <>
+                        {routeCoordinates.slice(0, -1).map((coord, idx) => {
+                            const nextCoord = routeCoordinates[idx + 1];
+                            const arrows: JSX.Element[] = [];
+
+                            // Calculate distance between points
+                            const latDiff = nextCoord[0] - coord[0];
+                            const lngDiff = nextCoord[1] - coord[1];
+                            const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+
+                            // Dense arrows to form the line (one arrow every ~0.05 degrees for continuity)
+                            const numArrows = Math.max(5, Math.floor(distance / 0.05));
+
+                            // Calculate angle for arrow direction
+                            const angle = Math.atan2(latDiff, lngDiff) * (180 / Math.PI);
+
+                            // Create dense arrows to form the path, but skip near endpoints to avoid overlap with markers
+                            const skipRatio = 0.08; // Skip first and last 8% to avoid numbered circles
+                            for (let i = 0; i <= numArrows; i++) {
+                                const ratio = i / numArrows;
+
+                                // Skip arrows too close to start or end points
+                                if (ratio < skipRatio || ratio > (1 - skipRatio)) {
+                                    continue;
+                                }
+
+                                const arrowLat = coord[0] + latDiff * ratio;
+                                const arrowLng = coord[1] + lngDiff * ratio;
+
+                                arrows.push(
+                                    <Marker
+                                        key={`arrow-${idx}-${i}`}
+                                        position={[arrowLat, arrowLng]}
+                                        icon={L.divIcon({
+                                            className: 'arrow-marker',
+                                            html: `
+                                                <div style="
+                                                    transform: rotate(${angle}deg);
+                                                    font-size: 14px;
+                                                    color: #F59E0B;
+                                                    text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
+                                                    font-weight: bold;
+                                                    line-height: 1;
+                                                ">▶</div>
+                                            `,
+                                            iconSize: [14, 14],
+                                            iconAnchor: [7, 7],
+                                        })}
+                                    />
+                                );
+                            }
+
+                            return arrows;
+                        })}
+                    </>
                 )}
 
                 {/* Markers */}

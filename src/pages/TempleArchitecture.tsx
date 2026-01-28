@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, Info } from "lucide-react";
+import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, Info, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -21,6 +21,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const abbreviations = [
   "👣 कोणत्या अवतारांची क्रीडा",
@@ -45,6 +52,7 @@ export default function TempleArchitecture() {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -92,6 +100,16 @@ export default function TempleArchitecture() {
     };
 
     checkIfSaved();
+  }, [user, id]);
+
+  // Scroll detection for header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [user, id]);
 
   // Toggle save/unsave
@@ -179,52 +197,36 @@ export default function TempleArchitecture() {
   return (
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
-      <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm shadow-sm">
+      <div className={cn(
+        "sticky top-0 z-30 px-4 flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
+        isScrolled ? "py-2" : "py-4"
+      )}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
             <ChevronLeft className="w-7 h-7 text-blue-900" />
           </Button>
           <div className="flex flex-col overflow-hidden">
-            <h1 className="text-lg font-heading font-bold text-blue-900 font-serif truncate leading-tight">
+            <h1 className={cn(
+              "font-heading font-bold text-[#0f3c6e] font-serif truncate transition-all duration-300",
+              isScrolled ? "text-lg lg:text-xl leading-tight" : "text-2xl lg:text-3xl leading-tight"
+            )}>
               {temple.name}
             </h1>
-            <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold uppercase tracking-wider truncate">
-              <MapPin className="w-3 h-3" />
-              <span>
-                {temple.city ? `${temple.city}, ` : ""}
-                {temple.district || "MAHARASHTRA"}
-              </span>
-            </div>
+            {!isScrolled && (
+              <>
+                <p className="text-sm text-muted-foreground font-serif mt-1">
+                  Todays name : {temple.todaysName || "Kamalpur"}
+                </p>
+                <p className="text-sm font-bold text-[#800000] mt-1">
+                  {temple.address || "Shree Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar"}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Top Right Icons */}
+        {/* Saved Icon */}
         <div className="flex gap-1 shrink-0 ml-2">
-          {/* Abbreviations Dialog */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="rounded-full w-9 h-9 hover:bg-black/5"
-              >
-                <span className="font-serif italic text-lg text-blue-900">i</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[90%] rounded-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3 pt-4">
-                {abbreviations.map((item, index) => (
-                  <div key={index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
-
           <Button
             size="icon"
             variant="ghost"
@@ -234,145 +236,162 @@ export default function TempleArchitecture() {
               "rounded-full w-9 h-9 hover:bg-black/5 transition-all"
             )}
           >
-            <Bookmark className={cn("w-5 h-5 text-blue-900", isSaved && "fill-amber-500 text-amber-500")} />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="rounded-full w-9 h-9 hover:bg-black/5"
-            onClick={handleShare}
-          >
-            <Share2 className="w-5 h-5 text-blue-900" />
+            <Bookmark className={cn("w-6 h-6 text-blue-900", isSaved && "fill-amber-500 text-amber-500")} />
           </Button>
         </div>
       </div>
 
-      <div className="px-6 space-y-8 mt-4">
+      <div className="px-4 lg:px-6 space-y-8 mt-6 max-w-6xl mx-auto pb-12">
 
-        {/* 1. Directions (Accordion) - MOVED TO TOP */}
-        <div className="space-y-4">
-          <Accordion type="single" collapsible className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 px-5">
-            <AccordionItem value="directions" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🧭</span>
-                  <h3 className="font-heading text-lg font-bold text-blue-900">
-                    {temple.directions_title || "जाण्याचा मार्ग"}
-                  </h3>
+        {/* Top Section: Directions & Contact Trigger */}
+        <div className="flex gap-4 items-start">
+          {/* Directions (Occupies most space) */}
+          <div className="flex-1 min-w-0">
+            <Accordion type="single" collapsible className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 px-5">
+              <AccordionItem value="directions" className="border-none">
+                <AccordionTrigger className="hover:no-underline py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">🧭</span>
+                    <h3 className="font-heading text-lg font-bold text-blue-900">
+                      {temple.directions_title || "जाण्याचा मार्ग"}
+                    </h3>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-4">
+                  <div className="text-sm text-slate-700 font-serif leading-relaxed">
+                    {temple.directions_text || "Shree Chakradhar Swami Mandir, Domegram. Road map details will be shown here."}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          {/* Contact Icon Trigger */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                size="icon"
+                className="w-14 h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+              >
+                <Phone className="w-6 h-6" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm rounded-[2rem]">
+              <DialogHeader>
+                <DialogTitle className="text-blue-900 font-serif text-center">Contact Details</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col items-center gap-4 py-6">
+                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Phone className="w-8 h-8 text-blue-900" />
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-4">
-                <div className="relative overflow-hidden pt-2">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-green-500/10"></div>
-                  {temple.directions_text ? (
-                    <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap mb-4 pl-3">
-                      {temple.directions_text}
-                    </p>
-                  ) : null}
-
-                  {temple.latitude && temple.longitude ? (
-                    <div className="space-y-3 pl-3">
-                      <p className="text-sm text-slate-600">
-                        या स्थानापर्यंत पोहोचण्यासाठी खालील बटणावर क्लिक करा:
-                      </p>
-                    </div>
-                  ) : (
-                    !temple.directions_text && (
-                      <p className="text-sm text-slate-500 text-center italic pl-3">
-                        दिशानिर्देश लवकरच उपलब्ध होतील
-                      </p>
-                    )
-                  )}
+                <div className="text-center space-y-1">
+                  <h4 className="text-xl font-bold text-blue-900 font-serif">
+                    {temple.contactName || "Kamalpur Temple Trust"}
+                  </h4>
+                  <p className="text-slate-600 font-medium text-lg">
+                    {temple.contactNumber || "+91 98765 43210"}
+                  </p>
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-
-        {/* 2. Hero Image with Verified Badge - MOVED BELOW DIRECTIONS */}
-        <div>
-          <div className="relative aspect-[4/3] w-full rounded-[2rem] overflow-hidden shadow-lg bg-slate-100">
-            <img
-              src={temple.images?.[0] || temple.architectureImage || "/placeholder-temple.jpg"}
-              alt={temple.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>';
-              }}
-            />
-
-            {/* Verified Badge */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-white px-4 py-2 rounded-full shadow-md flex items-center gap-2 border border-slate-100 min-w-max">
-              <div className="bg-amber-400 text-white rounded-full p-0.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-3 h-3"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Button className="w-full rounded-xl mt-2 bg-green-600 hover:bg-green-700">
+                  Call Now
+                </Button>
               </div>
-              <span className="text-[10px] font-bold text-blue-900 uppercase tracking-widest leading-none">
-                PANCHAJANYA <br /> VERIFIED
-              </span>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Image Slider */}
+        <div className="relative w-full rounded-[2rem] overflow-hidden shadow-lg bg-slate-100 aspect-video md:aspect-[21/9]">
+          <Carousel className="w-full h-full">
+            <CarouselContent>
+              {(temple.images && temple.images.length > 0 ? temple.images : [temple.architectureImage || "/placeholder-temple.jpg"]).map((img, index) => (
+                <CarouselItem key={index} className="w-full h-full">
+                  <img
+                    src={img}
+                    alt={`${temple.name} - ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
+                    }}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-blue-900 border-none" />
+            <CarouselNext className="right-4 bg-white/80 hover:bg-white text-blue-900 border-none" />
+          </Carousel>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <Button
+            className="flex-1 bg-[#1e3a8a] hover:bg-[#172554] text-white h-14 rounded-xl shadow-md text-sm md:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2 min-w-0"
+            onClick={handleArchitectureView}
+          >
+            <Compass className="w-5 h-5 shrink-0" />
+            <span className="truncate">Sthana Architecture View</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="w-14 md:w-auto h-14 rounded-xl border-blue-900/20 hover:bg-blue-50 text-blue-900 shadow-sm shrink-0 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs md:text-sm"
+            onClick={handleNavigation}
+            title="Location"
+          >
+            <Navigation className="w-6 h-6 shrink-0" />
+            <span className="hidden md:inline">Location</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="w-14 md:w-auto h-14 rounded-xl border-blue-900/20 hover:bg-blue-50 text-blue-900 shadow-sm shrink-0 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs md:text-sm"
+            onClick={handleShare}
+            title="Share"
+          >
+            <Share2 className="w-6 h-6 shrink-0" />
+            <span className="hidden md:inline">Share</span>
+          </Button>
+        </div>
+
+        {/* General Description */}
+        <div className="space-y-4 group relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">📜</span>
+              <h3 className="font-heading text-xl font-bold text-blue-900">
+                {temple.description_title || "General Description"}
+              </h3>
             </div>
-          </div>
-        </div>
 
-        {/* 3. Action Buttons Row - MOVED BELOW IMAGE */}
-        <div>
-          <div className="flex items-center gap-3">
-            <Button
-              className="flex-1 bg-[#1e3a8a] hover:bg-[#172554] text-white h-12 rounded-xl shadow-lg shadow-blue-900/20 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2"
-              onClick={handleArchitectureView}
-            >
-              <Compass className="w-4 h-4" />
-              STHANA ARCHITECTURE
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className="w-12 h-12 rounded-full border-slate-200 shadow-sm bg-white shrink-0"
-              onClick={handleNavigation}
-              title="Get Directions"
-            >
-              <Navigation className="w-5 h-5 text-blue-900 fill-blue-900/20" />
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className="w-12 h-12 rounded-full border-slate-200 shadow-sm bg-white shrink-0"
-              onClick={handleShare}
-              title="Share"
-            >
-              <Share2 className="w-5 h-5 text-blue-900" />
-            </Button>
-          </div>
-        </div>
-
-        {/* 4. General Description (Archive Overview) */}
-        <div className="space-y-4 group">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">📜</span>
-            <h3 className="font-heading text-xl font-bold text-blue-900">
-              {temple.description_title || "General Description"}
-            </h3>
+            {/* Info Button for Abbreviations - Moved to Header */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-900">
+                  <Info className="w-4 h-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[90%] rounded-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 pt-4">
+                  {abbreviations.map((item, index) => (
+                    <div key={index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
-            <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2">
+            <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2 pr-4 text-justify columns-2 gap-6">
               {temple.description_text || temple.description || "No description available."}
             </p>
           </div>
         </div>
 
-        {/* 5. Sthana Info - MOVED TO BOTTOM */}
+        {/* Sthana Info */}
         <div className="space-y-4 group">
           <div className="flex items-center gap-3">
             <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">🕉️</span>
@@ -391,22 +410,6 @@ export default function TempleArchitecture() {
           </div>
         </div>
 
-        {/* Additional Info (History) - Keep it last or near bottom */}
-        {temple.history && (
-          <div className="space-y-4 group">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">⏳</span>
-              <h3 className="font-heading text-xl font-bold text-blue-900">इतिहास</h3>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-amber-500/10"></div>
-              <p className="font-serif text-slate-700 leading-relaxed text-sm pl-2">
-                {temple.history}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
