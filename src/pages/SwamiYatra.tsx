@@ -53,8 +53,20 @@ const SwamiYatra = () => {
     useEffect(() => {
         const q = query(collection(db, "yatraPlaces"), orderBy("sequence", "asc"));
         const unsub = onSnapshot(q, (snapshot) => {
+            console.log(`🕉️ Fetching ${snapshot.docs.length} yatra places from Firebase`);
+
             const fetchedPlaces = snapshot.docs.map((doc) => {
                 const data = doc.data() as YatraPlace;
+
+                console.log(`📍 Place: ${data.name}`, {
+                    sequence: data.sequence,
+                    status: data.status,
+                    coordinates: [data.latitude, data.longitude],
+                    hasImage: !!data.image,
+                    time: data.time,
+                    isLive: data.isLive
+                });
+
                 // Default coordinates if missing (Varanasi center)
                 const lat = data.latitude || 25.3176;
                 const lng = data.longitude || 83.0062;
@@ -63,6 +75,8 @@ const SwamiYatra = () => {
                 let status: YatraLocation["status"] = "upcoming";
                 if (data.status === "visited") status = "completed";
                 else if (data.status === "stayed") status = "current";
+                else if (data.status === "current") status = "current";
+                else if (data.status === "upcoming") status = "upcoming";
                 else if (["completed", "current", "upcoming"].includes(data.status)) {
                     status = data.status as YatraLocation["status"];
                 }
@@ -76,16 +90,21 @@ const SwamiYatra = () => {
                     status: status,
                     time: data.time || "TBD",
                     title: data.name,
-                    description: data.description,
+                    description: data.description || "Sacred pilgrimage destination",
                     image: data.image || "/placeholder-temple.jpg",
-                    isLive: data.isLive,
-                    attendees: data.attendees
+                    isLive: data.isLive || false,
+                    attendees: data.attendees || ""
                 };
             });
+
+            console.log(`✅ Successfully loaded ${fetchedPlaces.length} yatra places`);
             setPlaces(fetchedPlaces);
+        }, (error) => {
+            console.error("❌ Error fetching yatra places:", error);
         });
         return () => unsub();
     }, []);
+
 
     // Handle drag to resize panel
     const handleMouseDown = (e: React.MouseEvent) => {

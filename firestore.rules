@@ -38,6 +38,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- YATRA PLACES COLLECTION ----
+    match /yatraPlaces/{placeId} {
+      
+      // Everyone can read yatra places publicly
+      allow read: if true;
+
+      // Only Admins can write (add/update/delete)
+      allow write: if isAdmin();
+    }
+
     // ---- DEFAULT RULE FOR EVERYTHING ELSE ----
     match /{document=**} {
       allow read: if false;
