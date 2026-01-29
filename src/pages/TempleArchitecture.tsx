@@ -315,7 +315,7 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Image Slider */}
-        <div className="pb-4">
+        <div className="pb-2">
           <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
             <Carousel className="w-full h-full">
               <CarouselContent>
@@ -379,7 +379,7 @@ export default function TempleArchitecture() {
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-900 shadow-md">
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md">
                   <Info className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
