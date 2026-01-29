@@ -475,10 +475,12 @@ export default function ArchitectureViewer() {
 
                 {/* Description */}
                 <div className="space-y-2">
-                    <h3 className="font-heading font-bold text-lg text-blue-900 flex items-center gap-2">
-                        <Info className="w-4 h-4 text-amber-600" />
-                        Sthans Overview
-                    </h3>
+                    <div className="flex items-center gap-3">
+                        <div className="w-1 h-6 bg-amber-600"></div>
+                        <h3 className="font-heading font-bold text-lg text-blue-900">
+                            Sthans Overview
+                        </h3>
+                    </div>
                     <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-sm text-slate-600 leading-relaxed font-serif">
                         {temple.description_text || temple.description || "No description available for this architecture."}
                     </div>

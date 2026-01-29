@@ -28,7 +28,7 @@ export const BottomNav = () => {
                         {/* Central Floating Button (Explore Map) */}
                         <NavLink to="/explore" className="relative -top-6">
                             <div className="w-16 h-16 bg-[#0f3c6e] rounded-full flex items-center justify-center shadow-lg border-4 border-[#F9F6F0] hover:scale-105 transition-transform">
-                                <Compass className="w-8 h-8 text-white" />
+                                <img src="/icons/explore_safari.png" alt="Explore" className="w-8 h-8 object-contain brightness-0 invert" />
                             </div>
                         </NavLink>
 
@@ -62,7 +62,7 @@ export const BottomNav = () => {
                         {/* Central Floating Button (Explore Map) */}
                         <NavLink to="/explore" className="relative -top-6">
                             <div className="w-16 h-16 bg-[#0f3c6e] rounded-full flex items-center justify-center shadow-lg border-4 border-[#F9F6F0] hover:scale-105 transition-transform">
-                                <Compass className="w-8 h-8 text-white" />
+                                <img src="/icons/explore_safari.png" alt="Explore" className="w-8 h-8 object-contain brightness-0 invert" />
                             </div>
                         </NavLink>
 
