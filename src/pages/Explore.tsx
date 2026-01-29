@@ -276,7 +276,7 @@ const Explore = () => {
         <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white">
             {/* Standard Header */}
             {/* Transparent Header Container */}
-            <div className="absolute top-0 left-0 right-0 z-[400] pr-4 py-4 flex items-center justify-between pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 z-[400] px-4 py-4 flex items-center justify-between pointer-events-none">
 
                 {/* Left: Back & Title */}
                 <div className="flex items-center gap-3 pointer-events-auto">

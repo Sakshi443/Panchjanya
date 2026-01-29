@@ -129,7 +129,7 @@ const SthanaVandan = () => {
         <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0] pb-8 lg:pb-0 font-sans animate-in fade-in duration-500 space-y-10">
             {/* Header */}
             {/* Header */}
-            <div className="sticky top-0 z-30 pr-4 py-4 flex items-center justify-between">
+            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>

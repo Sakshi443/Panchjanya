@@ -200,7 +200,7 @@ export default function TempleArchitecture() {
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
       <div className={cn(
-        "sticky top-0 z-30 pr-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
+        "sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
         isScrolled ? "py-2" : "py-4"
       )}>
         {/* Top Row: Back button, Title, Save button */}

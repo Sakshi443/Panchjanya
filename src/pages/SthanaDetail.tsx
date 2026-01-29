@@ -67,7 +67,7 @@ export default function SthanaDetail() {
             {/* Header */}
             <div className="shrink-0 sticky top-0 z-50 bg-white shadow-sm">
                 {/* Mobile: All in one row */}
-                <div className="md:hidden flex items-center gap-2 w-full pr-6 py-4">
+                <div className="md:hidden flex items-center gap-2 w-full px-4 py-4">
                     <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-blue-900 hover:bg-blue-900/10 shrink-0">
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
@@ -103,9 +103,9 @@ export default function SthanaDetail() {
                     {/* Top Slider: Present vs Old Images */}
                     <div className="flex justify-center">
                         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full max-w-sm">
-                            <TabsList className="grid w-full grid-cols-2 bg-blue-900/10 p-1 rounded-xl">
-                                <TabsTrigger value="present" className="rounded-lg data-[state=active]:bg-blue-900 data-[state=active]:text-white">Present Images</TabsTrigger>
-                                <TabsTrigger value="old" className="rounded-lg data-[state=active]:bg-amber-600 data-[state=active]:text-white">Old Images</TabsTrigger>
+                            <TabsList className="flex w-full bg-blue-900/10 p-1 rounded-xl gap-1">
+                                <TabsTrigger value="present" className="rounded-lg data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Present Images</TabsTrigger>
+                                <TabsTrigger value="old" className="rounded-lg data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Old Images</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
@@ -150,9 +150,9 @@ export default function SthanaDetail() {
                     {/* Bottom Slider: Details vs Leela */}
                     <div className="flex justify-center">
                         <Tabs value={contentMode} onValueChange={setContentMode} className="w-full max-w-sm">
-                            <TabsList className="grid w-full grid-cols-2 bg-gray-200 p-1 rounded-xl">
-                                <TabsTrigger value="details" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Details</TabsTrigger>
-                                <TabsTrigger value="leela" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Leela</TabsTrigger>
+                            <TabsList className="flex w-full bg-gray-200 p-1 rounded-xl gap-1">
+                                <TabsTrigger value="details" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Details</TabsTrigger>
+                                <TabsTrigger value="leela" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Leela</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
