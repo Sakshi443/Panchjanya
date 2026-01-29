@@ -41,7 +41,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
     const [sthanaInfoTitle, setSthanaInfoTitle] = useState("Sthan Description");
     const [sthanaInfoText, setSthanaInfoText] = useState("");
 
-    const [directionsTitle, setDirectionsTitle] = useState("जाण्याचा मार्ग");
+    const [directionsTitle, setDirectionsTitle] = useState("Way to reach");
     const [directionsText, setDirectionsText] = useState("");
 
     const [leela, setLeela] = useState(""); // Keeping for legacy/compatibility
@@ -73,7 +73,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
                     setSthanaInfoText(data.sthana_info_text || data.sthana || "");
 
-                    setDirectionsTitle(data.directions_title || "जाण्याचा मार्ग");
+                    setDirectionsTitle(data.directions_title || "Way to reach");
                     setDirectionsText(data.directions_text || "");
 
                     setLeela(data.leela || "");
@@ -354,7 +354,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                                 id="dirTitle"
                                 value={directionsTitle}
                                 onChange={(e) => setDirectionsTitle(e.target.value)}
-                                placeholder="e.g. जाण्याचा मार्ग"
+                                placeholder="e.g. Way to reach"
                             />
                         </div>
                         <div className="space-y-2">
