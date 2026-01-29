@@ -355,19 +355,21 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Sthana Architecture View Button */}
-        <Button1
-          variant="primary"
-          size="lg"
-          className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
-          onClick={handleArchitectureView}
-        >
-          <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
-          <span>Explore Sthan</span>
-        </Button1>
+        <div className="pb-2">
+          <Button1
+            variant="primary"
+            size="lg"
+            className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
+            onClick={handleArchitectureView}
+          >
+            <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
+            <span>Explore Sthan</span>
+          </Button1>
+        </div>
 
 
         {/* General Description */}
-        <div className="space-y-3 md:space-y-4 group relative">
+        <div className="space-y-3 md:space-y-4 group relative pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-6 bg-amber-600"></div>
@@ -407,7 +409,7 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Sthana Info */}
-        <div className="space-y-3 md:space-y-4 group">
+        <div className="space-y-3 md:space-y-4 group pb-2">
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 bg-amber-600"></div>
             <h3 className="font-heading text-xl font-bold text-blue-900">
