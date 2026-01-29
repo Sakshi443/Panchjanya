@@ -15,14 +15,14 @@ const About = () => {
         <div className="w-10" />
       </div>
 
-      <div className="max-w-5xl mx-auto py-12 px-6 space-y-16">
+      <div className="max-w-5xl mx-auto py-6 md:py-12 px-6 space-y-10 md:space-y-16">
         {/* Hero Section */}
         <div className="text-center space-y-6 text-left">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-widest border border-primary/20">
             <BookOpen className="w-4 h-4" />
             Panchajanya Presents
           </div>
-          <h1 className="font-heading text-6xl lg:text-7xl font-black text-foreground tracking-tighter italic">
+          <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter italic">
             About Panchjanya
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium italic">
@@ -32,7 +32,7 @@ const About = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
           {/* Mission */}
-          <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm relative overflow-hidden group">
+          <div className="bg-card p-6 md:p-10 rounded-[2.5rem] border border-border shadow-sm relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-6 text-primary/5 text-8xl font-heading select-none group-hover:scale-110 transition-transform">
               M
             </div>
@@ -47,7 +47,7 @@ const About = () => {
           </div>
 
           {/* Global Impact */}
-          <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm relative overflow-hidden group text-left">
+          <div className="bg-card p-6 md:p-10 rounded-[2.5rem] border border-border shadow-sm relative overflow-hidden group text-left">
             <div className="absolute top-0 right-0 p-6 text-primary/5 text-8xl font-heading select-none group-hover:scale-110 transition-transform">
               G
             </div>
@@ -63,8 +63,8 @@ const About = () => {
         </div>
 
         {/* Features Showcase */}
-        <div className="bg-secondary/10 p-12 rounded-[3.5rem] border border-secondary/20">
-          <h2 className="font-heading text-4xl font-bold text-center mb-12 italic lowercase">
+        <div className="bg-secondary/10 p-6 md:p-12 rounded-[3.5rem] border border-secondary/20">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 italic lowercase">
             Digital Heritage Tools
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -86,12 +86,12 @@ const About = () => {
         </div>
 
         {/* Contact Section */}
-        <div className="bg-background p-10 rounded-[2.5rem] border-2 border-dashed border-border text-center">
+        <div className="bg-background p-6 md:p-10 rounded-[2.5rem] border-2 border-dashed border-border text-center">
           <Info className="w-12 h-12 text-accent mx-auto mb-6" />
-          <h2 className="font-heading text-3xl font-bold mb-4 text-foreground italic lowercase">
+          <h2 className="font-heading text-2xl md:text-3xl font-bold mb-4 text-foreground italic lowercase">
             Connect with the Archive
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto leading-loose italic">
+          <p className="text-muted-foreground max-w-xl mx-auto leading-loose italic text-sm md:text-base">
             For suggestions, corrections, or to contribute to our digital library of sacred sthanas, please reach out.
             Together, we preserve the path of Dharma.
           </p>

@@ -279,11 +279,11 @@ const Explore = () => {
             <div className="absolute top-0 left-0 right-0 z-[400] px-4 py-4 flex items-center justify-between pointer-events-none">
 
                 {/* Left: Back & Title */}
-                <div className="flex items-center gap-3 pointer-events-auto">
-                    <Button variant="ghost" size="icon" className="-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full shadow-sm" onClick={() => navigate(-1)}>
-                        <ChevronLeft className="w-7 h-7 text-blue-900" />
+                <div className="flex items-center gap-2 md:gap-3 pointer-events-auto">
+                    <Button variant="ghost" size="icon" className="-ml-1 md:-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full shadow-sm w-9 h-9 md:w-10 md:h-10" onClick={() => navigate(-1)}>
+                        <ChevronLeft className="w-6 h-6 md:w-7 md:h-7 text-blue-900" />
                     </Button>
-                    <h1 className="text-xl font-heading font-bold text-blue-900 font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-white/20">
+                    <h1 className="text-sm md:text-xl font-heading font-bold text-blue-900 font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 rounded-full shadow-sm border border-white/20 whitespace-nowrap">
                         Explore
                     </h1>
                 </div>
@@ -315,8 +315,8 @@ const Explore = () => {
                 </div>
 
                 {/* Right: Logo */}
-                <div className="bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-sm border border-white/20 flex-shrink-0 pointer-events-auto">
-                    <Compass className="w-6 h-6 text-amber-600" />
+                <div className="bg-white/90 backdrop-blur-md p-2 md:p-2.5 rounded-full shadow-sm border border-white/20 flex-shrink-0 pointer-events-auto">
+                    <Compass className="w-5 h-5 md:w-6 md:h-6 text-amber-600" />
                 </div>
             </div>
 

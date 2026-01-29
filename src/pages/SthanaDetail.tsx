@@ -106,8 +106,8 @@ export default function SthanaDetail() {
                     <div className="flex justify-center">
                         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full max-w-sm">
                             <TabsList className="flex w-full bg-blue-900/10 p-1 rounded-xl gap-1">
-                                <TabsTrigger value="present" className="rounded-lg data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Present Images</TabsTrigger>
-                                <TabsTrigger value="old" className="rounded-lg data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Old Images</TabsTrigger>
+                                <TabsTrigger value="present" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Present Images</TabsTrigger>
+                                <TabsTrigger value="old" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Old Images</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
@@ -154,8 +154,8 @@ export default function SthanaDetail() {
                     <div className="flex justify-center">
                         <Tabs value={contentMode} onValueChange={setContentMode} className="w-full max-w-sm">
                             <TabsList className="flex w-full bg-gray-200 p-1 rounded-xl gap-1">
-                                <TabsTrigger value="details" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Details</TabsTrigger>
-                                <TabsTrigger value="leela" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Leela</TabsTrigger>
+                                <TabsTrigger value="details" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Details</TabsTrigger>
+                                <TabsTrigger value="leela" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Leela</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>

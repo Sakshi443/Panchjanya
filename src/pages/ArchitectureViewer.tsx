@@ -229,7 +229,7 @@ export default function ArchitectureViewer() {
                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 -ml-2" onClick={() => navigate(-1)}>
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
-                    <h1 className="font-heading font-bold text-lg leading-tight">{temple.name}</h1>
+                    <h1 className="font-heading font-bold text-lg leading-tight break-words">{temple.name}</h1>
                 </div>
 
                 <Dialog>
@@ -278,10 +278,10 @@ export default function ArchitectureViewer() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex justify-center px-4 py-4">
+            <div className="flex justify-center px-2 py-3 md:px-4 md:py-4">
                 <div
                     ref={imageContainerRef}
-                    className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group touch-none"
+                    className="relative aspect-video w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-slate-50 group touch-none"
                 >
                     <div
                         className="w-full h-full cursor-move"
@@ -303,7 +303,7 @@ export default function ArchitectureViewer() {
                             <img
                                 src={imageUrl}
                                 alt={`${temple.name} Architecture`}
-                                className="w-full h-full object-cover select-none"
+                                className="w-full h-full object-contain select-none"
                                 draggable={false}
                             />
 
@@ -340,24 +340,24 @@ export default function ArchitectureViewer() {
                                 <Button
                                     size="icon"
                                     variant="secondary"
-                                    className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white"
+                                    className="h-10 w-10 md:h-8 md:w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white"
                                     onClick={() => setShowHotspots(!showHotspots)}
                                     title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                 >
-                                    {showHotspots ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                    {showHotspots ? <Eye className="w-5 h-5 md:w-4 md:h-4" /> : <EyeOff className="w-5 h-5 md:w-4 md:h-4" />}
                                 </Button>
                             </div>
 
                             {/* Bottom right - Zoom and Reset buttons */}
                             <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomIn}>
-                                    <ZoomIn className="w-4 h-4" />
+                                <Button size="icon" variant="secondary" className="h-10 w-10 md:h-8 md:w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomIn}>
+                                    <ZoomIn className="w-5 h-5 md:w-4 md:h-4" />
                                 </Button>
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomOut}>
-                                    <ZoomOut className="w-4 h-4" />
+                                <Button size="icon" variant="secondary" className="h-10 w-10 md:h-8 md:w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomOut}>
+                                    <ZoomOut className="w-5 h-5 md:w-4 md:h-4" />
                                 </Button>
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
-                                    <RotateCcw className="w-4 h-4" />
+                                <Button size="icon" variant="secondary" className="h-10 w-10 md:h-8 md:w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
+                                    <RotateCcw className="w-5 h-5 md:w-4 md:h-4" />
                                 </Button>
                             </div>
                         </>
@@ -366,7 +366,7 @@ export default function ArchitectureViewer() {
             </div>
 
             {/* Content Section */}
-            <div className="px-6 pt-4 pb-6 space-y-6">
+            <div className="px-4 md:px-6 py-4 md:pt-4 md:pb-6 space-y-4 md:space-y-6">
 
                 {/* Button - Sthan Pothi (Dropdown) */}
                 <DropdownMenu>
