@@ -370,7 +370,7 @@ export default function ArchitectureViewer() {
                                         <Button
                                             size="icon"
                                             variant="secondary"
-                                            className="h-9 w-9 rounded-full shadow-lg bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+                                            className="h-9 w-9 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white backdrop-blur-sm"
                                             onClick={() => setShowHotspots(!showHotspots)}
                                             title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                         >

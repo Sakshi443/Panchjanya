@@ -35,10 +35,10 @@ export default function TempleForm({ templeId }: TempleFormProps) {
     const [longitude, setLongitude] = useState("");
 
     // New Fields
-    const [descriptionTitle, setDescriptionTitle] = useState("Description");
+    const [descriptionTitle, setDescriptionTitle] = useState("Sthan At Glance");
     const [descriptionText, setDescriptionText] = useState("");
 
-    const [sthanaInfoTitle, setSthanaInfoTitle] = useState("स्थानांची माहिती");
+    const [sthanaInfoTitle, setSthanaInfoTitle] = useState("Sthan Description");
     const [sthanaInfoText, setSthanaInfoText] = useState("");
 
     const [directionsTitle, setDirectionsTitle] = useState("जाण्याचा मार्ग");
@@ -67,10 +67,10 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     setLongitude(String(data.longitude ?? data.location?.lng ?? ""));
 
                     // Populate new fields with fallbacks to old fields if they exist
-                    setDescriptionTitle(data.description_title || "Description");
+                    setDescriptionTitle(data.description_title || "Sthan At Glance");
                     setDescriptionText(data.description_text || data.description || "");
 
-                    setSthanaInfoTitle(data.sthana_info_title || "स्थानांची माहिती");
+                    setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
                     setSthanaInfoText(data.sthana_info_text || data.sthana || "");
 
                     setDirectionsTitle(data.directions_title || "जाण्याचा मार्ग");
@@ -289,7 +289,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                 {/* 1. General Description Section */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Description Section</CardTitle>
+                        <CardTitle>Sthan At Glance Section</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -298,7 +298,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                                 id="descTitle"
                                 value={descriptionTitle}
                                 onChange={(e) => setDescriptionTitle(e.target.value)}
-                                placeholder="e.g. Description"
+                                placeholder="e.g. Sthan At Glance"
                             />
                         </div>
                         <div className="space-y-2">
@@ -317,7 +317,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                 {/* 2. Sthana Info Section */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Sthana Info Section</CardTitle>
+                        <CardTitle>Sthan Description Section</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -326,7 +326,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                                 id="sthanaTitle"
                                 value={sthanaInfoTitle}
                                 onChange={(e) => setSthanaInfoTitle(e.target.value)}
-                                placeholder="e.g. स्थानांची माहिती"
+                                placeholder="e.g. Sthan Description"
                             />
                         </div>
                         <div className="space-y-2">

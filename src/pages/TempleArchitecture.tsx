@@ -266,14 +266,22 @@ export default function TempleArchitecture() {
               <Button
                 className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
               >
-                <Compass className="w-5 h-5 md:w-6 md:h-6 text-blue-900" />
+                <img
+                  src="/icons/signpost.png"
+                  alt="Directions"
+                  className="w-5 h-5 md:w-6 md:h-6 object-contain"
+                />
                 <span className="text-sm md:text-base">{temple.directions_title || "जाण्याचा मार्ग"}</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md rounded-[2rem]">
               <DialogHeader>
                 <DialogTitle className="text-blue-900 font-serif text-center flex items-center justify-center gap-2">
-                  <Compass className="w-5 h-5" />
+                  <img
+                    src="/icons/signpost.png"
+                    alt="Directions"
+                    className="w-5 h-5 object-contain"
+                  />
                   {temple.directions_title || "जाण्याचा मार्ग"}
                 </DialogTitle>
               </DialogHeader>
@@ -329,15 +337,15 @@ export default function TempleArchitecture() {
             </CarouselContent>
             <button
               onClick={(e) => { e.preventDefault(); const prev = e.currentTarget.parentElement?.querySelector('[data-carousel-prev]') as HTMLButtonElement; prev?.click(); }}
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
             </button>
             <button
               onClick={(e) => { e.preventDefault(); const next = e.currentTarget.parentElement?.querySelector('[data-carousel-next]') as HTMLButtonElement; next?.click(); }}
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
             </button>
             <CarouselPrevious className="hidden" data-carousel-prev />
             <CarouselNext className="hidden" data-carousel-next />
@@ -348,11 +356,11 @@ export default function TempleArchitecture() {
         <Button1
           variant="primary"
           size="lg"
-          className="w-full bg-blue-900 hover:bg-blue-800 text-white rounded-xl md:rounded-2xl shadow-md text-sm md:text-base font-bold uppercase tracking-wide border border-blue-800"
+          className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-bold tracking-wide border border-blue-800"
           onClick={handleArchitectureView}
         >
           <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
-          <span>Sthana Architecture View</span>
+          <span>Explore Sthan</span>
         </Button1>
 
 
@@ -362,14 +370,14 @@ export default function TempleArchitecture() {
             <div className="flex items-center gap-3">
               <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">📜</span>
               <h3 className="font-heading text-xl font-bold text-blue-900">
-                {temple.description_title || "General Description"}
+                {temple.description_title || "Sthan At Glance"}
               </h3>
             </div>
 
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-900">
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-900 shadow-md">
                   <Info className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
@@ -401,7 +409,7 @@ export default function TempleArchitecture() {
           <div className="flex items-center gap-3">
             <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">🕉️</span>
             <h3 className="font-heading text-xl font-bold text-blue-900">
-              {temple.sthana_info_title || "स्थानांची माहिती"}
+              {temple.sthana_info_title || "Sthan Description"}
             </h3>
           </div>
 

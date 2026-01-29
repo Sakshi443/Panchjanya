@@ -105,7 +105,7 @@ export default function SthanaDetail() {
                     {/* Top Slider: Present vs Old Images */}
                     <div className="flex justify-center px-2 md:px-0">
                         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full max-w-sm">
-                            <TabsList className="flex w-full bg-gray-100 p-1 rounded-xl gap-1">
+                            <TabsList className="flex w-full bg-gray-200 p-0 rounded-lg gap-1">
                                 <TabsTrigger value="present" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Present Images</TabsTrigger>
                                 <TabsTrigger value="old" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Old Images</TabsTrigger>
                             </TabsList>
@@ -123,11 +123,11 @@ export default function SthanaDetail() {
                             />
                             {displayImages.length > 1 && (
                                 <>
-                                    <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
-                                        <ChevronLeft className="w-6 h-6" />
+                                    <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md">
+                                        <ChevronLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
                                     </button>
-                                    <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
-                                        <ChevronRight className="w-6 h-6" />
+                                    <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md">
+                                        <ChevronRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
                                     </button>
                                     {/* Indicator Dots */}
                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
@@ -155,9 +155,9 @@ export default function SthanaDetail() {
                     {/* Bottom Slider: Details vs Leela */}
                     <div className="flex justify-center px-2 md:px-0">
                         <Tabs value={contentMode} onValueChange={setContentMode} className="w-full max-w-sm">
-                            <TabsList className="flex w-full bg-gray-100 p-1 rounded-xl gap-1">
-                                <TabsTrigger value="details" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Details</TabsTrigger>
-                                <TabsTrigger value="leela" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Leela</TabsTrigger>
+                            <TabsList className="flex w-full bg-gray-200 p-1 rounded-xl gap-1">
+                                <TabsTrigger value="details" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-300/50">Details</TabsTrigger>
+                                <TabsTrigger value="leela" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-300/50">Leela</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
