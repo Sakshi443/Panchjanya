@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, Info, Phone } from "lucide-react";
+import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, ChevronRight, Info, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -247,24 +247,24 @@ export default function TempleArchitecture() {
         </div>
       </div>
 
-      <div className="px-4 lg:px-6 space-y-8 mt-6 max-w-6xl mx-auto pb-12">
+      <div className="px-4 lg:px-6 space-y-4 md:space-y-8 mt-4 md:mt-6 max-w-6xl mx-auto pb-12">
 
         {/* Action Buttons Row */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {/* Directions Button */}
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                className="flex-1 bg-white text-blue-900 h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 font-bold"
+                className="flex-1 bg-white text-blue-900 h-12 md:h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
               >
-                <span className="text-xl">🧭</span>
+                <Compass className="w-5 h-5 md:w-6 md:h-6 text-blue-900" />
                 <span className="text-sm md:text-base">{temple.directions_title || "जाण्याचा मार्ग"}</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md rounded-[2rem]">
               <DialogHeader>
                 <DialogTitle className="text-blue-900 font-serif text-center flex items-center justify-center gap-2">
-                  <span className="text-xl">🧭</span>
+                  <Compass className="w-5 h-5" />
                   {temple.directions_title || "जाण्याचा मार्ग"}
                 </DialogTitle>
               </DialogHeader>
@@ -279,26 +279,26 @@ export default function TempleArchitecture() {
           {/* Map/Navigation Button */}
           <Button
             size="icon"
-            className="w-14 h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+            className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
             onClick={handleNavigation}
             title="Navigate"
           >
-            <Navigation className="w-6 h-6" />
+            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
 
           {/* Share Button */}
           <Button
             size="icon"
-            className="w-14 h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+            className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
             onClick={handleShare}
             title="Share"
           >
-            <Share2 className="w-6 h-6" />
+            <Share2 className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
         </div>
 
         {/* Image Slider */}
-        <div className="relative w-full rounded-[2rem] overflow-hidden shadow-lg bg-slate-100 aspect-video md:aspect-[21/9]">
+        <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
           <Carousel className="w-full h-full">
             <CarouselContent>
               {(temple.images && temple.images.length > 0 ? temple.images : [temple.architectureImage || "/placeholder-temple.jpg"]).map((img, index) => (
@@ -320,33 +320,33 @@ export default function TempleArchitecture() {
             </CarouselContent>
             <button
               onClick={(e) => { e.preventDefault(); const prev = e.currentTarget.parentElement?.querySelector('[data-carousel-prev]') as HTMLButtonElement; prev?.click(); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-blue-900 border-none flex items-center justify-center font-bold text-xl shadow-md transition-all"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm"
             >
-              ‹
+              <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={(e) => { e.preventDefault(); const next = e.currentTarget.parentElement?.querySelector('[data-carousel-next]') as HTMLButtonElement; next?.click(); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-blue-900 border-none flex items-center justify-center font-bold text-xl shadow-md transition-all"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm"
             >
-              ›
+              <ChevronRight className="w-6 h-6" />
             </button>
             <CarouselPrevious className="hidden" data-carousel-prev />
             <CarouselNext className="hidden" data-carousel-next />
           </Carousel>
         </div>
 
-        {/* Full Width Sthana Architecture View Button */}
+        {/* Sthana Architecture View Button */}
         <Button
-          className="w-full bg-[#1e3a8a] hover:bg-[#172554] text-white h-16 rounded-2xl shadow-lg text-base md:text-lg font-bold uppercase tracking-wider flex items-center justify-center gap-3"
+          className="w-full bg-blue-900 hover:bg-blue-800 text-white h-12 md:h-14 rounded-xl md:rounded-2xl shadow-md text-sm md:text-base font-bold uppercase tracking-wide flex items-center justify-center gap-2 md:gap-3 border border-blue-800"
           onClick={handleArchitectureView}
         >
-          <Compass className="w-6 h-6 shrink-0" />
+          <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
           <span>Sthana Architecture View</span>
         </Button>
 
 
         {/* General Description */}
-        <div className="space-y-4 group relative">
+        <div className="space-y-3 md:space-y-4 group relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">📜</span>
@@ -377,7 +377,7 @@ export default function TempleArchitecture() {
             </Dialog>
           </div>
 
-          <div className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
             <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2 pr-4 text-justify columns-1 md:columns-2 gap-6">
               {temple.description_text || temple.description || "No description available."}
@@ -386,7 +386,7 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Sthana Info */}
-        <div className="space-y-4 group">
+        <div className="space-y-3 md:space-y-4 group">
           <div className="flex items-center gap-3">
             <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">🕉️</span>
             <h3 className="font-heading text-xl font-bold text-blue-900">
@@ -394,7 +394,7 @@ export default function TempleArchitecture() {
             </h3>
           </div>
 
-          <div className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/10"></div>
             <p className="font-serif text-slate-700 leading-relaxed italic text-sm whitespace-pre-wrap pl-2">
               {temple.sthana_info_text ||
