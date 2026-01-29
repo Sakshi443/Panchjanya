@@ -53,6 +53,8 @@ export default function TempleArchitecture() {
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -198,47 +200,48 @@ export default function TempleArchitecture() {
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
       <div className={cn(
-        "sticky top-0 z-30 px-4 flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
+        "sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
         isScrolled ? "py-2" : "py-4"
       )}>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
-            <ChevronLeft className="w-7 h-7 text-blue-900" />
-          </Button>
-          <div className="flex flex-col overflow-hidden">
+        {/* Top Row: Back button, Title, Save button */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
+              <ChevronLeft className="w-7 h-7 text-blue-900" />
+            </Button>
             <h1 className={cn(
               "font-heading font-bold text-[#0f3c6e] font-serif truncate transition-all duration-300",
               isScrolled ? "text-lg lg:text-xl leading-tight" : "text-2xl lg:text-3xl leading-tight"
             )}>
               Domegram
             </h1>
-            {!isScrolled && (
-              <>
-                <h2 className="text-base text-[#0f3c6e] font-serif mt-1">
-                  <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Todays name)
-                </h2>
-                <p className="text-sm font-bold mt-1">
-                  <span className="text-amber-600">Shree Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar</span>
-                </p>
-              </>
-            )}
           </div>
-        </div>
 
-        {/* Saved Icon */}
-        <div className="flex gap-1 shrink-0 ml-2">
+          {/* Saved Icon - aligned with h1 */}
           <Button
             size="icon"
             variant="ghost"
             onClick={toggleSave}
             disabled={isSaving || !user}
             className={cn(
-              "rounded-full w-9 h-9 hover:bg-black/5 transition-all"
+              "rounded-full w-9 h-9 hover:bg-black/5 transition-all shrink-0"
             )}
           >
             <Bookmark className={cn("w-6 h-6 text-blue-900", isSaved && "fill-amber-500 text-amber-500")} />
           </Button>
         </div>
+
+        {/* Subtitle and Address Row */}
+        {!isScrolled && (
+          <div className="ml-12 mt-1">
+            <h2 className="text-base text-[#0f3c6e] font-serif">
+              <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Todays name)
+            </h2>
+            <p className="text-sm font-bold mt-1">
+              <span className="text-amber-600">Shree Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar</span>
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="px-4 lg:px-6 space-y-8 mt-6 max-w-6xl mx-auto pb-12">
@@ -292,7 +295,7 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Image Slider */}
-        <div className="relative w-full rounded-[2rem] overflow-hidden shadow-lg bg-slate-100 aspect-video md:aspect-[21/9]">
+        <div className="relative w-full rounded-[2rem] overflow-hidden shadow-lg bg-slate-100 h-[280px] sm:h-auto sm:aspect-video md:aspect-[21/9]">
           <Carousel className="w-full h-full">
             <CarouselContent>
               {(temple.images && temple.images.length > 0 ? temple.images : [temple.architectureImage || "/placeholder-temple.jpg"]).map((img, index) => (
@@ -300,7 +303,11 @@ export default function TempleArchitecture() {
                   <img
                     src={img}
                     alt={`${temple.name} - ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => {
+                      setSelectedImageIndex(index);
+                      setIsImageModalOpen(true);
+                    }}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
                     }}
@@ -308,8 +315,20 @@ export default function TempleArchitecture() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-blue-900 border-none" />
-            <CarouselNext className="right-4 bg-white/80 hover:bg-white text-blue-900 border-none" />
+            <button
+              onClick={(e) => { e.preventDefault(); const prev = e.currentTarget.parentElement?.querySelector('[data-carousel-prev]') as HTMLButtonElement; prev?.click(); }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-blue-900 border-none flex items-center justify-center font-bold text-xl shadow-md transition-all"
+            >
+              ‹
+            </button>
+            <button
+              onClick={(e) => { e.preventDefault(); const next = e.currentTarget.parentElement?.querySelector('[data-carousel-next]') as HTMLButtonElement; next?.click(); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-blue-900 border-none flex items-center justify-center font-bold text-xl shadow-md transition-all"
+            >
+              ›
+            </button>
+            <CarouselPrevious className="hidden" data-carousel-prev />
+            <CarouselNext className="hidden" data-carousel-next />
           </Carousel>
         </div>
 
@@ -383,6 +402,28 @@ export default function TempleArchitecture() {
         </div>
 
       </div>
+
+      {/* Full-Screen Image Modal */}
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-none">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img
+              src={(temple?.images && temple.images.length > 0 ? temple.images : [temple?.architectureImage || "/placeholder-temple.jpg"])[selectedImageIndex]}
+              alt={`${temple?.name} - Full view`}
+              className="max-w-full max-h-[95vh] object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
+              }}
+            />
+            <button
+              onClick={() => setIsImageModalOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-2xl backdrop-blur-sm transition-all"
+            >
+              ×
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
