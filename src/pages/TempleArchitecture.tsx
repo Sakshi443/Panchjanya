@@ -315,48 +315,50 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Image Slider */}
-        <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
-          <Carousel className="w-full h-full">
-            <CarouselContent>
-              {(temple.images && temple.images.length > 0 ? temple.images : [temple.architectureImage || "/placeholder-temple.jpg"]).map((img, index) => (
-                <CarouselItem key={index} className="w-full h-full">
-                  <img
-                    src={img}
-                    alt={`${temple.name} - ${index + 1}`}
-                    className="w-full h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => {
-                      setSelectedImageIndex(index);
-                      setIsImageModalOpen(true);
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
-                    }}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <button
-              onClick={(e) => { e.preventDefault(); const prev = e.currentTarget.parentElement?.querySelector('[data-carousel-prev]') as HTMLButtonElement; prev?.click(); }}
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md"
-            >
-              <ChevronLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
-            </button>
-            <button
-              onClick={(e) => { e.preventDefault(); const next = e.currentTarget.parentElement?.querySelector('[data-carousel-next]') as HTMLButtonElement; next?.click(); }}
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md"
-            >
-              <ChevronRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
-            </button>
-            <CarouselPrevious className="hidden" data-carousel-prev />
-            <CarouselNext className="hidden" data-carousel-next />
-          </Carousel>
+        <div className="pb-4">
+          <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
+            <Carousel className="w-full h-full">
+              <CarouselContent>
+                {(temple.images && temple.images.length > 0 ? temple.images : [temple.architectureImage || "/placeholder-temple.jpg"]).map((img, index) => (
+                  <CarouselItem key={index} className="w-full h-full">
+                    <img
+                      src={img}
+                      alt={`${temple.name} - ${index + 1}`}
+                      className="w-full h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => {
+                        setSelectedImageIndex(index);
+                        setIsImageModalOpen(true);
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
+                      }}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <button
+                onClick={(e) => { e.preventDefault(); const prev = e.currentTarget.parentElement?.querySelector('[data-carousel-prev]') as HTMLButtonElement; prev?.click(); }}
+                className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md"
+              >
+                <ChevronLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
+              </button>
+              <button
+                onClick={(e) => { e.preventDefault(); const next = e.currentTarget.parentElement?.querySelector('[data-carousel-next]') as HTMLButtonElement; next?.click(); }}
+                className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md"
+              >
+                <ChevronRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
+              </button>
+              <CarouselPrevious className="hidden" data-carousel-prev />
+              <CarouselNext className="hidden" data-carousel-next />
+            </Carousel>
+          </div>
         </div>
 
         {/* Sthana Architecture View Button */}
         <Button1
           variant="primary"
           size="lg"
-          className="w-full h-12 md:h-14 mt-12 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
+          className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
           onClick={handleArchitectureView}
         >
           <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
@@ -368,7 +370,7 @@ export default function TempleArchitecture() {
         <div className="space-y-3 md:space-y-4 group relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">📜</span>
+              <div className="w-1 h-6 bg-amber-600"></div>
               <h3 className="font-heading text-xl font-bold text-blue-900">
                 {temple.description_title || "Sthan At Glance"}
               </h3>
@@ -407,7 +409,7 @@ export default function TempleArchitecture() {
         {/* Sthana Info */}
         <div className="space-y-3 md:space-y-4 group">
           <div className="flex items-center gap-3">
-            <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all duration-500">🕉️</span>
+            <div className="w-1 h-6 bg-amber-600"></div>
             <h3 className="font-heading text-xl font-bold text-blue-900">
               {temple.sthana_info_title || "Sthan Description"}
             </h3>
