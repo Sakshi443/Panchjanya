@@ -53,10 +53,10 @@ const Dashboard = () => {
                             </div>
                             <div className="mt-4 space-y-1">
                                 <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
-                                    Literature
+                                    Digital Library
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Ancient texts & sacred scrolls.
+                                    Your personal digital collection.
                                 </p>
                             </div>
                         </Card>
@@ -72,10 +72,10 @@ const Dashboard = () => {
                             </div>
                             <div className="mt-4 space-y-1">
                                 <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
-                                    Digital Library
+                                    Literature
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Your personal digital collection.
+                                    Ancient texts & sacred scrolls.
                                 </p>
                             </div>
                         </Card>
