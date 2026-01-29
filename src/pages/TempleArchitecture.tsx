@@ -210,15 +210,15 @@ export default function TempleArchitecture() {
               "font-heading font-bold text-[#0f3c6e] font-serif truncate transition-all duration-300",
               isScrolled ? "text-lg lg:text-xl leading-tight" : "text-2xl lg:text-3xl leading-tight"
             )}>
-              {temple.name}
+              Domegram
             </h1>
             {!isScrolled && (
               <>
-                <p className="text-sm text-muted-foreground font-serif mt-1">
-                  Todays name : {temple.todaysName || "Kamalpur"}
-                </p>
-                <p className="text-sm font-bold text-[#800000] mt-1">
-                  {temple.address || "Shree Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar"}
+                <h2 className="text-base text-[#0f3c6e] font-serif mt-1">
+                  <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Todays name)
+                </h2>
+                <p className="text-sm font-bold mt-1">
+                  <span className="text-amber-600">Shree Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar</span>
                 </p>
               </>
             )}
@@ -243,61 +243,52 @@ export default function TempleArchitecture() {
 
       <div className="px-4 lg:px-6 space-y-8 mt-6 max-w-6xl mx-auto pb-12">
 
-        {/* Top Section: Directions & Contact Trigger */}
-        <div className="flex gap-4 items-start">
-          {/* Directions (Occupies most space) */}
-          <div className="flex-1 min-w-0">
-            <Accordion type="single" collapsible className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 px-5">
-              <AccordionItem value="directions" className="border-none">
-                <AccordionTrigger className="hover:no-underline py-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">🧭</span>
-                    <h3 className="font-heading text-lg font-bold text-blue-900">
-                      {temple.directions_title || "जाण्याचा मार्ग"}
-                    </h3>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="text-sm text-slate-700 font-serif leading-relaxed">
-                    {temple.directions_text || "Shree Chakradhar Swami Mandir, Domegram. Road map details will be shown here."}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-
-          {/* Contact Icon Trigger */}
+        {/* Action Buttons Row */}
+        <div className="flex items-center gap-3">
+          {/* Directions Button */}
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                size="icon"
-                className="w-14 h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+                className="flex-1 bg-white text-blue-900 h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 font-bold"
               >
-                <Phone className="w-6 h-6" />
+                <span className="text-xl">🧭</span>
+                <span className="text-sm md:text-base">{temple.directions_title || "जाण्याचा मार्ग"}</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-sm rounded-[2rem]">
+            <DialogContent className="max-w-md rounded-[2rem]">
               <DialogHeader>
-                <DialogTitle className="text-blue-900 font-serif text-center">Contact Details</DialogTitle>
+                <DialogTitle className="text-blue-900 font-serif text-center flex items-center justify-center gap-2">
+                  <span className="text-xl">🧭</span>
+                  {temple.directions_title || "जाण्याचा मार्ग"}
+                </DialogTitle>
               </DialogHeader>
-              <div className="flex flex-col items-center gap-4 py-6">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Phone className="w-8 h-8 text-blue-900" />
+              <div className="py-4">
+                <div className="text-sm text-slate-700 font-serif leading-relaxed">
+                  {temple.directions_text || "Shree Chakradhar Swami Mandir, Domegram. Road map details will be shown here."}
                 </div>
-                <div className="text-center space-y-1">
-                  <h4 className="text-xl font-bold text-blue-900 font-serif">
-                    {temple.contactName || "Kamalpur Temple Trust"}
-                  </h4>
-                  <p className="text-slate-600 font-medium text-lg">
-                    {temple.contactNumber || "+91 98765 43210"}
-                  </p>
-                </div>
-                <Button className="w-full rounded-xl mt-2 bg-green-600 hover:bg-green-700">
-                  Call Now
-                </Button>
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Map/Navigation Button */}
+          <Button
+            size="icon"
+            className="w-14 h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+            onClick={handleNavigation}
+            title="Navigate"
+          >
+            <Navigation className="w-6 h-6" />
+          </Button>
+
+          {/* Share Button */}
+          <Button
+            size="icon"
+            className="w-14 h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+            onClick={handleShare}
+            title="Share"
+          >
+            <Share2 className="w-6 h-6" />
+          </Button>
         </div>
 
         {/* Image Slider */}
@@ -322,34 +313,15 @@ export default function TempleArchitecture() {
           </Carousel>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          <Button
-            className="flex-1 bg-[#1e3a8a] hover:bg-[#172554] text-white h-14 rounded-xl shadow-md text-sm md:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2 min-w-0"
-            onClick={handleArchitectureView}
-          >
-            <Compass className="w-5 h-5 shrink-0" />
-            <span className="truncate">Sthana Architecture View</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="w-14 md:w-auto h-14 rounded-xl border-blue-900/20 hover:bg-blue-50 text-blue-900 shadow-sm shrink-0 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs md:text-sm"
-            onClick={handleNavigation}
-            title="Location"
-          >
-            <Navigation className="w-6 h-6 shrink-0" />
-            <span className="hidden md:inline">Location</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="w-14 md:w-auto h-14 rounded-xl border-blue-900/20 hover:bg-blue-50 text-blue-900 shadow-sm shrink-0 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs md:text-sm"
-            onClick={handleShare}
-            title="Share"
-          >
-            <Share2 className="w-6 h-6 shrink-0" />
-            <span className="hidden md:inline">Share</span>
-          </Button>
-        </div>
+        {/* Full Width Sthana Architecture View Button */}
+        <Button
+          className="w-full bg-[#1e3a8a] hover:bg-[#172554] text-white h-16 rounded-2xl shadow-lg text-base md:text-lg font-bold uppercase tracking-wider flex items-center justify-center gap-3"
+          onClick={handleArchitectureView}
+        >
+          <Compass className="w-6 h-6 shrink-0" />
+          <span>Sthana Architecture View</span>
+        </Button>
+
 
         {/* General Description */}
         <div className="space-y-4 group relative">
