@@ -203,45 +203,48 @@ export default function TempleArchitecture() {
         "sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
         isScrolled ? "py-2" : "py-4"
       )}>
-        {/* Top Row: Back button, Title, Save button */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
-              <ChevronLeft className="w-7 h-7 text-blue-900" />
-            </Button>
-            <h1 className={cn(
-              "font-heading font-bold text-[#0f3c6e] font-serif truncate transition-all duration-300",
-              isScrolled ? "text-lg lg:text-xl leading-tight" : "text-2xl lg:text-3xl leading-tight"
-            )}>
-              Domegram
-            </h1>
-          </div>
-
-          {/* Saved Icon - aligned with h1 */}
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={toggleSave}
-            disabled={isSaving || !user}
-            className={cn(
-              "rounded-full w-9 h-9 hover:bg-black/5 transition-all shrink-0"
-            )}
-          >
-            <Bookmark className={cn("w-6 h-6 text-blue-900", isSaved && "fill-amber-500 text-amber-500")} />
+        {/* Header Content Block */}
+        <div className="flex items-start gap-3">
+          <Button variant="ghost" size="icon" className="-ml-2 mt-1 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
+            <ChevronLeft className="w-7 h-7 text-blue-900" />
           </Button>
-        </div>
 
-        {/* Subtitle and Address Row */}
-        {!isScrolled && (
-          <div className="ml-12 mt-1">
-            <h2 className="text-base text-[#0f3c6e] font-serif">
-              <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
-            </h2>
-            <p className="text-sm font-bold mt-1">
-              <span className="text-amber-600">Shri Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar</span>
-            </p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <h1 className={cn(
+                "font-heading font-bold text-[#0f3c6e] font-serif truncate transition-all duration-300",
+                isScrolled ? "text-lg lg:text-xl leading-tight" : "text-2xl lg:text-3xl leading-tight"
+              )}>
+                Domegram
+              </h1>
+
+              {/* Saved Icon */}
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={toggleSave}
+                disabled={isSaving || !user}
+                className={cn(
+                  "rounded-full w-9 h-9 hover:bg-black/5 transition-all shrink-0"
+                )}
+              >
+                <Bookmark className={cn("w-6 h-6 text-blue-900", isSaved && "fill-amber-500 text-amber-500")} />
+              </Button>
+            </div>
+
+            {/* Subtitle and Address - Aligned with Title */}
+            {!isScrolled && (
+              <div className="mt-1 space-y-1">
+                <h2 className="text-base text-[#0f3c6e] font-serif">
+                  <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
+                </h2>
+                <p className="text-sm font-bold text-amber-600 leading-tight">
+                  Shri Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <div className="px-4 lg:px-6 space-y-8 mt-6 max-w-6xl mx-auto pb-12">

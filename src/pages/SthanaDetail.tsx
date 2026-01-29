@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
@@ -13,6 +14,7 @@ export default function SthanaDetail() {
     const [hotspot, setHotspot] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     const [viewMode, setViewMode] = useState("present"); // 'present' | 'old'
     const [contentMode, setContentMode] = useState("details"); // 'details' | 'leela'
@@ -111,11 +113,12 @@ export default function SthanaDetail() {
                     </div>
 
                     {/* Image Viewer */}
-                    <div className="relative aspect-video w-full max-w-2xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
+                    <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
                         <img
                             src={displayImages[currentImageIndex]}
                             alt={hotspot.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={() => setIsImageModalOpen(true)}
                         />
                         {displayImages.length > 1 && (
                             <>
@@ -195,6 +198,24 @@ export default function SthanaDetail() {
 
                 </div>
             </div>
+            {/* Full-Screen Image Modal */}
+            <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+                <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-none">
+                    <div className="relative w-full h-full flex items-center justify-center">
+                        <img
+                            src={displayImages[currentImageIndex]}
+                            alt={`${hotspot.title} - Full view`}
+                            className="max-w-full max-h-[95vh] object-contain"
+                        />
+                        <button
+                            onClick={() => setIsImageModalOpen(false)}
+                            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-2xl backdrop-blur-sm transition-all"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
