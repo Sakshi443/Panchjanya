@@ -2,9 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
+
+// ... (rest of imports)
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -70,6 +73,15 @@ export default function ArchitectureViewer() {
     const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
     const [initialZoom, setInitialZoom] = useState(1);
     const imageContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleFullScreenChange = () => {
+            setIsFullScreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullScreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    }, []);
 
     useEffect(() => {
         if (!id) return;
@@ -226,7 +238,7 @@ export default function ArchitectureViewer() {
         <div className="min-h-screen bg-[#F9F6F0] flex flex-col relative pb-10">
 
             {/* Header: Back, Heading, 'i' */}
-            <div className="bg-[#1e3a8a] text-white px-4 py-3 flex items-center justify-between shadow-md z-20">
+            <div className="bg-[#1e3a8a] text-white px-4 py-2 flex items-center justify-between shadow-md z-20">
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 -ml-2" onClick={() => navigate(-1)}>
                         <ChevronLeft className="w-6 h-6" />
@@ -256,7 +268,7 @@ export default function ArchitectureViewer() {
             </div>
 
             {/* Image Type Slider/Tabs */}
-            <div className="bg-gray-100 px-4 py-3 flex justify-center w-full">
+            <div className="bg-gray-100 px-4 py-2 flex justify-center w-full">
                 <div className="flex w-full max-w-sm rounded-lg bg-gray-200 p-1 gap-1">
                     <button
                         onClick={() => setImageType('architectural')}
@@ -280,10 +292,10 @@ export default function ArchitectureViewer() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex justify-center px-6 py-3 md:px-4 md:py-4">
+            <div className="flex justify-center px-2 py-1 md:px-4 md:py-4">
                 <div
                     ref={imageContainerRef}
-                    className="relative aspect-[3/2] md:aspect-video w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-slate-50 group touch-none"
+                    className="relative aspect-square md:aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-slate-50 group touch-none"
                 >
                     <div
                         className="w-full h-full cursor-move"
@@ -350,38 +362,78 @@ export default function ArchitectureViewer() {
                     {/* Toggle Hotspots Button - Only visible on architectural image */}
                     {imageType === 'architectural' && (
                         <>
-                            {/* Top right - Hide/Show button only */}
-                            <div className="absolute right-4 top-4 z-10">
-                                <Button
-                                    size="icon"
-                                    variant="secondary"
-                                    className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white"
-                                    onClick={() => setShowHotspots(!showHotspots)}
-                                    title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
-                                >
-                                    {showHotspots ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                </Button>
-                            </div>
+                            {/* Controls Overlay */}
+                            {isFullScreen ? (
+                                <>
+                                    {/* Full Screen: Top Right Controls (Close + Hide/Show) */}
+                                    <div className="absolute right-4 top-4 z-10 flex gap-2">
+                                        <Button
+                                            size="icon"
+                                            variant="secondary"
+                                            className="h-9 w-9 rounded-full shadow-lg bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+                                            onClick={() => setShowHotspots(!showHotspots)}
+                                            title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
+                                        >
+                                            {showHotspots ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                        </Button>
+                                        <Button
+                                            size="icon"
+                                            variant="destructive"
+                                            className="h-9 w-9 rounded-full shadow-lg"
+                                            onClick={toggleFullScreen}
+                                            title="Exit Full Screen"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </Button>
+                                    </div>
 
-                            {/* Bottom right - Zoom and Reset buttons */}
-                            <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomIn}>
-                                    <ZoomIn className="w-4 h-4" />
-                                </Button>
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomOut}>
-                                    <ZoomOut className="w-4 h-4" />
-                                </Button>
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
-                                    <RotateCcw className="w-4 h-4" />
-                                </Button>
-                            </div>
+                                    {/* Full Screen: Bottom Right Controls (Vertical Stack) */}
+                                    <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-3">
+                                        <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomIn}>
+                                            <ZoomIn className="w-5 h-5" />
+                                        </Button>
+                                        <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomOut}>
+                                            <ZoomOut className="w-5 h-5" />
+                                        </Button>
+                                        <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
+                                            <RotateCcw className="w-5 h-5" />
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Normal View: Top Right (Hide/Show only) */}
+                                    <div className="absolute right-4 top-4 z-10">
+                                        <Button
+                                            size="icon"
+                                            variant="secondary"
+                                            className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white"
+                                            onClick={() => setShowHotspots(!showHotspots)}
+                                            title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
+                                        >
+                                            {showHotspots ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                        </Button>
+                                    </div>
+
+                                    {/* Normal View: Bottom Right (Horizontal Row with Full Screen) */}
+                                    <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
+
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
+                                            <RotateCcw className="w-4 h-4" />
+                                        </Button>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={toggleFullScreen}>
+                                            <Maximize className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                         </>
                     )}
                 </div>
             </div>
 
             {/* Content Section */}
-            <div className="px-3 md:px-6 py-3 md:py-4 space-y-3 md:space-y-6">
+            <div className="px-3 md:px-6 py-2 md:py-4 space-y-2 md:space-y-6">
 
                 {/* Button - Sthan Pothi (Dropdown) */}
                 <DropdownMenu>
@@ -394,7 +446,12 @@ export default function ArchitectureViewer() {
                             <ChevronDown className="w-5 h-5 opacity-70" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent side="bottom" align="start" avoidCollisions={false} className="w-[calc(100vw-3rem)] max-w-md max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100">
+                    <DropdownMenuContent
+                        side="bottom"
+                        align="center"
+                        avoidCollisions={false}
+                        className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100"
+                    >
                         {hotspots.map((h) => (
                             <DropdownMenuItem
                                 key={h.id}

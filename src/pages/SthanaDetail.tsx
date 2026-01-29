@@ -100,68 +100,70 @@ export default function SthanaDetail() {
             </div>
 
             <div className="flex-1 overflow-y-auto pb-20">
-                <div className="max-w-3xl mx-auto w-full px-4 pb-4 pt-3 space-y-3">
+                <div className="max-w-3xl mx-auto w-full px-0 md:px-4 pb-4 py-1 space-y-2 md:space-y-3">
 
                     {/* Top Slider: Present vs Old Images */}
-                    <div className="flex justify-center">
+                    <div className="flex justify-center px-2 md:px-0">
                         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full max-w-sm">
-                            <TabsList className="flex w-full bg-blue-900/10 p-1 rounded-xl gap-1">
-                                <TabsTrigger value="present" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Present Images</TabsTrigger>
-                                <TabsTrigger value="old" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Old Images</TabsTrigger>
+                            <TabsList className="flex w-full bg-gray-100 p-1 rounded-xl gap-1">
+                                <TabsTrigger value="present" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Present Images</TabsTrigger>
+                                <TabsTrigger value="old" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Old Images</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
 
                     {/* Image Viewer */}
-                    <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
-                        <img
-                            src={displayImages[currentImageIndex]}
-                            alt={hotspot.title}
-                            className="w-full h-full object-cover cursor-pointer"
-                            onClick={() => setIsImageModalOpen(true)}
-                        />
-                        {displayImages.length > 1 && (
-                            <>
-                                <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
-                                    <ChevronLeft className="w-6 h-6" />
-                                </button>
-                                <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
-                                    <ChevronRight className="w-6 h-6" />
-                                </button>
-                                {/* Indicator Dots */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                    {displayImages.map((_, idx) => (
-                                        <div
-                                            key={idx}
-                                            className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-amber-500 w-4' : 'bg-white/50'}`}
-                                        />
-                                    ))}
-                                </div>
-                            </>
-                        )}
+                    <div className="px-2 md:px-0">
+                        <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
+                            <img
+                                src={displayImages[currentImageIndex]}
+                                alt={hotspot.title}
+                                className="w-full h-full object-contain cursor-pointer"
+                                onClick={() => setIsImageModalOpen(true)}
+                            />
+                            {displayImages.length > 1 && (
+                                <>
+                                    <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
+                                        <ChevronLeft className="w-6 h-6" />
+                                    </button>
+                                    <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
+                                        <ChevronRight className="w-6 h-6" />
+                                    </button>
+                                    {/* Indicator Dots */}
+                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                                        {displayImages.map((_, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-amber-500 w-4' : 'bg-white/50'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
 
-                        {/* Label for Old Images Mode */}
-                        {viewMode === 'old' && (
-                            <div className="absolute top-4 right-4 bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
-                                Old Image
-                            </div>
-                        )}
+                            {/* Label for Old Images Mode */}
+                            {viewMode === 'old' && (
+                                <div className="absolute top-4 right-4 bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                                    Old Image
+                                </div>
+                            )}
+                        </div>
                     </div>
 
 
 
                     {/* Bottom Slider: Details vs Leela */}
-                    <div className="flex justify-center">
+                    <div className="flex justify-center px-2 md:px-0">
                         <Tabs value={contentMode} onValueChange={setContentMode} className="w-full max-w-sm">
-                            <TabsList className="flex w-full bg-gray-200 p-1 rounded-xl gap-1">
-                                <TabsTrigger value="details" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Details</TabsTrigger>
-                                <TabsTrigger value="leela" className="rounded-lg text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:flex-1 data-[state=inactive]:flex-[0.6]">Leela</TabsTrigger>
+                            <TabsList className="flex w-full bg-gray-100 p-1 rounded-xl gap-1">
+                                <TabsTrigger value="details" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Details</TabsTrigger>
+                                <TabsTrigger value="leela" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Leela</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
 
                     {/* Content Display */}
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 px-2 md:px-0">
                         {contentMode === 'details' ? (
                             <div className="space-y-3">
                                 {/* Significance */}

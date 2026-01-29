@@ -120,7 +120,7 @@ const Saved = () => {
                                         <img
                                             src={temple.templeImage || "https://placehold.co/400x300?text=Temple"}
                                             alt={temple.templeName}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).src = "https://placehold.co/400x300?text=Temple";
                                             }}

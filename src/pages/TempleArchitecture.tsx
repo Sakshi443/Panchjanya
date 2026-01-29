@@ -4,6 +4,7 @@ import { db } from "@/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, ChevronRight, Info, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Button1 } from "@/components/ui/button-1";
 import { Temple } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,12 +108,18 @@ export default function TempleArchitecture() {
   // Scroll detection for header
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY;
+      // Add hysteresis to prevent flickering
+      if (scrollY > 50 && !isScrolled) {
+        setIsScrolled(true);
+      } else if (scrollY < 30 && isScrolled) {
+        setIsScrolled(false);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [user, id]);
+  }, [user, id, isScrolled]); // Added isScrolled to dependency array
 
   // Toggle save/unsave
   const toggleSave = async () => {
@@ -204,8 +211,8 @@ export default function TempleArchitecture() {
         isScrolled ? "py-2" : "py-4"
       )}>
         {/* Header Content Block */}
-        <div className="flex items-start gap-3">
-          <Button variant="ghost" size="icon" className="-ml-2 mt-1 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
             <ChevronLeft className="w-7 h-7 text-blue-900" />
           </Button>
 
@@ -233,29 +240,31 @@ export default function TempleArchitecture() {
             </div>
 
             {/* Subtitle and Address - Aligned with Title */}
-            {!isScrolled && (
-              <div className="mt-1 space-y-1">
-                <h2 className="text-base text-[#0f3c6e] font-serif">
-                  <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
-                </h2>
-                <p className="text-sm font-bold text-amber-600 leading-tight">
-                  Shri Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar
-                </p>
-              </div>
-            )}
+            <div className={cn(
+              "space-y-1 overflow-hidden transition-all duration-300 ease-in-out origin-top",
+              isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-24 opacity-100 mt-1"
+            )}>
+              <h2 className="text-base text-[#0f3c6e] font-serif">
+                <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
+              </h2>
+              <p className="text-sm font-bold text-amber-600 leading-tight">
+                Shri Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar
+              </p>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <div className="px-4 lg:px-6 space-y-4 md:space-y-8 mt-4 md:mt-6 max-w-6xl mx-auto pb-12">
+      <div className="px-4 lg:px-6 space-y-2 md:space-y-4 mt-2 md:mt-4 max-w-6xl mx-auto pb-12">
 
         {/* Action Buttons Row */}
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-0 md:gap-3">
           {/* Directions Button */}
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                className="flex-1 bg-white text-blue-900 h-12 md:h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
+                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
               >
                 <Compass className="w-5 h-5 md:w-6 md:h-6 text-blue-900" />
                 <span className="text-sm md:text-base">{temple.directions_title || "जाण्याचा मार्ग"}</span>
@@ -279,21 +288,21 @@ export default function TempleArchitecture() {
           {/* Map/Navigation Button */}
           <Button
             size="icon"
-            className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+            className="text-blue-900 hover:text-blue-800 shrink-0 bg-transparent border-0 shadow-none hover:bg-transparent"
             onClick={handleNavigation}
             title="Navigate"
           >
-            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
+            <Navigation className="w-6 h-6 md:w-7 md:h-7" />
           </Button>
 
           {/* Share Button */}
           <Button
             size="icon"
-            className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white text-blue-900 shadow-sm border border-slate-100 hover:bg-blue-50 shrink-0"
+            className="text-blue-900 hover:text-blue-800 shrink-0 bg-transparent border-0 shadow-none hover:bg-transparent"
             onClick={handleShare}
             title="Share"
           >
-            <Share2 className="w-5 h-5 md:w-6 md:h-6" />
+            <Share2 className="w-6 h-6 md:w-7 md:h-7" />
           </Button>
         </div>
 
@@ -306,7 +315,7 @@ export default function TempleArchitecture() {
                   <img
                     src={img}
                     alt={`${temple.name} - ${index + 1}`}
-                    className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    className="w-full h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => {
                       setSelectedImageIndex(index);
                       setIsImageModalOpen(true);
@@ -336,13 +345,15 @@ export default function TempleArchitecture() {
         </div>
 
         {/* Sthana Architecture View Button */}
-        <Button
-          className="w-full bg-blue-900 hover:bg-blue-800 text-white h-12 md:h-14 rounded-xl md:rounded-2xl shadow-md text-sm md:text-base font-bold uppercase tracking-wide flex items-center justify-center gap-2 md:gap-3 border border-blue-800"
+        <Button1
+          variant="primary"
+          size="lg"
+          className="w-full bg-blue-900 hover:bg-blue-800 text-white rounded-xl md:rounded-2xl shadow-md text-sm md:text-base font-bold uppercase tracking-wide border border-blue-800"
           onClick={handleArchitectureView}
         >
           <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
           <span>Sthana Architecture View</span>
-        </Button>
+        </Button1>
 
 
         {/* General Description */}
