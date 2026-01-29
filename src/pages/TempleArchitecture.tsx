@@ -381,8 +381,8 @@ export default function TempleArchitecture() {
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md">
-                  <Info className="w-4 h-4" />
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50">
+                  <span className="font-serif italic font-bold text-lg leading-none">i</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-[90%] rounded-2xl">
