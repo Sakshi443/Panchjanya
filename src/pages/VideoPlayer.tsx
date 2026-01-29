@@ -126,7 +126,7 @@ export default function VideoPlayer() {
         <div className="min-h-screen bg-[#F9F6F0] lg:bg-white">
             {/* Video Player Header (Absolute) */}
             {/* Video Player Header */}
-            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
+            <div className="sticky top-0 z-30 pr-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 rounded-full" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>

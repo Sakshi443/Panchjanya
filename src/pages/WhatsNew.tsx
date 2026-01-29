@@ -108,7 +108,7 @@ export default function WhatsNew() {
         <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0] pb-20">
             {/* Header */}
             {/* Header */}
-            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-[#F9F6F0]/95 lg:bg-[#F9F6F0]/95 backdrop-blur-sm">
+            <div className="sticky top-0 z-30 pr-4 py-4 flex items-center justify-between bg-[#F9F6F0]/95 lg:bg-[#F9F6F0]/95 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>

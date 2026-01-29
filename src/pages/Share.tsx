@@ -115,7 +115,7 @@ const Share = () => {
   return (
     <div className="h-full flex flex-col bg-background lg:bg-white">
       {/* Standard Header */}
-      <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm border-b border-border">
+      <div className="sticky top-0 z-30 pr-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm border-b border-border">
         <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
           <ChevronLeft className="w-7 h-7 text-blue-900" />
         </Button>
@@ -178,7 +178,7 @@ const Share = () => {
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               maxZoom={20}
             />
 

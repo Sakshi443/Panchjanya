@@ -180,7 +180,7 @@ const SwamiYatra = () => {
             {/* Header - Hidden in Fullscreen */}
             {/* Header - Hidden in Fullscreen */}
             {!isFullScreen && (
-                <div className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+                <div className="sticky top-0 z-40 pr-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
                     <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                         <ChevronLeft className="w-7 h-7 text-blue-900" />
                     </Button>

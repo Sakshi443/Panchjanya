@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown } from "lucide-react";
+import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import {
@@ -55,10 +55,20 @@ export default function ArchitectureViewer() {
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [loading, setLoading] = useState(true);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const [showHotspots, setShowHotspots] = useState(true);
+    const [imageType, setImageType] = useState<'architectural' | 'present'>('architectural');
+    const [architecturalImage, setArchitecturalImage] = useState<string>("");
+    const [presentImage, setPresentImage] = useState<string>("");
 
     // Drag state
     const [isDragging, setIsDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
+
+    // Touch state for pinch zoom
+    const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
+    const [initialZoom, setInitialZoom] = useState(1);
+    const imageContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -77,9 +87,13 @@ export default function ArchitectureViewer() {
                 const data = snap.data() as Temple;
                 setTemple(data);
 
-                // Get architecture image
+                // Get architectural and present images
                 const archImg = data.architectureImage || data.images?.[0] || "";
-                setImageUrl(archImg);
+                const presImg = data.images?.[0] || "";
+
+                setArchitecturalImage(archImg);
+                setPresentImage(presImg);
+                setImageUrl(archImg); // Default to architectural image
 
                 // Add numbers to hotspots if they don't have them
                 const hotspotsWithNumbers = (data.hotspots || []).map((h, index) => ({
@@ -97,6 +111,18 @@ export default function ArchitectureViewer() {
 
         fetchTempleData();
     }, [id, navigate]);
+
+    // Update image when type changes
+    useEffect(() => {
+        if (imageType === 'architectural') {
+            setImageUrl(architecturalImage);
+        } else {
+            setImageUrl(presentImage);
+        }
+        // Reset zoom and pan when switching images
+        setZoom(1);
+        setPan({ x: 0, y: 0 });
+    }, [imageType, architecturalImage, presentImage]);
 
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 3));
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
@@ -119,6 +145,56 @@ export default function ArchitectureViewer() {
     };
 
     const handleMouseUp = () => setIsDragging(false);
+
+    // Touch handlers for mobile pinch zoom
+    const getTouchDistance = (touches: React.TouchList) => {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const distance = getTouchDistance(e.touches);
+            setInitialPinchDistance(distance);
+            setInitialZoom(zoom);
+        } else if (e.touches.length === 1) {
+            setIsDragging(true);
+            dragStart.current = { x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y };
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (e.touches.length === 2 && initialPinchDistance) {
+            e.preventDefault();
+            const distance = getTouchDistance(e.touches);
+            const scale = distance / initialPinchDistance;
+            setZoom(Math.min(Math.max(initialZoom * scale, 0.5), 3));
+        } else if (e.touches.length === 1 && isDragging) {
+            setPan({
+                x: e.touches[0].clientX - dragStart.current.x,
+                y: e.touches[0].clientY - dragStart.current.y
+            });
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setIsDragging(false);
+        setInitialPinchDistance(null);
+    };
+
+    const toggleFullScreen = () => {
+        if (!isFullScreen && imageContainerRef.current) {
+            if (imageContainerRef.current.requestFullscreen) {
+                imageContainerRef.current.requestFullscreen();
+            }
+            setIsFullScreen(true);
+        } else if (document.fullscreenElement) {
+            document.exitFullscreen();
+            setIsFullScreen(false);
+        }
+    };
 
     // Navigate to Detail Page
     const handleNavigationToDetail = (hotspot: Hotspot) => {
@@ -153,10 +229,7 @@ export default function ArchitectureViewer() {
                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 -ml-2" onClick={() => navigate(-1)}>
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
-                    <div>
-                        <h1 className="font-heading font-bold text-lg leading-tight">{temple.name}</h1>
-                        <p className="text-[10px] text-amber-300 uppercase tracking-widest">Architecture View</p>
-                    </div>
+                    <h1 className="font-heading font-bold text-lg leading-tight">{temple.name}</h1>
                 </div>
 
                 <Dialog>
@@ -180,56 +253,90 @@ export default function ArchitectureViewer() {
                 </Dialog>
             </div>
 
+            {/* Image Type Slider/Tabs */}
+            <div className="bg-gray-100 px-4 py-3 flex justify-center w-full">
+                <div className="flex w-full max-w-sm rounded-lg bg-gray-200 p-1 gap-1">
+                    <button
+                        onClick={() => setImageType('architectural')}
+                        className={`flex-1 px-2 md:px-6 py-2 rounded-lg font-medium text-xs md:text-sm whitespace-nowrap transition-all ${imageType === 'architectural'
+                            ? 'bg-blue-900 text-white shadow-md'
+                            : 'bg-transparent text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        Architectural View
+                    </button>
+                    <button
+                        onClick={() => setImageType('present')}
+                        className={`flex-1 px-2 md:px-6 py-2 rounded-lg font-medium text-xs md:text-sm whitespace-nowrap transition-all ${imageType === 'present'
+                            ? 'bg-blue-900 text-white shadow-md'
+                            : 'bg-transparent text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        Present View
+                    </button>
+                </div>
+            </div>
+
             {/* Image Viewer */}
-            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden border-b border-gray-200">
+            <div
+                ref={imageContainerRef}
+                className="relative w-full max-h-[70vh] bg-gray-100 flex items-center justify-center overflow-hidden border-b border-gray-200 touch-none"
+            >
                 <div
-                    className="w-full h-full flex items-center justify-center cursor-move"
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
+                    className="relative w-full h-full flex items-center justify-center"
                 >
                     <div
-                        style={{
-                            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                            transition: isDragging ? 'none' : 'transform 0.2s ease-out'
-                        }}
-                        className="relative"
+                        className="w-full h-full flex items-center justify-center cursor-move"
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
                     >
-                        <img
-                            src={imageUrl}
-                            alt={`${temple.name} Architecture`}
-                            className="max-w-none w-auto h-auto min-w-[100%] min-h-[100%] object-contain select-none"
-                            draggable={false}
-                        />
+                        <div
+                            style={{
+                                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                                transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+                            }}
+                            className="relative w-full h-full flex items-center justify-center"
+                        >
+                            <img
+                                src={imageUrl}
+                                alt={`${temple.name} Architecture`}
+                                className="max-w-full max-h-[70vh] w-auto h-auto object-contain select-none"
+                                draggable={false}
+                            />
 
-                        {/* Hotspots */}
-                        {hotspots.map((hotspot) => (
-                            <button
-                                key={hotspot.id}
-                                className="absolute flex items-center justify-center transition-transform hover:scale-125 z-10"
-                                style={{
-                                    left: `${hotspot.x}%`,
-                                    top: `${hotspot.y}%`,
-                                    transform: 'translate(-50%, -50%)'
-                                }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleNavigationToDetail(hotspot);
-                                }}
-                            >
-                                <div className="w-8 h-8 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center shadow-lg animate-pulse hover:animate-none">
-                                    <span className="text-xs font-bold text-white">
-                                        {hotspot.number}
-                                    </span>
-                                </div>
-                            </button>
-                        ))}
+                            {/* Hotspots - Only show on architectural image */}
+                            {imageType === 'architectural' && showHotspots && hotspots.map((hotspot) => (
+                                <button
+                                    key={hotspot.id}
+                                    className="absolute flex items-center justify-center transition-transform hover:scale-125 z-10"
+                                    style={{
+                                        left: `${hotspot.x}%`,
+                                        top: `${hotspot.y}%`,
+                                        transform: 'translate(-50%, -50%)'
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleNavigationToDetail(hotspot);
+                                    }}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center shadow-lg animate-pulse hover:animate-none">
+                                        <span className="text-xs font-bold text-white">
+                                            {hotspot.number}
+                                        </span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Quick Zoom Controls */}
-                <div className="absolute right-4 bottom-4 flex flex-col gap-2 z-10">
+                {/* Quick Zoom Controls - Hidden on mobile, visible on desktop */}
+                <div className="absolute right-4 bottom-4 hidden md:flex flex-col gap-2 z-10">
                     <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-white/90" onClick={handleZoomIn}>
                         <ZoomIn className="w-4 h-4" />
                     </Button>
@@ -240,10 +347,25 @@ export default function ArchitectureViewer() {
                         <RotateCcw className="w-4 h-4" />
                     </Button>
                 </div>
+
+                {/* Toggle Hotspots Button - Only visible on architectural image */}
+                {imageType === 'architectural' && (
+                    <div className="absolute right-4 bottom-4 md:bottom-auto md:top-4 z-10">
+                        <Button
+                            size="icon"
+                            variant="secondary"
+                            className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white"
+                            onClick={() => setShowHotspots(!showHotspots)}
+                            title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
+                        >
+                            {showHotspots ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Content Section */}
-            <div className="px-6 py-6 space-y-6">
+            <div className="px-6 pt-4 pb-6 space-y-6">
 
                 {/* Button - Sthan Pothi (Dropdown) */}
                 <DropdownMenu>
@@ -256,7 +378,7 @@ export default function ArchitectureViewer() {
                             <ChevronDown className="w-5 h-5 opacity-70" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[calc(100vw-3rem)] max-w-md max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100">
+                    <DropdownMenuContent side="bottom" align="start" avoidCollisions={false} className="w-[calc(100vw-3rem)] max-w-md max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100">
                         {hotspots.map((h) => (
                             <DropdownMenuItem
                                 key={h.id}
@@ -282,7 +404,7 @@ export default function ArchitectureViewer() {
                 <div className="space-y-2">
                     <h3 className="font-heading font-bold text-lg text-blue-900 flex items-center gap-2">
                         <Info className="w-4 h-4 text-amber-600" />
-                        Architecture Description
+                        Sthans Overview
                     </h3>
                     <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100/50 text-sm text-slate-600 leading-relaxed font-serif">
                         {temple.description_text || temple.description || "No description available for this architecture."}
@@ -291,7 +413,7 @@ export default function ArchitectureViewer() {
 
                 {/* Sthana (Hotspot Buttons) */}
                 <div className="space-y-3">
-                    <h3 className="font-heading font-bold text-lg text-blue-900">Sthana</h3>
+                    {/* <h3 className="font-heading font-bold text-lg text-blue-900">Sthana</h3> */}
                     <div className="flex flex-col gap-3">
                         {hotspots.map((hotspot) => (
                             <button
@@ -299,7 +421,7 @@ export default function ArchitectureViewer() {
                                 onClick={() => handleNavigationToDetail(hotspot)}
                                 className="w-full flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-amber-400 hover:shadow-md transition-all active:scale-[0.99] group text-left"
                             >
-                                <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-700 font-bold flex items-center justify-center border border-amber-200 shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                <div className="w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 font-bold flex items-center justify-center border border-amber-600 shrink-0 text-sm">
                                     {hotspot.number}
                                 </div>
                                 <span className="font-heading font-bold text-blue-900 line-clamp-1 group-hover:text-amber-700 transition-colors">

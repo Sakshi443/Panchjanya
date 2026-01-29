@@ -200,7 +200,7 @@ export default function TempleArchitecture() {
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
       <div className={cn(
-        "sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
+        "sticky top-0 z-30 pr-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
         isScrolled ? "py-2" : "py-4"
       )}>
         {/* Top Row: Back button, Title, Save button */}
@@ -235,10 +235,10 @@ export default function TempleArchitecture() {
         {!isScrolled && (
           <div className="ml-12 mt-1">
             <h2 className="text-base text-[#0f3c6e] font-serif">
-              <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Todays name)
+              <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
             </h2>
             <p className="text-sm font-bold mt-1">
-              <span className="text-amber-600">Shree Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar</span>
+              <span className="text-amber-600">Shri Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar</span>
             </p>
           </div>
         )}
@@ -267,7 +267,7 @@ export default function TempleArchitecture() {
               </DialogHeader>
               <div className="py-4">
                 <div className="text-sm text-slate-700 font-serif leading-relaxed">
-                  {temple.directions_text || "Shree Chakradhar Swami Mandir, Domegram. Road map details will be shown here."}
+                  {temple.directions_text || "Shri Chakradhar Swami Mandir, Domegram. Road map details will be shown here."}
                 </div>
               </div>
             </DialogContent>

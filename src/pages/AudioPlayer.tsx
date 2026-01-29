@@ -148,7 +148,7 @@ export default function AudioPlayer() {
             <audio ref={audioRef} src={audio.audioUrl} />
 
             {/* Header */}
-            <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-transparent">
+            <div className="sticky top-0 z-30 pr-4 py-4 flex items-center justify-between bg-transparent">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 rounded-full" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>

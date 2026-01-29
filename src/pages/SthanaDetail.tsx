@@ -65,30 +65,46 @@ export default function SthanaDetail() {
     return (
         <div className="min-h-screen bg-[#F9F6F0] flex flex-col">
             {/* Header */}
-            <div className="bg-[#0B1B38] text-white px-6 py-4 flex items-center justify-between shrink-0 shadow-md sticky top-0 z-50">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/10 -ml-2">
+            <div className="shrink-0 sticky top-0 z-50 bg-white shadow-sm">
+                {/* Mobile: All in one row */}
+                <div className="md:hidden flex items-center gap-2 w-full pr-6 py-4">
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-blue-900 hover:bg-blue-900/10 shrink-0">
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
-                    <div className="w-10 h-10 rounded-full border-2 border-amber-500 text-amber-500 font-bold flex items-center justify-center text-lg">
+                    <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
                         {hotspot.number}
                     </div>
-                    <div>
-                        <div className="text-[10px] uppercase tracking-[0.2em] text-gray-300">STHANA DETAIL</div>
-                        <div className="font-heading font-medium text-lg leading-none">{hotspot.title}</div>
-                    </div>
+                    <h1 className="text-lg font-heading font-bold text-blue-900 leading-tight truncate flex-1">
+                        {hotspot.title}
+                    </h1>
                 </div>
-                <div className="w-6" />
+
+
+                {/* Desktop: Existing layout */}
+                <div className="hidden md:flex items-center justify-center px-6 py-4 relative">
+                    <div className="absolute left-6 flex items-center gap-4">
+                        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-blue-900 hover:bg-blue-900/10 -ml-2">
+                            <ChevronLeft className="w-6 h-6" />
+                        </Button>
+                        <div className="w-10 h-10 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold flex items-center justify-center text-lg">
+                            {hotspot.number}
+                        </div>
+                    </div>
+
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-amber-600 text-center px-16 leading-tight max-w-2xl truncate">
+                        {hotspot.title}
+                    </h1>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-20">
-                <div className="max-w-3xl mx-auto w-full p-6 space-y-6">
+                <div className="max-w-3xl mx-auto w-full px-4 pb-4 pt-3 space-y-3">
 
                     {/* Top Slider: Present vs Old Images */}
                     <div className="flex justify-center">
                         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full max-w-sm">
                             <TabsList className="grid w-full grid-cols-2 bg-blue-900/10 p-1 rounded-xl">
-                                <TabsTrigger value="present" className="rounded-lg data-[state=active]:bg-blue-900 data-[state=active]:text-white">Present Sthan & Details</TabsTrigger>
+                                <TabsTrigger value="present" className="rounded-lg data-[state=active]:bg-blue-900 data-[state=active]:text-white">Present Images</TabsTrigger>
                                 <TabsTrigger value="old" className="rounded-lg data-[state=active]:bg-amber-600 data-[state=active]:text-white">Old Images</TabsTrigger>
                             </TabsList>
                         </Tabs>
@@ -129,7 +145,7 @@ export default function SthanaDetail() {
                         )}
                     </div>
 
-                    <h1 className="text-3xl font-heading font-bold text-center text-amber-600">{hotspot.title}</h1>
+
 
                     {/* Bottom Slider: Details vs Leela */}
                     <div className="flex justify-center">
@@ -144,38 +160,29 @@ export default function SthanaDetail() {
                     {/* Content Display */}
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                         {contentMode === 'details' ? (
-                            <div className="space-y-6">
+                            <div className="space-y-3">
                                 {/* Significance */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <Compass className="w-6 h-6 text-[#0B1B38]" />
-                                        <h3 className="text-[#0B1B38] font-bold tracking-widest uppercase text-sm">Architectural Significance</h3>
+                                <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
+                                            <h3 className="text-amber-800 font-bold tracking-widest uppercase text-sm">Description</h3>
+                                        </div>
+                                        <p className="font-serif text-lg text-slate-800 leading-relaxed">
+                                            {hotspot.significance || hotspot.description || "No info available"}
+                                        </p>
                                     </div>
-                                    <p className="text-gray-700 text-lg leading-relaxed font-medium">
-                                        {hotspot.significance || hotspot.description || "No info available"}
-                                    </p>
                                 </div>
 
-                                {/* Description */}
-                                <div className="bg-white border border-amber-100 rounded-xl p-6 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <History className="w-5 h-5 text-amber-500" />
-                                        <h3 className="text-[#0B1B38] font-bold tracking-widest uppercase text-xs">Description</h3>
-                                    </div>
-                                    <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-                                        {hotspot.description}
-                                    </p>
-                                </div>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div className="space-y-3">
                                 {/* Leela Section */}
-                                <div className="bg-[#FFFDF5] border border-amber-200 rounded-xl p-6 shadow-sm relative overflow-hidden">
-                                    <BookOpen className="absolute -right-6 -bottom-6 w-32 h-32 text-amber-100/50 rotate-[-15deg]" />
+                                <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                                     <div className="relative z-10">
-                                        <div className="flex items-center gap-2 mb-4">
+                                        <div className="flex items-center gap-2 mb-2">
                                             <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                            <h3 className="text-amber-800 font-bold tracking-widest uppercase text-sm">Leela Charitra</h3>
+                                            <h3 className="text-amber-800 font-bold tracking-widest uppercase text-sm">...</h3>
                                         </div>
                                         <p className="font-serif text-lg text-slate-800 leading-relaxed">
                                             {hotspot.leela || "या स्थानाशी संबंधित लीळाचरित्र लवकरच उपलब्ध होईल."}

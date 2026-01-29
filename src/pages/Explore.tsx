@@ -276,7 +276,7 @@ const Explore = () => {
         <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white">
             {/* Standard Header */}
             {/* Transparent Header Container */}
-            <div className="absolute top-0 left-0 right-0 z-[400] px-4 py-4 flex items-center justify-between pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 z-[400] pr-4 py-4 flex items-center justify-between pointer-events-none">
 
                 {/* Left: Back & Title */}
                 <div className="flex items-center gap-3 pointer-events-auto">
@@ -401,9 +401,8 @@ const Explore = () => {
                     attributionControl={false}
                 >
                     <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" // Cleaner, lighter map style
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                        maxZoom={20}
                     />
 
                     <MapEffect temples={filteredTemples} />
