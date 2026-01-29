@@ -356,7 +356,7 @@ export default function TempleArchitecture() {
         <Button1
           variant="primary"
           size="lg"
-          className="w-full h-12 md:h-14 mt-8 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
+          className="w-full h-12 md:h-14 mt-12 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
           onClick={handleArchitectureView}
         >
           <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
