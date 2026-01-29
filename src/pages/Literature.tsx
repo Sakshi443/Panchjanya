@@ -1,127 +1,151 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Search, Music, Video, Play, Pause, Image } from "lucide-react";
+import { ChevronLeft, Bookmark, Search, MoreVertical, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { db } from "@/firebase";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 
-// Mock Data for Audio
-const audioData = [
-    {
-        id: "1",
-        title: "Vishnu Sahasranamam",
-        subtitle: "ANCIENT VEDIC",
-        duration: "12:45",
-        imageUrl: "https://images.unsplash.com/photo-1605406575497-015ab0d21b9b?w=200", // Abstract Sound Wave or Placeholder
-        isPlaying: false,
-    },
-    {
-        id: "2",
-        title: "Shiva Tandava Stotram",
-        subtitle: "Rhythmic Devotion",
-        duration: "08:20",
-        imageUrl: "https://images.unsplash.com/photo-1517960413843-0aee8e2b3285?w=200",
-        isPlaying: false,
-    },
-    {
-        id: "3",
-        title: "Lalitha Sahasranamam",
-        subtitle: "Divine Mother",
-        duration: "24:12",
-        imageUrl: "https://images.unsplash.com/photo-1507838153414-b4b713384ebd?w=200",
-        isPlaying: false,
-    }
-];
+interface Book {
+    id: string;
+    title: string;
+    titleHindi: string;
+    author: string;
+    authorHindi: string;
+    description: string;
+    descriptionHindi: string;
+    category: string;
+    coverImage: string;
+    pdfUrl?: string; // Optional for now
+}
 
-// Mock Data for Video
-const videoData = [
-    {
-        id: "Bn7RDxdrSiA",
-        title: "Bhagavad Geeta recitation Chapter-1",
-        series: "By Astha Chhattani",
-        duration: "05:32",
-        thumbnailUrl: "https://img.youtube.com/vi/Bn7RDxdrSiA/maxresdefault.jpg",
-        views: "1.2K"
-    },
-    {
-        id: "dC0UvoytJ9A",
-        title: "प्रसादसेवा - prasadseva",
-        series: "Lyric Video",
-        duration: "04:15",
-        thumbnailUrl: "https://img.youtube.com/vi/dC0UvoytJ9A/maxresdefault.jpg",
-        views: "850"
-    },
-    {
-        id: "KHOfZ69p7mc",
-        title: "शरण आलो मी स्वामी तुम्हाला",
-        series: "श्री चक्रधर स्वामी भजन",
-        duration: "06:20",
-        thumbnailUrl: "https://img.youtube.com/vi/KHOfZ69p7mc/maxresdefault.jpg",
-        views: "2.1K"
-    },
-    {
-        id: "vs1GKt0uk-s",
-        title: "हे स्वामी श्री चक्रधरा तव चरणी शरण आलो",
-        series: "श्री चक्रधर स्वामी भजन",
-        duration: "05:45",
-        thumbnailUrl: "https://img.youtube.com/vi/vs1GKt0uk-s/maxresdefault.jpg",
-        views: "1.5K"
-    }
-];
-
-// Mock Data for Images
-const imageData = [
-    {
-        id: "1",
-        title: "Shri Swami Samarth",
-        category: "Divine Portraits",
-        resolution: "1920x1080",
-        imageUrl: "https://images.unsplash.com/photo-1604608672516-9c88dc049e49?w=400",
-    },
-    {
-        id: "2",
-        title: "Temple Architecture",
-        category: "Sacred Structures",
-        resolution: "1920x1080",
-        imageUrl: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400",
-    },
-    {
-        id: "3",
-        title: "Ancient Manuscripts",
-        category: "Sacred Texts",
-        resolution: "2400x1600",
-        imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
-    },
-    {
-        id: "4",
-        title: "Deity Shrines",
-        category: "Divine Portraits",
-        resolution: "1920x1200",
-        imageUrl: "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=400",
-    },
-    {
-        id: "5",
-        title: "Sacred Rituals",
-        category: "Devotional Practices",
-        resolution: "1920x1080",
-        imageUrl: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400",
-    },
-    {
-        id: "6",
-        title: "Temple Gopuram",
-        category: "Sacred Structures",
-        resolution: "2560x1440",
-        imageUrl: "https://images.unsplash.com/photo-1548013146-72479768bada?w=400",
-    },
-];
-
-function Literature() {
+export default function Literature() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<"audio" | "video" | "images">("audio");
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeCategory, setActiveCategory] = useState("all");
+    const [books, setBooks] = useState<Book[]>([]);
+
+    const categories = [
+        { id: "all", label: "सर्व", labelEn: "All" },
+        { id: "spiritual", label: "अध्यात्म", labelEn: "Spiritual" },
+        { id: "history", label: "इतिहास", labelEn: "History" },
+        { id: "literature", label: "तत्वज्ञान", labelEn: "Philosophy" },
+    ];
+
+    // Default books to ensure UI shows something (matching image) even if DB is empty
+    const defaultBooks: Book[] = [
+        {
+            id: "1",
+            title: "Shrimad Bhagavad Gita",
+            titleHindi: "श्रीमद्भगवद्गीता",
+            author: "Vyasa Muni",
+            authorHindi: "व्यास मुनी",
+            description: "Divine dialogue between Lord Krishna and Arjuna",
+            descriptionHindi: "मानवी जीवनाचे सार आणि कर्तव्याचे मार्गदर्शन करणारा पवित्र ग्रंथ.",
+            category: "spiritual",
+            coverImage: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400",
+        },
+        {
+            id: "2",
+            title: "Bhavārth Dīpikā (Jñāneśvarī)",
+            titleHindi: "भावार्थ दीपिका (ज्ञानेश्वरी)",
+            author: "Sant Jñāneśvar",
+            authorHindi: "संत ज्ञानेश्वर",
+            description: "Marathi commentary on the Bhagavad Gita",
+            descriptionHindi: "भगवद्गीतेवर मराठी भाषेत केलेले ओघवते आणि अमृततुल्य भाष्य.",
+            category: "spiritual",
+            coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
+        },
+        {
+            id: "3",
+            title: "Shivaji Maharaj: Management Guru",
+            titleHindi: "शिवाजी महाराज: मॅनेजमेंट गुरू",
+            author: "Namdev Rao Jadhav",
+            authorHindi: "नामदेवराव जाधव",
+            description: "Leadership lessons from Chhatrapati Shivaji Maharaj",
+            descriptionHindi: "छत्रपती शिवाजी महाराजांच्या व्यवस्थापन कौशल्यांचे सखोल...",
+            category: "history",
+            coverImage: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
+        },
+    ];
+
+    // Fetch books
+    useEffect(() => {
+        let q;
+        if (activeCategory === "all") {
+            q = query(collection(db, "books"));
+        } else {
+            // Map table category from 'tattvagyan' to 'literature' if needed, or just strict match
+            // Since defaulting to mock data if empty, let's just query
+            q = query(collection(db, "books"), where("category", "==", activeCategory));
+        }
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                // If DB empty, fallback to local default books filter
+                const filtered = activeCategory === 'all'
+                    ? defaultBooks
+                    : defaultBooks.filter(b => b.category === activeCategory || (activeCategory === 'literature' && b.category === 'philosophy')); // Handle potential mismatch
+
+                // Only set if we actually have matches, else keep empty array
+                if (filtered.length > 0) setBooks(filtered);
+                else setBooks([]); // Or keep defaultBooks if verifying UI
+
+                // FOR VERIFICATION: Always set mock data if DB empty
+                if (snapshot.empty) {
+                    const filteredDefaults = activeCategory === 'all'
+                        ? defaultBooks
+                        : defaultBooks.filter(b => b.category === activeCategory);
+                    setBooks(filteredDefaults);
+                }
+
+            } else {
+                const booksData = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as Book[];
+                setBooks(booksData);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [activeCategory]);
+
+    // Filter books by search
+    const filteredBooks = books.filter(
+        (book) =>
+            book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            book.titleHindi?.includes(searchQuery) ||
+            book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            book.authorHindi?.includes(searchQuery)
+    );
+
+    // Group books by category
+    const groupedBooks = filteredBooks.reduce((acc, book) => {
+        const category = book.category || "other";
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(book);
+        return acc;
+    }, {} as Record<string, Book[]>);
+
+    const getCategoryTitle = (category: string) => {
+        switch (category) {
+            case "spiritual":
+                return "अध्यात्मिक ग्रंथ (Spiritual)";
+            case "history":
+                return "ऐतिहासिक वारसा (History)";
+            case "literature":
+            case "philosophy":
+                return "तत्वज्ञान (Philosophy)";
+            default:
+                return category.charAt(0).toUpperCase() + category.slice(1);
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0] pb-20">
-            {/* Header */}
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0] pb-20 font-sans">
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-[#F9F6F0]/95 lg:bg-[#F9F6F0]/95 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
@@ -129,205 +153,125 @@ function Literature() {
                 </Button>
                 <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Literature</h1>
                 <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
-                    <Search className="w-6 h-6 text-blue-900" />
+                    <Bookmark className="w-6 h-6 text-blue-900" />
                 </Button>
             </div>
 
-            {/* Toggle Switch */}
-            <div className="flex p-1 bg-gray-100 rounded-full mx-6 mb-4">
-                <button
-                    className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "audio"
-                        ? "bg-blue-900 text-white shadow-md"
-                        : "text-gray-500 hover:text-blue-900"
-                        }`}
-                    onClick={() => setActiveTab("audio")}
-                >
-                    Audio
-                </button>
-                <button
-                    className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "video"
-                        ? "bg-blue-900 text-white shadow-md"
-                        : "text-gray-500 hover:text-blue-900"
-                        }`}
-                    onClick={() => setActiveTab("video")}
-                >
-                    Videos
-                </button>
-                <button
-                    className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "images"
-                        ? "bg-blue-900 text-white shadow-md"
-                        : "text-gray-500 hover:text-blue-900"
-                        }`}
-                    onClick={() => setActiveTab("images")}
-                >
-                    Images
-                </button>
+            {/* Search Bar */}
+            <div className="px-5 mb-6">
+                <div className="relative shadow-sm">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                        placeholder="पुस्तके, लेखक किंवा विषय शोधा..."
+                        className="pl-12 pr-4 h-12 rounded-2xl border-gray-100 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-200 text-base"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {/* Category Tabs */}
+            <div className="px-5 mb-8">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {categories.map((category) => (
+                        <button
+                            key={category.id}
+                            onClick={() => setActiveCategory(category.id)}
+                            className={`px-6 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all border ${activeCategory === category.id
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200"
+                                : "bg-white text-blue-500 border-blue-100 hover:bg-blue-50"
+                                }`}
+                        >
+                            {category.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Content */}
-            <div className="px-6 py-6">
-                {activeTab === "audio" ? (
-                    <div>
-                        <h2 className="font-heading font-bold text-2xl text-blue-900 mb-6">
-                            Sacred Chants
-                        </h2>
-
-                        {/* Featured Audio Card - Example: Vishnu Sahasranamam */}
-                        <div
-                            onClick={() => navigate("/audio/1")}
-                            className="bg-white rounded-2xl p-4 shadow-sm border border-amber-100 flex items-center gap-4 mb-6 cursor-pointer hover:shadow-md transition-all relative overflow-hidden"
-                        >
-                            <div className="w-0.5 h-10 absolute left-0 top-1/2 -translate-y-1/2 bg-amber-500 rounded-r" />
-                            <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <span className="text-2xl">॥</span> {/* Placeholder Icon */}
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-blue-900 text-lg leading-tight mb-1">
-                                    Vishnu Sahasranamam
-                                </h3>
-                                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600">
-                                    <span>12:45</span>
-                                    <span>•</span>
-                                    <span>Ancient Vedic</span>
-                                </div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full border-2 border-amber-200 flex items-center justify-center text-amber-600">
-                                <Pause className="w-4 h-4 fill-current" />
-                            </div>
+            <div className="px-5 pb-6">
+                {Object.entries(groupedBooks).map(([category, categoryBooks]) => (
+                    <div key={category} className="mb-10">
+                        {/* Category Header */}
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="font-heading font-bold text-lg text-blue-700">
+                                {getCategoryTitle(category)}
+                            </h2>
+                            <button className="text-xs font-bold text-amber-500 hover:text-amber-600">
+                                सर्व पहा
+                            </button>
                         </div>
 
-                        {/* List */}
-                        <div className="space-y-4">
-                            {audioData.slice(1).map((item) => (
+                        {/* Books List */}
+                        <div className="space-y-5">
+                            {categoryBooks.map((book) => (
                                 <div
-                                    key={item.id}
-                                    onClick={() => navigate(`/audio/${item.id}`)}
-                                    className="bg-gray-50 rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white hover:shadow-sm transition-all"
+                                    key={book.id}
+                                    className="bg-white rounded-2xl p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] ring-1 ring-gray-50/50 hover:shadow-lg transition-all cursor-pointer relative group"
+                                    onClick={() => navigate(`/book/${book.id}`)}
                                 >
-                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 text-gray-400">
-                                        <Music className="w-6 h-6" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="font-bold text-gray-800 text-base mb-1">
-                                            {item.title}
-                                        </h3>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                                            <span>{item.duration}</span>
-                                            <span>•</span>
-                                            <span>{item.subtitle}</span>
+                                    {/* Kebab Menu */}
+                                    <button className="absolute top-4 right-3 text-gray-300 hover:text-gray-500">
+                                        <MoreVertical className="w-5 h-5" />
+                                    </button>
+
+                                    <div className="flex gap-4">
+                                        {/* Book Cover */}
+                                        <div className="w-28 h-[8.5rem] flex-shrink-0 rounded-lg overflow-hidden shadow-md bg-slate-200 relative">
+                                            <div className="absolute inset-0 border border-black/5 rounded-lg z-10 pointer-events-none"></div>
+                                            <img
+                                                src={book.coverImage}
+                                                alt={book.title}
+                                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).src =
+                                                        "https://placehold.co/300x400/e2e8f0/475569?text=Book";
+                                                }}
+                                            />
                                         </div>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white shadow-md">
-                                        <Play className="w-3 h-3 fill-current ml-0.5" />
+
+                                        {/* Book Info */}
+                                        <div className="flex-1 min-w-0 py-1 flex flex-col">
+                                            <h3 className="font-heading font-bold text-blue-600 text-[1.05rem] leading-tight mb-1 pr-6">
+                                                {book.titleHindi}
+                                            </h3>
+                                            <p className="text-xs font-medium text-slate-500 mb-2">
+                                                {book.authorHindi}
+                                            </p>
+                                            <p className="text-xs text-slate-600 leading-relaxed mb-auto line-clamp-2 font-medium">
+                                                {book.descriptionHindi}
+                                            </p>
+
+                                            <Button
+                                                className="bg-[#4361ee] hover:bg-blue-700 text-white rounded-lg px-6 h-9 text-xs font-bold w-fit mt-3 shadow-sm shadow-blue-200"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/book/${book.id}`);
+                                                }}
+                                            >
+                                                <BookOpen className="w-3.5 h-3.5 mr-2 opacity-90" />
+                                                आता वाचा
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                ) : activeTab === "video" ? (
-                    <div>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-heading font-bold text-2xl text-blue-900">
-                                Dharma Pravachan
-                            </h2>
-                            <button className="text-xs font-bold text-amber-600 uppercase tracking-wider">
-                                View All
-                            </button>
-                        </div>
+                ))}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {videoData.map((video) => (
-                                <div
-                                    key={video.id}
-                                    onClick={() => navigate(`/video/${video.id}`)}
-                                    className="group cursor-pointer"
-                                >
-                                    {/* Thumbnail */}
-                                    <div className="relative aspect-video rounded-xl overflow-hidden mb-3 shadow-md group-hover:shadow-lg transition-all">
-                                        <img
-                                            src={video.thumbnailUrl}
-                                            alt={video.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center">
-                                                <Play className="w-4 h-4 text-blue-900 fill-current ml-0.5" />
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                                            {video.duration}
-                                        </div>
-                                    </div>
-
-                                    {/* Info */}
-                                    <div>
-                                        <h3 className="font-bold text-blue-900 text-base leading-tight mb-1 group-hover:text-blue-700">
-                                            {video.title}
-                                        </h3>
-                                        <p className="text-xs font-bold text-amber-600 uppercase tracking-wider">
-                                            {video.series}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                {filteredBooks.length === 0 && books.length > 0 && (
+                    <div className="text-center py-16">
+                        <div className="w-20 h-20 bg-blue-50/50 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                            <Search className="w-8 h-8 text-blue-200" />
                         </div>
-                    </div>
-                ) : (
-                    <div>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-heading font-bold text-2xl text-blue-900">
-                                Sacred Gallery
-                            </h2>
-                            <button className="text-xs font-bold text-amber-600 uppercase tracking-wider">
-                                View All
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {imageData.map((image) => (
-                                <div
-                                    key={image.id}
-                                    onClick={() => navigate(`/image/${image.id}`)}
-                                    className="group cursor-pointer"
-                                >
-                                    {/* Image Card */}
-                                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2 shadow-md group-hover:shadow-xl transition-all">
-                                        <img
-                                            src={image.imageUrl}
-                                            alt={image.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="flex items-center justify-center">
-                                                <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
-                                                    <Image className="w-4 h-4 text-blue-900" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute top-2 right-2 bg-black/70 text-white text-[9px] font-bold px-2 py-0.5 rounded">
-                                            {image.resolution}
-                                        </div>
-                                    </div>
-
-                                    {/* Info */}
-                                    <div>
-                                        <h3 className="font-bold text-blue-900 text-sm leading-tight mb-0.5 group-hover:text-blue-700">
-                                            {image.title}
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">
-                                            {image.category}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <p className="text-slate-600 font-medium mb-1">कोणतीही पुस्तके सापडली नाहीत</p>
+                        <p className="text-xs text-slate-400">
+                            कृपया दुसरा शोध प्रयत्न करा
+                        </p>
                     </div>
                 )}
             </div>
-        </div >
+        </div>
     );
 }
-export default Literature;
-

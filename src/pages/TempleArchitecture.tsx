@@ -259,7 +259,7 @@ export default function TempleArchitecture() {
       <div className="px-4 lg:px-6 space-y-2 md:space-y-4 mt-2 md:mt-4 max-w-6xl mx-auto pb-12">
 
         {/* Action Buttons Row */}
-        <div className="flex items-center gap-0 md:gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
           {/* Directions Button */}
           <Dialog>
             <DialogTrigger asChild>
@@ -295,22 +295,20 @@ export default function TempleArchitecture() {
 
           {/* Map/Navigation Button */}
           <Button
-            size="icon"
-            className="text-blue-900 hover:text-blue-800 shrink-0 bg-transparent border-0 shadow-none hover:bg-transparent"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 flex items-center justify-center shrink-0"
             onClick={handleNavigation}
             title="Navigate"
           >
-            <Navigation className="w-6 h-6 md:w-7 md:h-7" />
+            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
 
           {/* Share Button */}
           <Button
-            size="icon"
-            className="text-blue-900 hover:text-blue-800 shrink-0 bg-transparent border-0 shadow-none hover:bg-transparent"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 flex items-center justify-center shrink-0"
             onClick={handleShare}
             title="Share"
           >
-            <Share2 className="w-6 h-6 md:w-7 md:h-7" />
+            <Share2 className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
         </div>
 
@@ -362,7 +360,11 @@ export default function TempleArchitecture() {
             className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
             onClick={handleArchitectureView}
           >
-            <Compass className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
+            <img
+              src="/icons/explore_safari.png"
+              alt="Explore"
+              className="w-5 h-5 md:w-6 md:h-6 shrink-0 object-contain brightness-0 invert"
+            />
             <span>Explore Sthan</span>
           </Button1>
         </div>
