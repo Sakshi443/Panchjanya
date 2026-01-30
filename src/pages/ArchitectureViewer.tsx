@@ -253,8 +253,8 @@ export default function ArchitectureViewer() {
 
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="rounded-full w-9 h-9 hover:bg-black/5 transition-all shrink-0">
-                                <span className="font-serif italic font-bold text-lg text-[#0f3c6e]">i</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 shrink-0">
+                                <span className="font-serif italic font-bold text-lg leading-none">i</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-[90%] rounded-2xl">
@@ -276,25 +276,23 @@ export default function ArchitectureViewer() {
             <div className="px-4 lg:px-6 space-y-4 md:space-y-4 mt-2 md:mt-4 max-w-6xl mx-auto pb-12">
                 {/* Image Type Segmented Buttons */}
                 <div className="flex justify-center w-full">
-                    <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden">
+                    <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
                         <button
                             onClick={() => setImageType('architectural')}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${imageType === 'architectural'
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${imageType === 'architectural'
                                 ? 'bg-blue-900 text-white'
                                 : 'bg-white text-slate-500 hover:bg-slate-50'
                                 }`}
                         >
-                            {imageType === 'architectural' && <Check className="w-4 h-4 text-white" />}
                             Architectural View
                         </button>
                         <button
                             onClick={() => setImageType('present')}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${imageType === 'present'
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${imageType === 'present'
                                 ? 'bg-blue-900 text-white'
                                 : 'bg-white text-slate-500 hover:bg-slate-50'
                                 }`}
                         >
-                            {imageType === 'present' && <Check className="w-4 h-4 text-white" />}
                             Present View
                         </button>
                     </div>
@@ -468,19 +466,32 @@ export default function ArchitectureViewer() {
                 {/* Content Section */}
                 <div className="space-y-4">
                     {/* Sthan Pothi Dropdown */}
-                    <DropdownMenu>
+                    <DropdownMenu onOpenChange={(open) => {
+                        if (open) {
+                            setTimeout(() => {
+                                const trigger = document.getElementById('sthan-pothi-trigger');
+                                if (trigger) {
+                                    trigger.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                            }, 100);
+                        }
+                    }}>
                         <DropdownMenuTrigger asChild>
-                            <button className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md flex items-center p-0 overflow-hidden border border-blue-800 group transition-colors">
-                                <div className="flex-1 flex items-center justify-center gap-3 h-full px-4 md:px-6">
-                                    <BookOpen className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
-                                    <span className="font-heading font-bold uppercase tracking-wider text-sm md:text-base">स्थान पोथी</span>
+                            <button id="sthan-pothi-trigger" className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md flex items-center justify-between px-6 border border-blue-800 group transition-all focus:outline-none">
+                                <div className="flex items-center gap-3">
+                                    <BookOpen className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                                    <span className="font-heading font-bold tracking-wider text-sm md:text-base">Sthan Pothi</span>
                                 </div>
-                                <div className="w-12 md:w-14 h-full border-l border-blue-800/50 flex items-center justify-center transition-colors">
-                                    <ChevronDown className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
-                                </div>
+                                <ChevronDown className="w-5 h-5 text-white opacity-80 group-hover:opacity-100 transition-opacity" />
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent side="bottom" align="center" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100">
+                        <DropdownMenuContent
+                            side="bottom"
+                            align="center"
+                            avoidCollisions={false}
+                            sideOffset={8}
+                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100 z-50"
+                        >
                             {hotspots.map((h) => (
                                 <DropdownMenuItem key={h.id} className="p-2 md:p-3 focus:bg-amber-50 rounded-lg cursor-pointer border-b border-gray-50 last:border-0" onClick={() => handleNavigationToDetail(h)}>
                                     <div className="flex items-center gap-3 w-full">

@@ -104,25 +104,23 @@ export default function SthanaDetail() {
 
                     {/* Top Slider: Present vs Old Images */}
                     <div className="flex justify-center px-2 md:px-0 py-2">
-                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden">
+                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
                             <button
                                 onClick={() => setViewMode('present')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'present'
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'present'
                                     ? 'bg-blue-900 text-white'
                                     : 'bg-white text-slate-500 hover:bg-slate-50'
                                     }`}
                             >
-                                {viewMode === 'present' && <Check className="w-4 h-4 text-white" />}
                                 Present Images
                             </button>
                             <button
                                 onClick={() => setViewMode('old')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'old'
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'old'
                                     ? 'bg-blue-900 text-white'
                                     : 'bg-white text-slate-500 hover:bg-slate-50'
                                     }`}
                             >
-                                {viewMode === 'old' && <Check className="w-4 h-4 text-white" />}
                                 Old Images
                             </button>
                         </div>
@@ -170,25 +168,23 @@ export default function SthanaDetail() {
 
                     {/* Bottom Slider: Details vs Leela */}
                     <div className="flex justify-center px-2 md:px-0 py-2">
-                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden">
+                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
                             <button
                                 onClick={() => setContentMode('details')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'details'
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'details'
                                     ? 'bg-blue-900 text-white'
                                     : 'bg-white text-slate-500 hover:bg-slate-50'
                                     }`}
                             >
-                                {contentMode === 'details' && <Check className="w-4 h-4 text-white" />}
                                 Details
                             </button>
                             <button
                                 onClick={() => setContentMode('leela')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'leela'
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'leela'
                                     ? 'bg-blue-900 text-white'
                                     : 'bg-white text-slate-500 hover:bg-slate-50'
                                     }`}
                             >
-                                {contentMode === 'leela' && <Check className="w-4 h-4 text-white" />}
                                 Leela
                             </button>
                         </div>
