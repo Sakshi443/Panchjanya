@@ -75,16 +75,16 @@ export default function VandanHistory() {
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
-                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                    <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Vandan History</h1>
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Vandan History</h1>
                 <div className="w-10" />
             </div>
 
             {/* Content */}
             <div className="px-6 py-6">
                 {/* Total Salutations Card */}
-                <div className="bg-gradient-to-br from-white to-amber-50 rounded-3xl p-8 shadow-lg border border-amber-100 mb-8 relative overflow-hidden">
+                <div className="bg-gradient-to-br from-white to-amber-50 rounded-3xl p-8 border border-amber-100 mb-8 relative overflow-hidden">
                     {/* Decorative Background */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full -mr-16 -mt-16 opacity-50" />
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-100 rounded-full -ml-12 -mb-12 opacity-50" />
@@ -102,7 +102,7 @@ export default function VandanHistory() {
                             <br />
                             Completed in your journey
                         </p>
-                        <Button className="bg-blue-900 hover:bg-blue-800 text-white rounded-full px-8 h-12 font-bold uppercase tracking-wider shadow-lg">
+                        <Button className="bg-blue-900 hover:bg-blue-800 text-white rounded-full px-8 h-12 font-bold uppercase tracking-wider">
                             <Award className="w-5 h-5 mr-2" />
                             View Milestones
                         </Button>
@@ -138,7 +138,7 @@ export default function VandanHistory() {
                             vandanEntries.map((entry) => (
                                 <div
                                     key={entry.id}
-                                    className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl transition-shadow"
+                                    className="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow-xl transition-shadow"
                                 >
                                     <div className="flex items-center gap-4">
                                         {/* Temple Image */}

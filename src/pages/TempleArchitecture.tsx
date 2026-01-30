@@ -107,19 +107,26 @@ export default function TempleArchitecture() {
 
   // Scroll detection for header
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      // Add hysteresis to prevent flickering
-      if (scrollY > 50 && !isScrolled) {
-        setIsScrolled(true);
-      } else if (scrollY < 30 && isScrolled) {
-        setIsScrolled(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          // Use a larger threshold and functional updates to prevent flickering
+          if (scrollY > 100) {
+            setIsScrolled(true);
+          } else if (scrollY < 20) {
+            setIsScrolled(false);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [user, id, isScrolled]); // Added isScrolled to dependency array
+  }, []); // Remove dependencies that cause re-subscription
 
   // Toggle save/unsave
   const toggleSave = async () => {
@@ -207,7 +214,7 @@ export default function TempleArchitecture() {
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
       <div
-        className="sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-gray-400 py-3"
+        className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-[#0f3c6e] py-3"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Content Block */}
@@ -218,11 +225,8 @@ export default function TempleArchitecture() {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h1 className={cn(
-                "font-heading font-bold text-[#0f3c6e] font-serif truncate transition-all duration-300",
-                isScrolled ? "text-lg lg:text-xl leading-tight" : "text-2xl lg:text-3xl leading-tight"
-              )}>
-                Domegram
+              <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif truncate flex-1 leading-tight">
+                {temple.name}
               </h1>
 
               {/* Saved Icon */}
@@ -241,8 +245,8 @@ export default function TempleArchitecture() {
 
             {/* Subtitle and Address - Aligned with Title */}
             <div className={cn(
-              "space-y-1 overflow-hidden transition-all duration-300 ease-in-out origin-top",
-              isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-24 opacity-100 mt-1"
+              "space-y-1 overflow-hidden transition-all duration-300 ease-in-out origin-top will-change-[max-height,opacity]",
+              isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-32 opacity-100 mt-1"
             )}>
               <h2 className="text-base text-[#0f3c6e] font-serif">
                 <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
@@ -264,7 +268,7 @@ export default function TempleArchitecture() {
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl shadow-sm border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
+                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
               >
                 <img
                   src="/icons/signpost.png"
@@ -295,7 +299,7 @@ export default function TempleArchitecture() {
 
           {/* Map/Navigation Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 flex items-center justify-center shrink-0"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0"
             onClick={handleNavigation}
             title="Navigate"
           >
@@ -304,7 +308,7 @@ export default function TempleArchitecture() {
 
           {/* Share Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 flex items-center justify-center shrink-0"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0"
             onClick={handleShare}
             title="Share"
           >
@@ -314,7 +318,7 @@ export default function TempleArchitecture() {
 
         {/* Image Slider */}
         <div className="pb-2">
-          <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-gray-200 group">
+          <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden border-4 border-white bg-gray-200 group">
             <Carousel className="w-full h-full">
               <CarouselContent>
                 {(temple.images && temple.images.length > 0 ? temple.images : [temple.architectureImage || "/placeholder-temple.jpg"]).map((img, index) => (
@@ -357,7 +361,7 @@ export default function TempleArchitecture() {
           <Button1
             variant="primary"
             size="lg"
-            className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
+            className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
             onClick={handleArchitectureView}
           >
             <img
@@ -383,7 +387,7 @@ export default function TempleArchitecture() {
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50">
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 border border-blue-100/50">
                   <span className="font-serif italic font-bold text-lg leading-none">i</span>
                 </Button>
               </DialogTrigger>
@@ -402,7 +406,7 @@ export default function TempleArchitecture() {
             </Dialog>
           </div>
 
-          <div className="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
             <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2 pr-4 text-justify columns-2 gap-6">
               {temple.description_text || temple.description || "No description available."}
@@ -419,7 +423,7 @@ export default function TempleArchitecture() {
             </h3>
           </div>
 
-          <div className="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/10"></div>
             <p className="font-serif text-slate-700 leading-relaxed italic text-sm whitespace-pre-wrap pl-2">
               {temple.sthana_info_text ||

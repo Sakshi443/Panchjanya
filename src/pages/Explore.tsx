@@ -280,17 +280,17 @@ const Explore = () => {
 
                 {/* Left: Back & Title */}
                 <div className="flex items-center gap-2 md:gap-3 pointer-events-auto">
-                    <Button variant="ghost" size="icon" className="-ml-1 md:-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full shadow-sm w-9 h-9 md:w-10 md:h-10" onClick={() => navigate(-1)}>
-                        <ChevronLeft className="w-6 h-6 md:w-7 md:h-7 text-blue-900" />
+                    <Button variant="ghost" size="icon" className="-ml-1 md:-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full w-9 h-9 md:w-10 md:h-10" onClick={() => navigate(-1)}>
+                        <ChevronLeft className="w-6 h-6 md:w-7 md:h-7 text-[#0f3c6e]" />
                     </Button>
-                    <h1 className="text-sm md:text-xl font-heading font-bold text-blue-900 font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 rounded-full shadow-sm border border-white/20 whitespace-nowrap">
+                    <h1 className="text-sm md:text-xl font-heading font-bold text-[#0f3c6e] font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 rounded-full border border-white/20 whitespace-nowrap">
                         Explore
                     </h1>
                 </div>
 
                 {/* Center: Search Bar */}
                 <div className="pointer-events-auto w-full max-w-sm mx-4">
-                    <div className="relative shadow-xl rounded-full bg-white/95 backdrop-blur-md border border-white/40 flex items-center">
+                    <div className="relative rounded-full bg-white/95 backdrop-blur-md border border-white/40 flex items-center">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                         <Input
                             placeholder={t("explore.searchPlaceholder")}
@@ -300,7 +300,7 @@ const Explore = () => {
                         />
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900 w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[#0f3c6e] w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors"
                         >
                             <div className="relative">
                                 <Filter className="w-4 h-4" />
@@ -315,7 +315,7 @@ const Explore = () => {
                 </div>
 
                 {/* Right: Logo */}
-                <div className="bg-white/90 backdrop-blur-md p-2 md:p-2.5 rounded-full shadow-sm border border-white/20 flex-shrink-0 pointer-events-auto">
+                <div className="bg-white/90 backdrop-blur-md p-2 md:p-2.5 rounded-full border border-white/20 flex-shrink-0 pointer-events-auto">
                     <Compass className="w-5 h-5 md:w-6 md:h-6 text-amber-600" />
                 </div>
             </div>
@@ -323,7 +323,7 @@ const Explore = () => {
             {/* Filter Panel */}
             {showFilters && (
                 <div className="absolute top-32 left-4 right-4 z-[400] pointer-events-auto">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-100/50 p-6">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-100/50 p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-heading font-bold text-lg text-blue-900">Filters</h3>
                             <button

@@ -127,7 +127,7 @@ export default function Jigyasa() {
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Jigyasa</h1>
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Jigyasa</h1>
                 <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
                     <HelpCircle className="w-6 h-6 text-blue-900" />
                 </Button>
@@ -136,7 +136,7 @@ export default function Jigyasa() {
             {/* Content */}
             <div className="px-6 py-6 space-y-6">
                 {/* Daily Wisdom Card */}
-                <div className="relative bg-gradient-to-br from-blue-900 to-blue-800 rounded-3xl p-6 shadow-xl overflow-hidden">
+                <div className="relative bg-gradient-to-br from-blue-900 to-blue-800 rounded-3xl p-6 overflow-hidden">
                     {/* Decorative Pattern */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
@@ -158,7 +158,7 @@ export default function Jigyasa() {
                                         <p>Difficulty: {dailyWisdom.difficulty}</p>
                                     </div>
 
-                                    <Button className="bg-amber-500 hover:bg-amber-600 text-blue-900 font-bold rounded-full px-6 h-11 shadow-lg">
+                                    <Button className="bg-amber-500 hover:bg-amber-600 text-blue-900 font-bold rounded-full px-6 h-11">
                                         Answer Now
                                         <Sparkles className="w-4 h-4 ml-2" />
                                     </Button>
@@ -176,7 +176,7 @@ export default function Jigyasa() {
                                         <p>Difficulty: Seeker</p>
                                     </div>
 
-                                    <Button className="bg-amber-500 hover:bg-amber-600 text-blue-900 font-bold rounded-full px-6 h-11 shadow-lg">
+                                    <Button className="bg-amber-500 hover:bg-amber-600 text-blue-900 font-bold rounded-full px-6 h-11">
                                         Answer Now
                                         <Sparkles className="w-4 h-4 ml-2" />
                                     </Button>
@@ -206,7 +206,7 @@ export default function Jigyasa() {
                             >
                                 <div className="relative aspect-square">
                                     {/* Circle */}
-                                    <div className={`absolute inset-0 bg-gradient-to-br ${sphere.color} rounded-full shadow-lg group-hover:scale-105 transition-transform duration-300`}>
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${sphere.color} rounded-full group-hover:scale-105 transition-transform duration-300`}>
                                         {/* Pattern Overlay */}
                                         <div className="absolute inset-0 rounded-full opacity-10">
                                             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
@@ -228,7 +228,7 @@ export default function Jigyasa() {
                 </div>
 
                 {/* Knowledge Streak */}
-                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                <div className="bg-white rounded-3xl p-6 border border-gray-100">
                     <div className="flex items-start gap-3 mb-4">
                         <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <Sparkles className="w-5 h-5 text-amber-600" />

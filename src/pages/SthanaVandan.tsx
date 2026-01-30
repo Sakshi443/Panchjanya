@@ -133,15 +133,15 @@ const SthanaVandan = () => {
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Sthaan Vandan</h1>
-                <div className="w-10 h-10 bg-[#FDF6E3] rounded-full flex items-center justify-center border border-[#FDF6E3] shadow-sm">
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Sthaan Vandan</h1>
+                <div className="w-10 h-10 bg-[#FDF6E3] rounded-full flex items-center justify-center border border-[#FDF6E3]">
                     <Bell className="w-5 h-5 text-amber-600 fill-amber-600" />
                 </div>
             </div>
 
             <div className="px-6 space-y-12">
                 {/* Swami Virahan Card */}
-                <Card className="p-5 bg-white shadow-sm border-none rounded-3xl overflow-hidden relative">
+                <Card className="p-5 bg-white border-none rounded-3xl overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full blur-2xl -translate-y-10 translate-x-10" />
                     <div className="relative z-10">
                         <h2 className="font-heading font-bold text-xl text-blue-900 mb-2">Raj Viharan</h2>
@@ -150,7 +150,7 @@ const SthanaVandan = () => {
                         </p>
                         <Button
                             onClick={() => navigate('/yatra')}
-                            className="w-full bg-[#0f3c6e] hover:bg-[#0a2a4d] text-white py-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
+                            className="w-full bg-[#0f3c6e] hover:bg-[#0a2a4d] text-white py-6 rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-3"
                         >
                             <div className="p-0.5 bg-amber-500 rounded-full">
                                 <Compass className="w-4 h-4 text-white" />
@@ -172,7 +172,7 @@ const SthanaVandan = () => {
                     </Link>
                 </div>
 
-                <div className="h-[500px] w-full rounded-3xl overflow-hidden shadow-inner border border-border/50 bg-amber-50 relative">
+                <div className="h-[500px] w-full rounded-3xl overflow-hidden border border-border/50 bg-amber-50 relative">
                     <MapWithMarkers
                         temples={filteredTemples}
                         onTempleClick={handleTempleClick}
@@ -184,7 +184,7 @@ const SthanaVandan = () => {
                         <div className="absolute bottom-4 left-4 right-4 z-[400] lg:w-96 lg:left-auto lg:right-4">
                             <Card className="p-3 flex items-center gap-3 shadow-xl bg-white/95 backdrop-blur-sm border-none animate-in slide-in-from-bottom-4">
                                 {/* Image */}
-                                <div className="w-16 h-16 bg-amber-100 rounded-lg flex-shrink-0 flex items-center justify-center text-amber-700 overflow-hidden shadow-sm border border-amber-100/50">
+                                <div className="w-16 h-16 bg-amber-100 rounded-lg flex-shrink-0 flex items-center justify-center text-amber-700 overflow-hidden border border-amber-100/50">
                                     <img
                                         src={selectedTemple.images?.[0] || "/placeholder-temple.jpg"}
                                         alt={selectedTemple.name}
@@ -260,7 +260,7 @@ const SthanaVandan = () => {
                     {architectureTemples.length > 0 ? (
                         architectureTemples.map((temple) => (
                             <Link to={`/temple/${temple.id}/architecture`} key={temple.id}>
-                                <Card className="overflow-hidden group cursor-pointer shadow-md hover:shadow-xl transition-all h-full flex flex-col">
+                                <Card className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all h-full flex flex-col">
                                     <div className="h-40 bg-gray-100 relative overflow-hidden">
                                         {temple.architectureImage || temple.images?.[0] ? (
                                             <img

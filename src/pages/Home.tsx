@@ -107,7 +107,7 @@ const Home = () => {
   const selectedTemple = temples.find((t) => t.id === selectedTempleId) || null;
 
   return (
-    <div className="relative h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] overflow-hidden rounded-3xl shadow-2xl border border-border/50">
+    <div className="relative h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] overflow-hidden rounded-3xl border border-border/50">
       {/* FLOATING SEARCH & FILTERS */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[90%] lg:w-auto z-20 transition-all duration-300">
         <SearchBar
@@ -137,7 +137,7 @@ const Home = () => {
 
       {/* QUICK STATS CHIP (Spiritual Touch) */}
       <div className="absolute bottom-6 left-6 z-20 hidden lg:block">
-        <div className="px-5 py-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-border/50 flex items-center gap-3">
+        <div className="px-5 py-3 bg-white/90 backdrop-blur-md rounded-full border border-border/50 flex items-center gap-3">
           <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
           <span className="text-sm font-medium text-foreground">
             {filteredTemples.length} Sthanas discovered

@@ -138,7 +138,7 @@ export default function WhatsNew() {
                             featuredItems.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="relative flex-shrink-0 w-[280px] h-[320px] rounded-2xl overflow-hidden shadow-lg cursor-pointer group"
+                                    className="relative flex-shrink-0 w-[280px] h-[320px] rounded-2xl overflow-hidden cursor-pointer group"
                                     onClick={() => item.link && navigate(item.link)}
                                 >
                                     <img
@@ -168,7 +168,7 @@ export default function WhatsNew() {
                                 </div>
                             ))
                         ) : (
-                            <div className="relative flex-shrink-0 w-[280px] h-[320px] rounded-2xl overflow-hidden shadow-lg bg-gray-200">
+                            <div className="relative flex-shrink-0 w-[280px] h-[320px] rounded-2xl overflow-hidden bg-gray-200">
                                 <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                                     No featured content
                                 </div>
@@ -188,7 +188,7 @@ export default function WhatsNew() {
                             notifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl transition-shadow"
+                                    className="bg-white rounded-2xl p-4 border border-gray-100 transition-shadow"
                                 >
                                     <div className="flex gap-4">
                                         {/* Icon */}
@@ -258,7 +258,7 @@ export default function WhatsNew() {
             </div>
 
             {/* Floating Action Button */}
-            <button className="fixed bottom-24 right-6 w-14 h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 z-20">
+            <button className="fixed bottom-24 right-6 w-14 h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 z-20">
                 <Plus className="w-6 h-6" />
             </button>
         </div>

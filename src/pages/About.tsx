@@ -9,9 +9,9 @@ const About = () => {
       {/* Header */}
       <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm border-b border-gray-100">
         <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
-          <ChevronLeft className="w-7 h-7 text-blue-900" />
+          <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
         </Button>
-        <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">About Panchjanya</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">About Panchjanya</h1>
         <div className="w-10" />
       </div>
 

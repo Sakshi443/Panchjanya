@@ -180,15 +180,15 @@ const SwamiYatra = () => {
             {/* Header - Hidden in Fullscreen */}
             {/* Header - Hidden in Fullscreen */}
             {!isFullScreen && (
-                <div className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+                <div className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100">
                     <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
-                        <ChevronLeft className="w-7 h-7 text-blue-900" />
+                        <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <div className="text-center">
-                        <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">My Yatra</h1>
+                        <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">My Yatra</h1>
                     </div>
                     <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
-                        <Share2 className="w-6 h-6 text-blue-900" />
+                        <Share2 className="w-6 h-6 text-[#0f3c6e]" />
                     </Button>
                 </div>
             )}
@@ -197,7 +197,7 @@ const SwamiYatra = () => {
             <div
                 className={`relative transition-all ${isDragging ? '' : 'duration-300 ease-in-out'} ${isFullScreen
                     ? "fixed inset-0 w-screen h-screen z-[99999] rounded-none bg-slate-100"
-                    : "w-full shadow-inner"
+                    : "w-full"
                     } bg-slate-100`}
                 style={!isFullScreen ? { height: `${100 - panelHeight}vh` } : {}}
             >
@@ -207,7 +207,7 @@ const SwamiYatra = () => {
 
                 {/* Floating "Confirmed" Badge */}
                 {!isFullScreen && (
-                    <div className="absolute top-4 right-4 bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg border border-white/20 z-[400]">
+                    <div className="absolute top-4 right-4 bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20 z-[400]">
                         CONFIRMED
                     </div>
                 )}
@@ -217,7 +217,7 @@ const SwamiYatra = () => {
                     <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute top-6 left-6 z-[400] rounded-full shadow-lg bg-white/90 hover:bg-white text-blue-900 h-12 w-12"
+                        className="absolute top-6 left-6 z-[400] rounded-full bg-white/90 hover:bg-white text-blue-900 h-12 w-12"
                         onClick={toggleFullScreen}
                     >
                         <ChevronLeft className="w-6 h-6" />
@@ -228,7 +228,7 @@ const SwamiYatra = () => {
                 <Button
                     variant="secondary"
                     size="icon"
-                    className="absolute bottom-6 right-6 z-[400] rounded-full shadow-lg bg-white/90 hover:bg-white text-blue-900 h-12 w-12 border-2 border-amber-500/20"
+                    className="absolute bottom-6 right-6 z-[400] rounded-full bg-white/90 hover:bg-white text-blue-900 h-12 w-12 border-2 border-amber-500/20"
                     onClick={toggleFullScreen}
                 >
                     {isFullScreen ? (
@@ -272,7 +272,7 @@ const SwamiYatra = () => {
 
             {/* Timeline Section - Bottom Half (Scrollable) with Dynamic Height */}
             <div
-                className="flex-1 bg-[#F9F6F0] relative z-10 px-6 pt-6 pb-6 space-y-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] overflow-y-auto"
+                className="flex-1 bg-[#F9F6F0] relative z-10 px-6 pt-6 pb-6 space-y-8 overflow-y-auto"
                 style={!isFullScreen ? { minHeight: `${panelHeight}vh`, height: `${panelHeight}vh` } : {}}
             >
                 <div className="flex items-center justify-between mb-2">
@@ -306,7 +306,7 @@ const SwamiYatra = () => {
                         places.map((place) => (
                             <div key={place.id} className="relative pl-6">
                                 {/* Sequence Marker */}
-                                <div className={`absolute -left-[27px] top-0 flex items-center justify-center w-8 h-8 rounded-full border-4 border-[#F9F6F0] shadow-md z-10 ${place.status === 'completed' ? 'bg-[#0f3c6e] text-white' :
+                                <div className={`absolute -left-[27px] top-0 flex items-center justify-center w-8 h-8 rounded-full border-4 border-[#F9F6F0] z-10 ${place.status === 'completed' ? 'bg-[#0f3c6e] text-white' :
                                     place.status === 'current' ? 'bg-[#0f3c6e] text-white' :
                                         'bg-white border-slate-200 text-slate-400'
                                     }`}>
@@ -326,7 +326,7 @@ const SwamiYatra = () => {
                                         {place.time}
                                     </span>
 
-                                    <Card className={`p-4 rounded-2xl border-none shadow-sm overflow-hidden flex gap-4 ${place.status === 'current' ? 'bg-white ring-1 ring-amber-100 shadow-md' : 'bg-white'}`}>
+                                    <Card className={`p-4 rounded-2xl border-none overflow-hidden flex gap-4 ${place.status === 'current' ? 'bg-white ring-1 ring-amber-100' : 'bg-white'}`}>
                                         <div className="flex-1 space-y-2">
                                             <h3 className="font-heading font-bold text-lg text-blue-900 leading-tight">
                                                 {place.title}
@@ -352,7 +352,7 @@ const SwamiYatra = () => {
                                         </div>
 
                                         {/* Thumbnail Image */}
-                                        <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden shadow-inner">
+                                        <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
                                             <img
                                                 src={place.image}
                                                 alt={place.title}
@@ -377,7 +377,7 @@ const SwamiYatra = () => {
 
             {/* Start Navigation sticky footer */}
             <div className="fixed bottom-20 lg:bottom-4 left-6 right-6 z-50">
-                <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white text-base font-bold py-6 rounded-2xl shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 uppercase tracking-wide">
+                <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white text-base font-bold py-6 rounded-2xl flex items-center justify-center gap-2 uppercase tracking-wide">
                     <Compass className="w-5 h-5 animate-pulse" />
                     Start Navigation
                 </Button>

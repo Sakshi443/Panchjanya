@@ -66,16 +66,16 @@ export default function HelpCenter() {
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-background/95 lg:bg-white/95 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
-                    <ChevronLeft className="w-7 h-7 text-blue-900" />
+                    <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Help Center</h1>
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Help Center</h1>
                 <div className="w-10" />
             </div>
 
             {/* Search Box Section - Moved below header */}
             <div className="px-6 py-4 bg-background/50">
                 <h2 className="text-blue-900 text-xl font-bold mb-4 text-center">How can we help you?</h2>
-                <div className="relative shadow-lg rounded-full">
+                <div className="relative rounded-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                         placeholder="Search for answers..."
@@ -91,7 +91,7 @@ export default function HelpCenter() {
                 {/* Quick Actions */}
                 <div className="grid grid-cols-3 gap-3 mb-8">
                     <Card
-                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
+                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
                         onClick={() => scrollToSection(faqSectionRef)}
                     >
                         <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
@@ -100,7 +100,7 @@ export default function HelpCenter() {
                         <span className="text-xs font-bold text-gray-700">Guides</span>
                     </Card>
                     <Card
-                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
+                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
                         onClick={handleChatClick}
                     >
                         <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600">
@@ -109,7 +109,7 @@ export default function HelpCenter() {
                         <span className="text-xs font-bold text-gray-700">Chat</span>
                     </Card>
                     <Card
-                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white shadow-md border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
+                        className="p-4 flex flex-col items-center justify-center gap-2 bg-white border-none rounded-xl hover:shadow-xl transition-all cursor-pointer"
                         onClick={() => scrollToSection(supportSectionRef)}
                     >
                         <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-600">
@@ -129,7 +129,7 @@ export default function HelpCenter() {
                             filteredFaqs.map((faq) => (
                                 <div
                                     key={faq.id}
-                                    className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-300"
+                                    className="bg-white rounded-xl overflow-hidden border border-gray-100 transition-all duration-300"
                                 >
                                     <button
                                         onClick={() => toggleFaq(faq.id)}
@@ -164,7 +164,7 @@ export default function HelpCenter() {
                     <h3 className="font-heading font-bold text-lg text-blue-900 mb-4">
                         Still need help?
                     </h3>
-                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100">
                         <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 -mx-5 px-5 transition-colors">
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                                 <Mail className="w-5 h-5" />

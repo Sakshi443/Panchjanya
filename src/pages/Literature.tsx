@@ -151,7 +151,7 @@ export default function Literature() {
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Literature</h1>
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Literature</h1>
                 <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
                     <Bookmark className="w-6 h-6 text-blue-900" />
                 </Button>
@@ -159,7 +159,7 @@ export default function Literature() {
 
             {/* Search Bar */}
             <div className="px-5 mb-6">
-                <div className="relative shadow-sm">
+                <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                         placeholder="पुस्तके, लेखक किंवा विषय शोधा..."
@@ -178,7 +178,7 @@ export default function Literature() {
                             key={category.id}
                             onClick={() => setActiveCategory(category.id)}
                             className={`px-6 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all border ${activeCategory === category.id
-                                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200"
+                                ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-blue-500 border-blue-100 hover:bg-blue-50"
                                 }`}
                         >
@@ -207,7 +207,7 @@ export default function Literature() {
                             {categoryBooks.map((book) => (
                                 <div
                                     key={book.id}
-                                    className="bg-white rounded-2xl p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] ring-1 ring-gray-50/50 hover:shadow-lg transition-all cursor-pointer relative group"
+                                    className="bg-white rounded-2xl p-4 ring-1 ring-gray-50/50 hover:shadow-lg transition-all cursor-pointer relative group"
                                     onClick={() => navigate(`/book/${book.id}`)}
                                 >
                                     {/* Kebab Menu */}
@@ -217,7 +217,7 @@ export default function Literature() {
 
                                     <div className="flex gap-4">
                                         {/* Book Cover */}
-                                        <div className="w-28 h-[8.5rem] flex-shrink-0 rounded-lg overflow-hidden shadow-md bg-slate-200 relative">
+                                        <div className="w-28 h-[8.5rem] flex-shrink-0 rounded-lg overflow-hidden bg-slate-200 relative">
                                             <div className="absolute inset-0 border border-black/5 rounded-lg z-10 pointer-events-none"></div>
                                             <img
                                                 src={book.coverImage}
@@ -243,7 +243,7 @@ export default function Literature() {
                                             </p>
 
                                             <Button
-                                                className="bg-[#4361ee] hover:bg-blue-700 text-white rounded-lg px-6 h-9 text-xs font-bold w-fit mt-3 shadow-sm shadow-blue-200"
+                                                className="bg-[#4361ee] hover:bg-blue-700 text-white rounded-lg px-6 h-9 text-xs font-bold w-fit mt-3"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/book/${book.id}`);

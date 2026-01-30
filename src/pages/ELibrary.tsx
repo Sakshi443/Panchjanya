@@ -124,7 +124,7 @@ function ELibrary() {
                 <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5" onClick={() => navigate(-1)}>
                     <ChevronLeft className="w-7 h-7 text-blue-900" />
                 </Button>
-                <h1 className="text-xl font-heading font-bold text-blue-900 font-serif">Digital Library</h1>
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Digital Library</h1>
                 <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
                     <Search className="w-6 h-6 text-blue-900" />
                 </Button>
@@ -134,7 +134,7 @@ function ELibrary() {
             <div className="flex p-1 bg-gray-100 rounded-full mx-6 mb-4">
                 <button
                     className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "audio"
-                        ? "bg-blue-900 text-white shadow-md"
+                        ? "bg-blue-900 text-white"
                         : "text-gray-500 hover:text-blue-900"
                         }`}
                     onClick={() => setActiveTab("audio")}
@@ -143,7 +143,7 @@ function ELibrary() {
                 </button>
                 <button
                     className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "video"
-                        ? "bg-blue-900 text-white shadow-md"
+                        ? "bg-blue-900 text-white"
                         : "text-gray-500 hover:text-blue-900"
                         }`}
                     onClick={() => setActiveTab("video")}
@@ -152,7 +152,7 @@ function ELibrary() {
                 </button>
                 <button
                     className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${activeTab === "images"
-                        ? "bg-blue-900 text-white shadow-md"
+                        ? "bg-blue-900 text-white"
                         : "text-gray-500 hover:text-blue-900"
                         }`}
                     onClick={() => setActiveTab("images")}
@@ -172,7 +172,7 @@ function ELibrary() {
                         {/* Featured Audio Card - Example: Vishnu Sahasranamam */}
                         <div
                             onClick={() => navigate("/audio/1")}
-                            className="bg-white rounded-2xl p-4 shadow-sm border border-amber-100 flex items-center gap-4 mb-6 cursor-pointer hover:shadow-md transition-all relative overflow-hidden"
+                            className="bg-white rounded-2xl p-4 border border-amber-100 flex items-center gap-4 mb-6 cursor-pointer hover:shadow-md transition-all relative overflow-hidden"
                         >
                             <div className="w-0.5 h-10 absolute left-0 top-1/2 -translate-y-1/2 bg-amber-500 rounded-r" />
                             <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -214,7 +214,7 @@ function ELibrary() {
                                             <span>{item.subtitle}</span>
                                         </div>
                                     </div>
-                                    <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white shadow-md">
+                                    <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white">
                                         <Play className="w-3 h-3 fill-current ml-0.5" />
                                     </div>
                                 </div>
@@ -240,7 +240,7 @@ function ELibrary() {
                                     className="group cursor-pointer"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="relative aspect-video rounded-xl overflow-hidden mb-3 shadow-md group-hover:shadow-lg transition-all">
+                                    <div className="relative aspect-video rounded-xl overflow-hidden mb-3 group-hover:shadow-lg transition-all">
                                         <img
                                             src={video.thumbnailUrl}
                                             alt={video.title}
@@ -289,7 +289,7 @@ function ELibrary() {
                                     className="group cursor-pointer"
                                 >
                                     {/* Image Card */}
-                                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2 shadow-md group-hover:shadow-xl transition-all">
+                                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2 group-hover:shadow-xl transition-all">
                                         <img
                                             src={image.imageUrl}
                                             alt={image.title}

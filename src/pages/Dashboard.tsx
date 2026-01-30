@@ -45,7 +45,7 @@ const Dashboard = () => {
 
                     {/* Literature - Top Left */}
                     <Link to="/literature" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
                                 <div className="p-3 bg-blue-100/50 rounded-xl text-blue-900 group-hover:scale-110 transition-transform duration-300">
                                     <BookOpen className="w-6 h-6" />
@@ -64,7 +64,7 @@ const Dashboard = () => {
 
                     {/* The Digital Library - Top Right */}
                     <Link to="/e-library" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
                                 <div className="p-3 bg-blue-100/50 rounded-xl text-blue-900 group-hover:scale-110 transition-transform duration-300">
                                     <Library className="w-6 h-6" />
@@ -83,7 +83,7 @@ const Dashboard = () => {
 
                     {/* What's New - Bottom Left */}
                     <Link to="/whats-new" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
                                 <div className="p-3 bg-blue-100/50 rounded-xl text-blue-900 group-hover:scale-110 transition-transform duration-300">
                                     <Sparkles className="w-6 h-6" />
@@ -102,7 +102,7 @@ const Dashboard = () => {
 
                     {/* Jigyasa - Bottom Right */}
                     <Link to="/jigyasa" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
                                 <div className="p-3 bg-blue-100/50 rounded-xl text-blue-900 group-hover:scale-110 transition-transform duration-300">
                                     <BrainCircuit className="w-6 h-6" />
@@ -122,7 +122,7 @@ const Dashboard = () => {
 
                 {/* Sthaan Vandan Banner */}
                 <Link to="/dashboard/sthana-vandan" className="block group">
-                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white shadow-xl group-hover:shadow-2xl transition-all duration-300">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="relative z-10 flex items-center justify-between">
@@ -161,7 +161,7 @@ const Dashboard = () => {
 
                     <div className="space-y-3">
                         <Link to="/help-center">
-                            <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
+                            <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-blue-100/50 text-blue-900 rounded-full">
                                         <HelpCircle className="w-5 h-5" />
