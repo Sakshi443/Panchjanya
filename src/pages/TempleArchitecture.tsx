@@ -404,7 +404,7 @@ export default function TempleArchitecture() {
 
           <div className="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
-            <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2 pr-4 text-justify columns-1 md:columns-2 gap-6">
+            <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2 pr-4 text-justify columns-2 gap-6">
               {temple.description_text || temple.description || "No description available."}
             </p>
           </div>

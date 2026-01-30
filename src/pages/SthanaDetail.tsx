@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -103,13 +103,29 @@ export default function SthanaDetail() {
                 <div className="max-w-3xl mx-auto w-full px-0 md:px-4 pb-4 py-1 space-y-2 md:space-y-3">
 
                     {/* Top Slider: Present vs Old Images */}
-                    <div className="flex justify-center px-2 md:px-0">
-                        <Tabs value={viewMode} onValueChange={setViewMode} className="w-full max-w-sm">
-                            <TabsList className="flex w-full bg-gray-200 p-0 rounded-lg gap-1">
-                                <TabsTrigger value="present" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Present Images</TabsTrigger>
-                                <TabsTrigger value="old" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-200/50">Old Images</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                    <div className="flex justify-center px-2 md:px-0 py-2">
+                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden">
+                            <button
+                                onClick={() => setViewMode('present')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'present'
+                                    ? 'bg-blue-900 text-white'
+                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {viewMode === 'present' && <Check className="w-4 h-4 text-white" />}
+                                Present Images
+                            </button>
+                            <button
+                                onClick={() => setViewMode('old')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'old'
+                                    ? 'bg-blue-900 text-white'
+                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {viewMode === 'old' && <Check className="w-4 h-4 text-white" />}
+                                Old Images
+                            </button>
+                        </div>
                     </div>
 
                     {/* Image Viewer */}
@@ -153,13 +169,29 @@ export default function SthanaDetail() {
 
 
                     {/* Bottom Slider: Details vs Leela */}
-                    <div className="flex justify-center px-2 md:px-0">
-                        <Tabs value={contentMode} onValueChange={setContentMode} className="w-full max-w-sm">
-                            <TabsList className="flex w-full bg-gray-200 p-1 rounded-xl gap-1">
-                                <TabsTrigger value="details" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-300/50">Details</TabsTrigger>
-                                <TabsTrigger value="leela" className="flex-1 rounded-lg py-2 text-xs md:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-300/50">Leela</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                    <div className="flex justify-center px-2 md:px-0 py-2">
+                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden">
+                            <button
+                                onClick={() => setContentMode('details')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'details'
+                                    ? 'bg-blue-900 text-white'
+                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {contentMode === 'details' && <Check className="w-4 h-4 text-white" />}
+                                Details
+                            </button>
+                            <button
+                                onClick={() => setContentMode('leela')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'leela'
+                                    ? 'bg-blue-900 text-white'
+                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {contentMode === 'leela' && <Check className="w-4 h-4 text-white" />}
+                                Leela
+                            </button>
+                        </div>
                     </div>
 
                     {/* Content Display */}
