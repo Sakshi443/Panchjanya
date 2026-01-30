@@ -68,13 +68,13 @@ export default function SthanaDetail() {
         <div className="min-h-screen bg-[#F9F6F0] flex flex-col">
             {/* Header */}
             <div
-                className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-[#0f3c6e] py-3"
+                className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-md shadow-sm border-y border-[#0f3c6e] py-3"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Mobile: All in one row */}
                 <div className="md:hidden flex items-center gap-3 w-full">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#0f3c6e] hover:bg-blue-900/10 shrink-0">
-                        <ChevronLeft className="w-6 h-6" />
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-9 w-9 rounded-full">
+                        <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
                         {hotspot.number}
@@ -88,8 +88,8 @@ export default function SthanaDetail() {
                 {/* Desktop: Existing layout */}
                 <div className="hidden md:flex items-center justify-center relative">
                     <div className="absolute left-6 flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#0f3c6e] hover:bg-blue-900/10 -ml-2">
-                            <ChevronLeft className="w-6 h-6" />
+                        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-10 w-10 rounded-full">
+                            <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                         </Button>
                         <div className="w-10 h-10 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold flex items-center justify-center text-lg">
                             {hotspot.number}
