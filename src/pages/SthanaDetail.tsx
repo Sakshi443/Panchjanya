@@ -67,23 +67,26 @@ export default function SthanaDetail() {
     return (
         <div className="min-h-screen bg-[#F9F6F0] flex flex-col">
             {/* Header */}
-            <div className="shrink-0 sticky top-0 z-50 bg-white shadow-sm">
+            <div
+                className="sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-gray-400 py-3"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Mobile: All in one row */}
-                <div className="md:hidden flex items-center gap-2 w-full px-4 py-4">
+                <div className="md:hidden flex items-center gap-3 w-full">
                     <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-blue-900 hover:bg-blue-900/10 shrink-0">
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
                     <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
                         {hotspot.number}
                     </div>
-                    <h1 className="text-lg font-heading font-bold text-blue-900 leading-tight truncate flex-1">
+                    <h1 className="text-xl font-heading font-bold text-blue-900 leading-tight truncate flex-1">
                         {hotspot.title}
                     </h1>
                 </div>
 
 
                 {/* Desktop: Existing layout */}
-                <div className="hidden md:flex items-center justify-center px-6 py-4 relative">
+                <div className="hidden md:flex items-center justify-center relative">
                     <div className="absolute left-6 flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-blue-900 hover:bg-blue-900/10 -ml-2">
                             <ChevronLeft className="w-6 h-6" />
@@ -93,7 +96,7 @@ export default function SthanaDetail() {
                         </div>
                     </div>
 
-                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-amber-600 text-center px-16 leading-tight max-w-2xl truncate">
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-amber-600 text-center px-16 leading-tight max-w-2xl truncate">
                         {hotspot.title}
                     </h1>
                 </div>

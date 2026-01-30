@@ -206,10 +206,10 @@ export default function TempleArchitecture() {
   return (
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
-      <div className={cn(
-        "sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 transition-all duration-300",
-        isScrolled ? "py-2" : "py-4"
-      )}>
+      <div
+        className="sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-gray-400 py-3"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header Content Block */}
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>

@@ -66,8 +66,20 @@ export default function ArchitectureViewer() {
     const [presentImage, setPresentImage] = useState<string>("");
     const [imageRatio, setImageRatio] = useState<number | null>(null);
     const [selectedHotspotId, setSelectedHotspotId] = useState<string | null>(null);
+    const [selectionSource, setSelectionSource] = useState<'image' | 'list' | 'dropdown' | null>(null);
     const [hoveredHotspotId, setHoveredHotspotId] = useState<string | null>(null);
     const [showAllHotspotsList, setShowAllHotspotsList] = useState(false);
+    const [expandedHotspots, setExpandedHotspots] = useState<Record<string, boolean>>({});
+    const [isPothiOpen, setIsPothiOpen] = useState(false);
+
+    const handleSelectHotspot = (id: string | null, source: 'image' | 'list' | 'dropdown' | null) => {
+        setSelectedHotspotId(id);
+        setSelectionSource(source);
+    };
+
+    const toggleHotspot = (id: string) => {
+        setExpandedHotspots(prev => ({ ...prev, [id]: !prev[id] }));
+    };
 
     // Drag state
     const [isDragging, setIsDragging] = useState(false);
@@ -77,6 +89,18 @@ export default function ArchitectureViewer() {
     const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
     const [initialZoom, setInitialZoom] = useState(1);
     const imageContainerRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to hotspot info when selected from image
+    useEffect(() => {
+        if (selectedHotspotId && selectionSource === 'image') {
+            setTimeout(() => {
+                const infoSection = document.getElementById('active-hotspot-info');
+                if (infoSection) {
+                    infoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+    }, [selectedHotspotId]);
 
     useEffect(() => {
         const handleFullScreenChange = () => {
@@ -239,15 +263,21 @@ export default function ArchitectureViewer() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8 overflow-x-hidden">
+        <div
+            className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8 overflow-x-hidden"
+            onClick={() => handleSelectHotspot(null, null)}
+        >
 
             {/* Header: Back, Heading, 'i' */}
-            <div className="sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 py-3">
+            <div
+                className="sticky top-0 z-30 px-4 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-gray-400 py-3"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="flex items-center gap-3 max-w-6xl mx-auto">
                     <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
                         <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
-                    <h1 className="flex-1 font-heading font-bold text-lg md:text-xl text-[#0f3c6e] font-serif truncate transition-all duration-300">
+                    <h1 className="flex-1 font-heading font-bold text-2xl md:text-3xl text-[#0f3c6e] font-serif truncate transition-all duration-300">
                         {temple.name}
                     </h1>
 
@@ -273,9 +303,12 @@ export default function ArchitectureViewer() {
                 </div>
             </div>
 
-            <div className="px-4 lg:px-6 space-y-4 md:space-y-4 mt-2 md:mt-4 max-w-6xl mx-auto pb-12">
+            <div
+                className="px-4 lg:px-6 space-y-4 md:space-y-4 mt-2 md:mt-4 max-w-6xl mx-auto pb-12"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Image Type Segmented Buttons */}
-                <div className="flex justify-center w-full">
+                <div id="segmented-buttons-section" className="flex justify-center w-full">
                     <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
                         <button
                             onClick={() => setImageType('architectural')}
@@ -313,6 +346,7 @@ export default function ArchitectureViewer() {
                             onTouchStart={handleTouchStart}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={handleTouchEnd}
+                            onClick={() => handleSelectHotspot(null, null)}
                         >
                             <div
                                 style={{
@@ -361,7 +395,7 @@ export default function ArchitectureViewer() {
                                                     onMouseLeave={() => setHoveredHotspotId(null)}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setSelectedHotspotId(isSelected ? null : hotspot.id);
+                                                        handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'image');
                                                     }}
                                                 />
 
@@ -466,12 +500,17 @@ export default function ArchitectureViewer() {
                 {/* Content Section */}
                 <div className="space-y-4">
                     {/* Sthan Pothi Dropdown */}
-                    <DropdownMenu onOpenChange={(open) => {
+                    <DropdownMenu modal={false} onOpenChange={(open) => {
+                        setIsPothiOpen(open);
+                        if (!open) {
+                            // Clear expanded states when closing dropdown, but keep selection
+                            setExpandedHotspots({});
+                        }
                         if (open) {
                             setTimeout(() => {
-                                const trigger = document.getElementById('sthan-pothi-trigger');
-                                if (trigger) {
-                                    trigger.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                const section = document.getElementById('segmented-buttons-section');
+                                if (section) {
+                                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                 }
                             }, 100);
                         }
@@ -479,10 +518,10 @@ export default function ArchitectureViewer() {
                         <DropdownMenuTrigger asChild>
                             <button id="sthan-pothi-trigger" className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md flex items-center justify-between px-6 border border-blue-800 group transition-all focus:outline-none">
                                 <div className="flex items-center gap-3">
-                                    <BookOpen className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                                    <span className="font-heading font-bold tracking-wider text-sm md:text-base">Sthan Pothi</span>
+                                    <BookOpen className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                                    <span className="font-heading font-bold tracking-wider text-base md:text-lg">Sthan Pothi</span>
                                 </div>
-                                <ChevronDown className="w-5 h-5 text-white opacity-80 group-hover:opacity-100 transition-opacity" />
+                                <ChevronDown className={`w-6 h-6 text-white opacity-80 group-hover:opacity-100 transition-all duration-300 ${isPothiOpen ? 'rotate-180' : ''}`} />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -490,19 +529,51 @@ export default function ArchitectureViewer() {
                             align="center"
                             avoidCollisions={false}
                             sideOffset={8}
-                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[50vh] overflow-y-auto rounded-xl p-2 bg-white/95 backdrop-blur-md shadow-xl border-blue-100 z-50"
+                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto rounded-2xl p-3 bg-white shadow-2xl border-blue-50 z-50 px-4"
                         >
-                            {hotspots.map((h) => (
-                                <DropdownMenuItem key={h.id} className="p-2 md:p-3 focus:bg-amber-50 rounded-lg cursor-pointer border-b border-gray-50 last:border-0" onClick={() => handleNavigationToDetail(h)}>
-                                    <div className="flex items-center gap-3 w-full">
-                                        <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold border border-amber-200">{h.number}</div>
-                                        <span className="flex-1 font-medium text-blue-900 truncate">{h.title}</span>
-                                        <span className="text-xs text-amber-700 font-bold">Go to &rarr;</span>
+                            <div className="py-2 mb-2 border-b border-slate-100">
+                                <h3 className="text-blue-900 font-heading font-extrabold text-sm uppercase tracking-widest">Sthan Descriptions</h3>
+                            </div>
+                            {hotspots.map((h) => {
+                                const isExpanded = expandedHotspots[h.id];
+                                return (
+                                    <div
+                                        key={h.id}
+                                        className="py-4 border-b border-slate-50 last:border-0 group cursor-pointer transition-all"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            // Minimal selection for map sync, without triggering pop-up/scroll
+                                            handleSelectHotspot(h.id, 'dropdown');
+                                            // Toggle detail description
+                                            toggleHotspot(h.id);
+                                        }}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-1 space-y-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-1.5 h-4 bg-amber-500 rounded-full"></div>
+                                                    <h4 className="font-heading font-bold text-blue-900 uppercase text-xs tracking-wider transition-colors">{h.title}</h4>
+                                                </div>
+                                                {isExpanded && (
+                                                    <p className="text-sm text-slate-600 font-serif leading-relaxed pl-3.5 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                        {h.description || "Historical records of this sacred site are being updated."}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className={`w-8 h-8 rounded-full bg-[#fcfaf5] text-blue-900 flex items-center justify-center shrink-0 border border-slate-200 transition-all ${isExpanded ? 'bg-amber-50 border-amber-200' : 'group-hover:bg-amber-50 group-hover:border-amber-200'}`}>
+                                                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                            </div>
+                                        </div>
                                     </div>
-                                </DropdownMenuItem>
-                            ))}
+                                );
+                            })}
                             {hotspots.length === 0 && (
-                                <div className="p-4 text-center text-sm text-muted-foreground">No sthana available.</div>
+                                <div className="p-8 text-center">
+                                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <BookOpen className="w-6 h-6 text-slate-300" />
+                                    </div>
+                                    <p className="text-sm text-slate-400 italic font-serif">Historical data not yet cataloged.</p>
+                                </div>
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -518,24 +589,68 @@ export default function ArchitectureViewer() {
                         </div>
                     </div>
 
+                    {/* Active Selection - Appears UNDER overview ONLY when a hotspot is selected from the IMAGE */}
+                    {selectedHotspotId && selectionSource === 'image' && (
+                        <div id="active-hotspot-info" className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                            {(() => {
+                                const activeHotspot = hotspots.find(h => h.id === selectedHotspotId);
+                                if (!activeHotspot) return null;
+                                return (
+                                    <div
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleNavigationToDetail(activeHotspot);
+                                        }}
+                                        className="w-full h-14 md:h-16 flex items-center justify-between px-4 md:px-6 bg-white rounded-2xl shadow-sm border border-amber-400/50 transition-all group ring-4 ring-amber-600/10 cursor-pointer"
+                                    >
+                                        <div className="flex-1 h-full flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-full font-bold flex items-center justify-center border shrink-0 text-base transition-all duration-300 bg-amber-600 text-white border-amber-600 shadow-md ring-4 ring-amber-600/20">{activeHotspot.number}</div>
+                                            <span className="font-heading font-bold text-base md:text-lg line-clamp-1 transition-colors text-amber-700">{activeHotspot.title}</span>
+                                        </div>
+                                        <div className="flex items-center pl-4 h-full">
+                                            <ChevronRight className="w-5 h-5 transition-all duration-300 translate-x-1 text-amber-600" />
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    )}
+
                     {/* Sthana List */}
                     <div className="space-y-3">
                         <div className="flex flex-col gap-2 md:gap-3">
-                            {(showAllHotspotsList ? hotspots : hotspots.slice(0, 6)).map((hotspot) => {
-                                const isSelected = selectedHotspotId === hotspot.id;
-                                return (
-                                    <div key={hotspot.id} className={`w-full h-12 md:h-14 flex items-center justify-between px-4 md:px-6 bg-white rounded-2xl shadow-sm border transition-all group ${isSelected ? 'border-amber-400/50 bg-amber-50/10' : 'border-gray-100 hover:border-amber-200'}`}>
-                                        <div className="flex-1 h-full flex items-center gap-3 cursor-pointer" onClick={() => setSelectedHotspotId(isSelected ? null : hotspot.id)} onMouseEnter={() => setHoveredHotspotId(hotspot.id)} onMouseLeave={() => setHoveredHotspotId(null)}>
-                                            <div className={`w-7 h-7 rounded-full font-bold flex items-center justify-center border shrink-0 text-sm transition-all duration-300 ${isSelected ? 'bg-amber-600 text-white border-amber-600 shadow-md ring-4 ring-amber-600/20' : 'bg-[#F9F6F0] text-amber-600 border-amber-600'}`}>{hotspot.number}</div>
-                                            <span className={`font-heading font-bold line-clamp-1 transition-colors ${isSelected ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{hotspot.title}</span>
+                            {(() => {
+                                // Only filter out the active hotspot if selected from IMAGE
+                                const filteredHotspots = selectionSource === 'image'
+                                    ? hotspots.filter(h => h.id !== selectedHotspotId)
+                                    : hotspots;
+
+                                const listItems = showAllHotspotsList ? filteredHotspots : filteredHotspots.slice(0, 6);
+                                return listItems.map((hotspot) => {
+                                    return (
+                                        <div
+                                            key={hotspot.id}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleNavigationToDetail(hotspot);
+                                            }}
+                                            className="w-full h-14 md:h-16 flex items-center justify-between px-4 md:px-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-amber-200 transition-all group cursor-pointer"
+                                        >
+                                            <div className="flex-1 h-full flex items-center gap-4" onMouseEnter={() => setHoveredHotspotId(hotspot.id)} onMouseLeave={() => setHoveredHotspotId(null)}>
+                                                <div className="w-8 h-8 rounded-full font-bold flex items-center justify-center border shrink-0 text-base transition-all duration-300 bg-[#F9F6F0] text-amber-600 border-amber-600 group-hover:bg-amber-600 group-hover:text-white group-hover:border-amber-600">
+                                                    {hotspot.number}
+                                                </div>
+                                                <span className="font-heading font-bold text-base md:text-lg line-clamp-1 transition-colors text-blue-900 group-hover:text-amber-700">
+                                                    {hotspot.title}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center pl-4 h-full">
+                                                <ChevronRight className="w-4 h-4 transition-all duration-300 text-amber-700 lg:text-slate-300 lg:group-hover:text-amber-500 group-hover:translate-x-1" />
+                                            </div>
                                         </div>
-                                        <button onClick={(e) => { e.stopPropagation(); handleNavigationToDetail(hotspot); }} className="flex items-center gap-2 pl-4 h-full cursor-pointer transition-opacity">
-                                            <span className={`text-[10px] md:text-xs font-semibold uppercase tracking-tight transition-colors ${isSelected ? 'text-amber-700' : 'text-amber-700 lg:text-slate-400 lg:group-hover:text-amber-700'}`}>View Details</span>
-                                            <ChevronRight className={`w-4 h-4 transition-all duration-300 ${isSelected ? 'translate-x-1 text-amber-600' : 'text-amber-700 lg:text-slate-300 lg:group-hover:text-amber-500'}`} />
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                });
+                            })()}
                         </div>
 
                         {hotspots.length > 6 && (
