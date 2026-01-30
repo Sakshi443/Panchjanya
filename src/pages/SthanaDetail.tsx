@@ -7,6 +7,7 @@ import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen, Check } from 
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 
 export default function SthanaDetail() {
     const { id, sthanaId } = useParams<{ id: string; sthanaId: string }>();
@@ -18,6 +19,7 @@ export default function SthanaDetail() {
 
     const [viewMode, setViewMode] = useState("present"); // 'present' | 'old'
     const [contentMode, setContentMode] = useState("details"); // 'details' | 'leela'
+    const [allHotspots, setAllHotspots] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchTemple = async () => {
@@ -26,12 +28,16 @@ export default function SthanaDetail() {
                 const snap = await getDoc(doc(db, "temples", id));
                 if (snap.exists()) {
                     const data = snap.data() as Temple;
-                    const found = (data.hotspots || []).find((h: any) => h.id === sthanaId);
+                    const hotspots = (data.hotspots || []).map((h, index) => ({
+                        ...h,
+                        number: h.number || index + 1
+                    })).sort((a, b) => a.number - b.number);
+
+                    setAllHotspots(hotspots);
+
+                    const found = hotspots.find((h: any) => h.id === sthanaId);
                     if (found) {
-                        setHotspot({
-                            ...found,
-                            number: found.number || (data.hotspots?.indexOf(found) || 0) + 1
-                        });
+                        setHotspot(found);
                     }
                 }
             } catch (error) {
@@ -59,6 +65,10 @@ export default function SthanaDetail() {
 
     const nextImage = () => setCurrentImageIndex((p) => (p + 1) % displayImages.length);
     const prevImage = () => setCurrentImageIndex((p) => (p - 1 + displayImages.length) % displayImages.length);
+
+    const currentIndex = allHotspots.findIndex(h => h.id === sthanaId);
+    const prevSthana = currentIndex > 0 ? allHotspots[currentIndex - 1] : null;
+    const nextSthana = currentIndex < allHotspots.length - 1 ? allHotspots[currentIndex + 1] : null;
 
     if (loading) return <div className="min-h-screen bg-[#F9F6F0] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900" /></div>;
 
@@ -105,28 +115,33 @@ export default function SthanaDetail() {
             <div className="flex-1 overflow-y-auto pb-20">
                 <div className="max-w-3xl mx-auto w-full px-0 md:px-4 pb-4 py-1 space-y-2 md:space-y-3">
 
-                    {/* Top Slider: Present vs Old Images */}
-                    <div className="flex justify-center px-2 md:px-0 py-2">
-                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
-                            <button
-                                onClick={() => setViewMode('present')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'present'
-                                    ? 'bg-blue-900 text-white'
-                                    : 'bg-white text-slate-500 hover:bg-slate-50'
-                                    }`}
-                            >
-                                Present Images
-                            </button>
-                            <button
-                                onClick={() => setViewMode('old')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${viewMode === 'old'
-                                    ? 'bg-blue-900 text-white'
-                                    : 'bg-white text-slate-500 hover:bg-slate-50'
-                                    }`}
-                            >
-                                Old Images
-                            </button>
+                    {/* Sthana Navigation Pagination (Refined Theme) */}
+                    <div className="flex items-center justify-between max-w-sm mx-auto px-4 w-full mt-2 mb-2">
+                        <button
+                            onClick={() => prevSthana && navigate(`/temple/${id}/architecture/sthana/${prevSthana.id}`)}
+                            disabled={!prevSthana}
+                            className={`w-28 h-10 border rounded-full duration-150 transition-all flex items-center justify-center font-bold text-sm ${!prevSthana
+                                ? 'border-gray-200 text-gray-300 cursor-not-allowed opacity-50'
+                                : 'border-[#0f3c6e] text-[#0f3c6e] bg-transparent hover:bg-[#0f3c6e]/5 active:bg-[#0f3c6e]/10'
+                                }`}
+                        >
+                            Previous
+                        </button>
+
+                        <div className="text-[#0f3c6e] font-bold text-sm whitespace-nowrap px-4">
+                            Page {currentIndex + 1} of {allHotspots.length}
                         </div>
+
+                        <button
+                            onClick={() => nextSthana && navigate(`/temple/${id}/architecture/sthana/${nextSthana.id}`)}
+                            disabled={!nextSthana}
+                            className={`w-28 h-10 border rounded-full duration-150 transition-all flex items-center justify-center font-bold text-sm ${!nextSthana
+                                ? 'border-gray-200 text-gray-300 cursor-not-allowed opacity-50'
+                                : 'border-[#0f3c6e] text-[#0f3c6e] bg-transparent hover:bg-[#0f3c6e]/5 active:bg-[#0f3c6e]/10'
+                                }`}
+                        >
+                            Next
+                        </button>
                     </div>
 
                     {/* Image Viewer */}
