@@ -81,6 +81,31 @@ export default function ArchitectureViewer() {
         setExpandedHotspots(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
+    const sthanaListRef = useRef<HTMLDivElement>(null);
+
+    // Internal Scroll Logic for Sthana List
+    useEffect(() => {
+        if (selectedHotspotId && selectionSource === 'image' && sthanaListRef.current) {
+            // Ensure the list is expanded to show all items so we can scroll to the target
+            setShowAllHotspotsList(true);
+
+            setTimeout(() => {
+                const selectedCard = document.getElementById(`sthana-card-${selectedHotspotId}`);
+                if (selectedCard && sthanaListRef.current) {
+                    const container = sthanaListRef.current;
+                    const containerTop = container.getBoundingClientRect().top;
+                    const cardTop = selectedCard.getBoundingClientRect().top;
+                    const scrollOffset = cardTop - containerTop + container.scrollTop;
+
+                    container.scrollTo({
+                        top: scrollOffset,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+        }
+    }, [selectedHotspotId, selectionSource]);
+
     // Drag state
     const [isDragging, setIsDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
@@ -260,10 +285,10 @@ export default function ArchitectureViewer() {
 
             {/* Header: Back, Heading, 'i' */}
             <div
-                className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-[#0f3c6e] py-3"
+                className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-md shadow-sm border-y border-[#0f3c6e] py-3"
             >
                 <div className="flex items-center gap-3 max-w-6xl mx-auto">
-                    <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
+                    <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80" onClick={() => navigate(-1)}>
                         <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <h1 className="flex-1 font-heading font-bold text-2xl md:text-3xl text-[#0f3c6e] font-serif truncate leading-tight">
@@ -272,8 +297,8 @@ export default function ArchitectureViewer() {
 
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 shrink-0">
-                                <span className="font-serif italic font-bold text-lg leading-none">i</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 shadow-md border border-blue-100/50 shrink-0">
+                                <span className="font-serif italic font-bold text-lg leading-none drop-shadow-sm">i</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-[90%] rounded-2xl">
@@ -297,7 +322,7 @@ export default function ArchitectureViewer() {
             >
                 {/* Image Type Segmented Buttons */}
                 <div id="segmented-buttons-section" className="flex justify-center w-full">
-                    <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
+                    <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-md overflow-hidden text-sm md:text-base">
                         <button
                             onClick={() => setImageType('architectural')}
                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${imageType === 'architectural'
@@ -400,8 +425,8 @@ export default function ArchitectureViewer() {
                                                             </span>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center shadow-md transition-all">
-                                                            <span className="text-[10px] md:text-xs font-bold text-white">
+                                                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-transparent border-2 border-white flex items-center justify-center shadow-md transition-all backdrop-blur-[1px]">
+                                                            <span className="text-[10px] md:text-xs font-bold text-white drop-shadow-sm">
                                                                 {hotspot.number}
                                                             </span>
                                                         </div>
@@ -571,20 +596,13 @@ export default function ArchitectureViewer() {
 
                     {/* Sthana List */}
                     <div className="space-y-3">
-                        <div className="flex flex-col gap-2 md:gap-3">
+                        <div
+                            ref={sthanaListRef}
+                            className="flex flex-col gap-2 md:gap-3 max-h-[500px] overflow-y-auto scroll-smooth pr-1 custom-scrollbar"
+                        >
                             {(() => {
-                                // Sort all hotspots by number first
-                                const sortedBase = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
-
-                                // If a hotspot is selected from the VIEW (image), move it to the top
-                                // If selected from the list, keep it in its original sequence
-                                let displayHotspots = sortedBase;
-                                if (selectedHotspotId && selectionSource === 'image') {
-                                    const selected = sortedBase.find(h => h.id === selectedHotspotId);
-                                    if (selected) {
-                                        displayHotspots = [selected, ...sortedBase.filter(h => h.id !== selectedHotspotId)];
-                                    }
-                                }
+                                // Keep base sorted order for continuity
+                                const displayHotspots = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
 
                                 const listItems = showAllHotspotsList ? displayHotspots : displayHotspots.slice(0, 6);
                                 return listItems.map((hotspot) => {
@@ -593,11 +611,12 @@ export default function ArchitectureViewer() {
                                     return (
                                         <div
                                             key={hotspot.id}
+                                            id={`sthana-card-${hotspot.id}`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                             }}
-                                            className={`w-full h-14 md:h-16 flex items-center justify-between px-4 md:px-0 bg-white rounded-2xl shadow-sm border transition-all group cursor-pointer ${isSelected
+                                            className={`w-full h-14 md:h-16 flex items-center justify-between px-4 md:px-0 bg-white rounded-2xl shadow-md border transition-all group cursor-pointer ${isSelected
                                                 ? 'border-amber-400/50 ring-4 ring-amber-600/10'
                                                 : 'border-gray-100 hover:border-amber-200'
                                                 }`}

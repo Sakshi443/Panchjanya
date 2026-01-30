@@ -214,12 +214,12 @@ export default function TempleArchitecture() {
     <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
       {/* Header Section */}
       <div
-        className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-[#0f3c6e] py-3"
+        className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-md shadow-sm border-y border-[#0f3c6e] py-3"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Content Block */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80" onClick={() => navigate(-1)}>
             <ChevronLeft className="w-7 h-7 text-blue-900" />
           </Button>
 
@@ -236,7 +236,7 @@ export default function TempleArchitecture() {
                 onClick={toggleSave}
                 disabled={isSaving || !user}
                 className={cn(
-                  "rounded-full w-9 h-9 hover:bg-black/5 transition-all shrink-0"
+                  "rounded-full w-9 h-9 hover:bg-black/5 transition-all shrink-0 bg-white/80"
                 )}
               >
                 <Bookmark className={cn("w-6 h-6 text-blue-900", isSaved && "fill-amber-500 text-amber-500")} />
@@ -268,7 +268,7 @@ export default function TempleArchitecture() {
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold"
+                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold shadow-md"
               >
                 <img
                   src="/icons/signpost.png"
@@ -299,20 +299,20 @@ export default function TempleArchitecture() {
 
           {/* Map/Navigation Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0 shadow-md"
             onClick={handleNavigation}
             title="Navigate"
           >
-            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
+            <Navigation className="w-5 h-5 md:w-6 md:h-6 drop-shadow-sm" />
           </Button>
 
           {/* Share Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0 shadow-md"
             onClick={handleShare}
             title="Share"
           >
-            <Share2 className="w-5 h-5 md:w-6 md:h-6" />
+            <Share2 className="w-5 h-5 md:w-6 md:h-6 drop-shadow-sm" />
           </Button>
         </div>
 
@@ -361,7 +361,7 @@ export default function TempleArchitecture() {
           <Button1
             variant="primary"
             size="lg"
-            className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800"
+            className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl text-sm md:text-base font-heading font-serif font-bold tracking-wide border border-blue-800 shadow-md"
             onClick={handleArchitectureView}
           >
             <img
@@ -387,8 +387,8 @@ export default function TempleArchitecture() {
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-transparent hover:bg-blue-200 text-blue-900 border border-blue-100/50">
-                  <span className="font-serif italic font-bold text-lg leading-none">i</span>
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 border border-blue-100/50 shadow-md">
+                  <span className="font-serif italic font-bold text-lg leading-none drop-shadow-sm">i</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-[90%] rounded-2xl">
