@@ -218,7 +218,7 @@ export default function SthanaDetail() {
                                     <div className="relative z-10">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                            <h3 className="text-amber-800 font-bold tracking-widest uppercase text-sm">Description</h3>
+                                            <h3 className="text-amber-800 font-bold tracking-widest text-sm">Description</h3>
                                         </div>
                                         <p className="font-serif text-lg text-slate-800 leading-relaxed">
                                             {hotspot.significance || hotspot.description || "No info available"}
@@ -267,8 +267,7 @@ export default function SthanaDetail() {
                                                     className="w-full flex items-center justify-between p-4 text-left gap-4"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 ${isExpanded ? 'text-amber-700 font-bold' : 'text-slate-700 hover:text-amber-700'
-                                                            }`}>
+                                                        <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>
                                                             {content.length > 60 ? content.substring(0, 60) + '...' : content}
                                                         </span>
                                                     </div>

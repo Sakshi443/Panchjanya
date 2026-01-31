@@ -594,7 +594,7 @@ export default function ArchitectureViewer() {
                                         className="border-b border-slate-50 last:border-0 transition-all"
                                     >
                                         <div
-                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'border border-amber-700 bg-amber-50/50 shadow-sm' : 'border border-transparent hover:border-amber-900/40'}`}
+                                            className={`h-12 md:h-14 flex items-center justify-between gap-3 px-2 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'border border-amber-700/40 bg-amber-50/50 shadow-sm' : 'border border-transparent hover:border-amber-700/40 hover:bg-amber-50/40'}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 // Minimal selection for map sync, without triggering pop-up/scroll
@@ -612,7 +612,7 @@ export default function ArchitectureViewer() {
                                                 </div>
                                             </div>
                                             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all bg-transparent border-none">
-                                                <ChevronDown className={`w-4 h-4 text-blue-900 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`w-4 h-4 text-amber-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                                             </div>
                                         </div>
                                         {isExpanded && (
@@ -671,9 +671,9 @@ export default function ArchitectureViewer() {
                                                 e.stopPropagation();
                                                 handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                             }}
-                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-5 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
-                                                ? 'border-[0.5px] border-amber-900/40 bg-amber-50/50'
-                                                : 'border-[0.5px] border-transparent hover:border-amber-900/40'
+                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-2 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
+                                                ? 'border-[0.5px] border-amber-700/40 bg-amber-50/50'
+                                                : 'border-[0.5px] border-transparent hover:border-amber-700/40 hover:bg-amber-50/40'
                                                 }`}
                                             onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
                                             onMouseLeave={() => setHoveredHotspotId(null)}
