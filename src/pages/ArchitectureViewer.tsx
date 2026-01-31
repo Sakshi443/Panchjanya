@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff, Maximize, Check, ChevronRight } from "lucide-react";
+import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff, Maximize, Check, ChevronRight, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button1 } from "@/components/ui/button-1";
 import { Temple } from "@/types";
@@ -636,86 +636,97 @@ export default function ArchitectureViewer() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Sthans Overview */}
-                    <div className="space-y-2">
+                    {/* Sthans Overview & List - Combined Scrollable Area */}
+                    <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-amber-600 rounded-full"></div>
                             <h3 className="font-heading font-bold text-lg text-blue-900">Sthan's Description</h3>
                         </div>
-                        <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-sm text-slate-600 leading-relaxed font-serif">
-                            {temple.description_text || temple.description || "No description available for this architecture."}
-                        </div>
-                    </div>
 
-
-
-                    {/* Sthana List */}
-                    <div className="space-y-4 mt-4">
                         <div
                             ref={sthanaListRef}
-                            className="relative flex flex-col gap-2 md:gap-4 h-[450px] overflow-y-auto scroll-smooth pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                            className="h-[500px] overflow-y-auto scroll-smooth pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
-                            {(() => {
-                                // Keep base sorted order for continuity
-                                const displayHotspots = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
+                            <div className="space-y-4 pb-8">
+                                {/* Description Card */}
+                                <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-md text-slate-600 leading-relaxed font-serif">
+                                    {temple.description_text || temple.description || "No description available for this architecture."}
+                                </div>
 
-                                return displayHotspots.map((hotspot) => {
-                                    const isSelected = selectedHotspotId === hotspot.id;
+                                {/* Sthana List */}
+                                <div className="flex flex-col gap-2 md:gap-4">
+                                    {(() => {
+                                        const displayHotspots = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
 
-                                    return (
-                                        <div
-                                            key={hotspot.id}
-                                            ref={(el) => (cardRefs.current[hotspot.id] = el)}
-                                            id={`sthana-card-${hotspot.id}`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
-                                            }}
-                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-0 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
-                                                ? 'border-[0.5px] border-transparent bg-amber-50/50'
-                                                : 'border-[0.5px] border-transparent hover:bg-amber-50/40'
-                                                }`}
-                                            onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
-                                            onMouseLeave={() => setHoveredHotspotId(null)}
-                                        >
-                                            <div className="flex-1 h-full flex items-center px-1 py-2 gap-2 overflow-hidden">
-                                                <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center border shrink-0 text-sm md:text-base transition-all duration-200 ${isSelected
-                                                    ? 'bg-amber-600 text-white border-amber-600'
-                                                    : 'bg-[#F9F6F0] text-amber-600 border-amber-600 group-hover:bg-amber-600 group-hover:text-white group-hover:border-amber-600'
-                                                    }`}>
-                                                    {hotspot.number}
+                                        return displayHotspots.map((hotspot) => {
+                                            const isSelected = selectedHotspotId === hotspot.id;
+
+                                            return (
+                                                <div
+                                                    key={hotspot.id}
+                                                    ref={(el) => (cardRefs.current[hotspot.id] = el)}
+                                                    id={`sthana-card-${hotspot.id}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
+                                                    }}
+                                                    className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-0 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
+                                                        ? 'border-[0.5px] border-transparent bg-amber-50/50'
+                                                        : 'border-[0.5px] border-transparent hover:bg-amber-50/40'
+                                                        }`}
+                                                    onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
+                                                    onMouseLeave={() => setHoveredHotspotId(null)}
+                                                >
+                                                    <div className="flex-1 h-full flex items-center px-1 py-2 gap-2 overflow-hidden">
+                                                        <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center border shrink-0 text-sm md:text-base transition-all duration-200 ${isSelected
+                                                            ? 'bg-amber-600 text-white border-amber-600'
+                                                            : 'bg-[#F9F6F0] text-amber-600 border-amber-600 group-hover:bg-amber-600 group-hover:text-white group-hover:border-amber-600'
+                                                            }`}>
+                                                            {hotspot.number}
+                                                        </div>
+                                                        <span className={`font-heading font-bold text-xl md:text-2xl leading-tight line-clamp-1 transition-colors duration-200 truncate ${isSelected
+                                                            ? 'text-amber-700'
+                                                            : 'text-blue-900 group-hover:text-amber-700'
+                                                            }`}>
+                                                            {hotspot.title}
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        className={`flex items-center justify-center w-12 md:w-16 h-full transition-all duration-300 rounded-r-2xl ${isSelected ? 'bg-amber-50/50' : 'hover:bg-slate-50'}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleNavigationToDetail(hotspot);
+                                                        }}
+                                                    >
+                                                        <ChevronRight className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${isSelected
+                                                            ? 'text-amber-600'
+                                                            : 'text-amber-700 lg:text-slate-300 lg:group-hover:text-amber-500'
+                                                            }`} />
+                                                    </div>
                                                 </div>
-                                                <span className={`font-heading font-bold text-xl md:text-2xl leading-tight line-clamp-1 transition-colors duration-200 truncate ${isSelected
-                                                    ? 'text-amber-700'
-                                                    : 'text-blue-900 group-hover:text-amber-700'
-                                                    }`}>
-                                                    {hotspot.title}
-                                                </span>
-                                            </div>
-                                            <div
-                                                className={`flex items-center justify-center w-12 md:w-16 h-full transition-all duration-300 rounded-r-2xl ${isSelected ? 'bg-amber-50/50' : 'hover:bg-slate-50'}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleNavigationToDetail(hotspot);
-                                                }}
-                                            >
-                                                <ChevronRight className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${isSelected
-                                                    ? 'text-amber-600'
-                                                    : 'text-amber-700 lg:text-slate-300 lg:group-hover:text-amber-500'
-                                                    }`} />
-                                            </div>
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
+                                            );
+                                        });
+                                    })()}
+                                </div>
 
+                                {/* Bottom Scroll-to-Top & Text */}
+                                <div className="flex flex-col items-center gap-2 pt-8 pb-12">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="w-12 h-12 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 transition-all shadow-sm"
+                                        onClick={() => sthanaListRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                                    >
+                                        <ChevronUp className="w-6 h-6" />
+                                    </Button>
+                                    <span className="text-slate-400 font-serif italic text-sm">Back to Top</span>
+                                </div>
+                            </div>
 
-                        {
-                            hotspots.length === 0 && (
+                            {hotspots.length === 0 && (
                                 <p className="text-sm text-muted-foreground italic">No sthana hotspots found.</p>
-                            )
-                        }
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

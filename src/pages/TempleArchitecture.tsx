@@ -411,7 +411,7 @@ export default function TempleArchitecture() {
 
           <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
-            <p className="font-serif text-slate-700 leading-relaxed text-sm whitespace-pre-wrap pl-2 pr-4 text-justify columns-2 gap-6">
+            <p className="font-serif text-slate-700 leading-relaxed text-md whitespace-pre-wrap pl-2 pr-4 text-justify columns-2 gap-6">
               {temple.description_text || temple.description || "No description available."}
             </p>
           </div>
@@ -428,7 +428,7 @@ export default function TempleArchitecture() {
 
           <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/10"></div>
-            <p className="font-serif text-slate-700 leading-relaxed italic text-sm whitespace-pre-wrap pl-2">
+            <p className="font-serif text-slate-700 leading-relaxed text-md whitespace-pre-wrap pl-2">
               {temple.sthana_info_text ||
                 temple.sthana ||
                 `${temple.name} हे महाराष्ट्रातील एक प्राचीन व पवित्र स्थान आहे. येथील वास्तुकला आणि ऐतिहासिक महत्त्व अद्वितीय आहे.`}
