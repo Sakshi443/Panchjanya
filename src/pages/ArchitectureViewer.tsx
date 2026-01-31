@@ -511,13 +511,13 @@ export default function ArchitectureViewer() {
                                             </Button>
                                         </div>
                                         <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-3">
-                                            <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomIn}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-black/20 hover:bg-black/40 text-white backdrop-blur-md border border-white/20" onClick={handleZoomIn}>
                                                 <ZoomIn className="w-5 h-5" />
                                             </Button>
-                                            <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleZoomOut}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-black/20 hover:bg-black/40 text-white backdrop-blur-md border border-white/20" onClick={handleZoomOut}>
                                                 <ZoomOut className="w-5 h-5" />
                                             </Button>
-                                            <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-black/20 hover:bg-black/40 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation}>
                                                 <RotateCcw className="w-5 h-5" />
                                             </Button>
                                         </div>
@@ -536,10 +536,10 @@ export default function ArchitectureViewer() {
                                             </Button>
                                         </div>
                                         <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                                            <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={handleResetOrientation}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-black/20 hover:bg-black/40 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation}>
                                                 <RotateCcw className="w-4 h-4" />
                                             </Button>
-                                            <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white" onClick={toggleFullScreen}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-black/20 hover:bg-black/40 text-white backdrop-blur-md border border-white/20" onClick={toggleFullScreen}>
                                                 <Maximize className="w-4 h-4" />
                                             </Button>
                                         </div>
@@ -649,7 +649,7 @@ export default function ArchitectureViewer() {
                         >
                             <div className="space-y-4 pb-[450px]">
                                 {/* Description Card */}
-                                <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-md text-slate-600 leading-relaxed font-serif">
+                                <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-base text-slate-600 leading-relaxed font-serif">
                                     {temple.description_text || temple.description || "No description available for this architecture."}
                                 </div>
 
@@ -670,7 +670,7 @@ export default function ArchitectureViewer() {
                                                         e.stopPropagation();
                                                         handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                                     }}
-                                                    className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-0 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
+                                                    className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-0 py-1 bg-transparent rounded-2xl transition-all duration-300 group cursor-pointer ${isSelected
                                                         ? 'border-[0.5px] border-transparent bg-amber-50/50'
                                                         : 'border-[0.5px] border-transparent hover:bg-amber-50/40'
                                                         }`}
