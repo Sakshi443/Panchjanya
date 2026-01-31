@@ -90,14 +90,20 @@ export default function ArchitectureViewer() {
     const [isDragging, setIsDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
 
-    // Internal Scroll Logic for Sthana List (Top-Aligned Internal Scrolling)
+    // Dual Scroll Logic: Main Page to buttons & Sthana List to card
     useEffect(() => {
         if (selectedHotspotId && selectionSource === 'image') {
             const timeoutId = setTimeout(() => {
+                // 1. Scroll main page to segmented buttons
+                const buttonsSection = document.getElementById('segmented-buttons-section');
+                if (buttonsSection) {
+                    buttonsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                // 2. Scroll internal list to target card
                 const targetCard = cardRefs.current[selectedHotspotId];
                 const container = sthanaListRef.current;
                 if (targetCard && container) {
-                    // Calculate the position to scroll to bring card to top of container
                     const containerRect = container.getBoundingClientRect();
                     const cardRect = targetCard.getBoundingClientRect();
                     const scrollOffset = cardRect.top - containerRect.top + container.scrollTop;
