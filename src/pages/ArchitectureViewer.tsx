@@ -294,7 +294,7 @@ export default function ArchitectureViewer() {
 
             {/* Header: Back, Heading, 'i' */}
             <div
-                className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-[#0f3c6e] py-3"
+                className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-slate-200 py-3"
             >
                 <div className="flex items-center gap-3 max-w-6xl mx-auto">
                     <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80" onClick={() => navigate(-1)}>
@@ -428,13 +428,13 @@ export default function ArchitectureViewer() {
 
                                                 <div className="relative flex items-center justify-center">
                                                     {isActive ? (
-                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-900 border-2 border-white flex items-center justify-center shadow-lg transition-all duration-300">
+                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-900 border-2 border-amber-700 flex items-center justify-center shadow-lg transition-all duration-300">
                                                             <span className="text-[9px] md:text-xs font-semibold text-white">
                                                                 {hotspot.number}
                                                             </span>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-transparent border border-white flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
+                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-transparent border border-amber-700 flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
                                                             <span className="text-[8px] md:text-[10px] font-medium text-white drop-shadow-sm">
                                                                 {hotspot.number}
                                                             </span>
@@ -555,7 +555,7 @@ export default function ArchitectureViewer() {
                                         className="border-b border-slate-50 last:border-0 transition-all"
                                     >
                                         <div
-                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all ${isSelected ? 'border-2 border-amber-400 bg-amber-500/5' : 'border-2 border-transparent hover:border-amber-200'}`}
+                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all ${isSelected ? 'border-2 border-amber-700 bg-amber-500/5' : 'border-2 border-transparent hover:border-amber-200'}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 // Minimal selection for map sync, without triggering pop-up/scroll
@@ -631,7 +631,7 @@ export default function ArchitectureViewer() {
                                                 handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                             }}
                                             className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-5 py-1 bg-white rounded-2xl shadow-md transition-all duration-200 group cursor-pointer ${isSelected
-                                                ? 'border border-amber-400 bg-amber-500/5'
+                                                ? 'border border-amber-700 bg-amber-500/5'
                                                 : 'border border-transparent hover:border-amber-200'
                                                 }`}
                                         >
