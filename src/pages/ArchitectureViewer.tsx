@@ -567,7 +567,7 @@ export default function ArchitectureViewer() {
                                             <div className="flex-1 min-w-0 px-1 py-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-1.5 h-6 bg-amber-600 rounded-full shrink-0"></div>
-                                                    <h4 className={`font-heading font-bold uppercase text-base md:text-lg tracking-wider transition-colors truncate ${isSelected ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
+                                                    <h4 className={`font-heading font-bold uppercase text-lg tracking-wider transition-colors truncate ${isSelected ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
                                                 </div>
                                             </div>
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all ${isExpanded ? 'bg-amber-50 border-amber-200' : isSelected ? 'bg-amber-600/10 border-amber-200' : 'bg-[#fcfaf5] border-slate-200 group-hover:bg-amber-50 group-hover:border-amber-200'}`}>
