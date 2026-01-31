@@ -444,7 +444,7 @@ export default function ArchitectureViewer() {
                                                             </span>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white/80 border border-amber-700 flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
+                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-transparent border border-amber-700 flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
                                                             <span className="text-[8px] md:text-[10px] font-bold text-amber-700 drop-shadow-sm">
                                                                 {hotspot.number}
                                                             </span>
@@ -565,7 +565,7 @@ export default function ArchitectureViewer() {
                                         className="border-b border-slate-50 last:border-0 transition-all"
                                     >
                                         <div
-                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all ${isSelected ? 'border-2 border-amber-700 bg-amber-500/5' : 'border-2 border-transparent hover:border-amber-200'}`}
+                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all ${isSelected ? 'border-2 border-amber-700 bg-amber-500/5 shadow-md' : 'border-2 border-transparent hover:border-amber-200'}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 // Minimal selection for map sync, without triggering pop-up/scroll
@@ -641,8 +641,8 @@ export default function ArchitectureViewer() {
                                                 handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                             }}
                                             className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-5 py-1 bg-white rounded-2xl shadow-md transition-all duration-200 group cursor-pointer ${isSelected
-                                                ? 'border border-amber-700 bg-amber-500/5'
-                                                : 'border border-transparent hover:border-amber-200'
+                                                ? 'border-2 border-amber-700 bg-amber-500/5 shadow-lg'
+                                                : 'border-2 border-transparent hover:border-amber-200'
                                                 }`}
                                         >
                                             <div className="flex-1 h-full flex items-center px-1 py-2 gap-3 overflow-hidden">
