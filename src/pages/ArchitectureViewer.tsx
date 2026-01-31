@@ -90,28 +90,42 @@ export default function ArchitectureViewer() {
     const [isDragging, setIsDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
 
-    // Dual Scroll Logic: Main Page to buttons & Sthana List to card
     useEffect(() => {
-        if (selectedHotspotId && selectionSource === 'image') {
+        if (selectedHotspotId) {
             const timeoutId = setTimeout(() => {
-                // 1. Scroll main page to segmented buttons
-                const buttonsSection = document.getElementById('segmented-buttons-section');
-                if (buttonsSection) {
-                    buttonsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                if (selectionSource === 'image') {
+                    // 1. Scroll main page down to list section
+                    const buttonsSection = document.getElementById('segmented-buttons-section');
+                    if (buttonsSection) {
+                        buttonsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
 
-                // 2. Scroll internal list to target card
-                const targetCard = cardRefs.current[selectedHotspotId];
-                const container = sthanaListRef.current;
-                if (targetCard && container) {
-                    const containerRect = container.getBoundingClientRect();
-                    const cardRect = targetCard.getBoundingClientRect();
-                    const scrollOffset = cardRect.top - containerRect.top + container.scrollTop;
+                    // 2. Scroll internal list to target card
+                    const targetCard = cardRefs.current[selectedHotspotId];
+                    const container = sthanaListRef.current;
+                    if (targetCard && container) {
+                        const containerRect = container.getBoundingClientRect();
+                        const cardRect = targetCard.getBoundingClientRect();
+                        const scrollOffset = cardRect.top - containerRect.top + container.scrollTop;
 
-                    container.scrollTo({
-                        top: scrollOffset,
-                        behavior: 'smooth'
-                    });
+                        container.scrollTo({
+                            top: scrollOffset,
+                            behavior: 'smooth'
+                        });
+                    }
+                } else if (selectionSource === 'list' || selectionSource === 'dropdown') {
+                    // Scroll main page up to image container
+                    if (imageContainerRef.current) {
+                        // Offset by header height (around 80px)
+                        const headerOffset = 80;
+                        const elementPosition = imageContainerRef.current.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
                 }
             }, 100);
 
@@ -125,6 +139,13 @@ export default function ArchitectureViewer() {
     const imageContainerRef = useRef<HTMLDivElement>(null);
 
 
+
+    // Sync expanded states in pothi when open
+    useEffect(() => {
+        if (isPothiOpen && selectedHotspotId && (selectionSource === 'image' || selectionSource === 'list')) {
+            setExpandedHotspots(prev => ({ ...prev, [selectedHotspotId]: true }));
+        }
+    }, [selectedHotspotId, selectionSource, isPothiOpen]);
 
     useEffect(() => {
         const handleFullScreenChange = () => {
@@ -408,10 +429,17 @@ export default function ArchitectureViewer() {
                                     {imageType === 'architectural' && (showHotspots || selectedHotspotId) && hotspots.map((hotspot) => {
                                         const isSelected = selectedHotspotId === hotspot.id;
                                         const isHovered = hoveredHotspotId === hotspot.id;
-                                        const isActive = isSelected || isHovered;
 
-                                        // Determine if this specific hotspot should be visible
-                                        const isVisible = showHotspots || isSelected;
+                                        // Hotspot is active (highlighted) if:
+                                        // 1. Hovered
+                                        // 2. Selected from image/list
+                                        // 3. Selected from dropdown AND dropdown is open
+                                        const isActive = isHovered || (isSelected && (
+                                            selectionSource !== 'dropdown' || isPothiOpen
+                                        ));
+
+                                        // Hotspot is visible if showHotspots is on, OR if it's the active one
+                                        const isVisible = showHotspots || isActive;
                                         if (!isVisible) return null;
 
                                         return (
@@ -554,18 +582,19 @@ export default function ArchitectureViewer() {
                             align="center"
                             avoidCollisions={false}
                             sideOffset={8}
-                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto rounded-2xl p-3 bg-white shadow-2xl border-blue-50 z-50 px-4"
+                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto rounded-2xl p-3 bg-white shadow-2xl border-blue-50 z-50 px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
                             {hotspots.map((h) => {
                                 const isExpanded = expandedHotspots[h.id];
-                                const isSelected = selectedHotspotId === h.id;
+                                // Selection in pothi only shows if it matches AND (pothi is open)
+                                const isSelectedInPothi = selectedHotspotId === h.id && isPothiOpen;
                                 return (
                                     <div
                                         key={h.id}
                                         className="border-b border-slate-50 last:border-0 transition-all"
                                     >
                                         <div
-                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all ${isSelected ? 'border-2 border-amber-700 bg-amber-500/5 shadow-md' : 'border-2 border-transparent hover:border-amber-200'}`}
+                                            className={`h-12 md:h-14 flex items-center gap-3 px-5 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'border border-amber-700 bg-amber-50/50 shadow-sm' : 'border border-transparent hover:border-amber-900/40'}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 // Minimal selection for map sync, without triggering pop-up/scroll
@@ -573,14 +602,16 @@ export default function ArchitectureViewer() {
                                                 // Toggle detail description
                                                 toggleHotspot(h.id);
                                             }}
+                                            onMouseEnter={() => setHoveredHotspotId(h.id)}
+                                            onMouseLeave={() => setHoveredHotspotId(null)}
                                         >
                                             <div className="flex-1 min-w-0 px-1 py-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-1.5 h-6 bg-amber-600 rounded-full shrink-0"></div>
-                                                    <h4 className={`font-heading font-bold uppercase text-lg tracking-wider transition-colors truncate ${isSelected ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
+                                                    <h4 className={`font-heading font-bold uppercase text-lg tracking-wider transition-colors truncate ${isSelectedInPothi ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
                                                 </div>
                                             </div>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all ${isExpanded ? 'bg-amber-50 border-amber-200' : isSelected ? 'bg-amber-600/10 border-amber-200' : 'bg-[#fcfaf5] border-slate-200 group-hover:bg-amber-50 group-hover:border-amber-200'}`}>
+                                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all bg-transparent border-none">
                                                 <ChevronDown className={`w-4 h-4 text-blue-900 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                                             </div>
                                         </div>
@@ -622,7 +653,7 @@ export default function ArchitectureViewer() {
                     <div className="space-y-4 mt-4">
                         <div
                             ref={sthanaListRef}
-                            className="relative flex flex-col gap-2 md:gap-4 h-[450px] overflow-y-auto scroll-smooth pr-1 custom-scrollbar [scrollbar-gutter:stable]"
+                            className="relative flex flex-col gap-2 md:gap-4 h-[450px] overflow-y-auto scroll-smooth pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
                             {(() => {
                                 // Keep base sorted order for continuity
@@ -640,10 +671,12 @@ export default function ArchitectureViewer() {
                                                 e.stopPropagation();
                                                 handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                             }}
-                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-5 py-1 bg-white rounded-2xl shadow-md transition-all duration-200 group cursor-pointer ${isSelected
-                                                ? 'border-2 border-amber-700 bg-amber-500/5 shadow-lg'
-                                                : 'border-2 border-transparent hover:border-amber-200'
+                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-5 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
+                                                ? 'border-[0.5px] border-amber-900/40 bg-amber-50/50'
+                                                : 'border-[0.5px] border-transparent hover:border-amber-900/40'
                                                 }`}
+                                            onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
+                                            onMouseLeave={() => setHoveredHotspotId(null)}
                                         >
                                             <div className="flex-1 h-full flex items-center px-1 py-2 gap-3 overflow-hidden">
                                                 <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center border shrink-0 text-sm md:text-base transition-all duration-200 ${isSelected
@@ -660,7 +693,7 @@ export default function ArchitectureViewer() {
                                                 </span>
                                             </div>
                                             <div
-                                                className={`flex items-center justify-center w-12 md:w-16 h-full border-l border-slate-100 transition-all duration-300 rounded-r-2xl ${isSelected ? 'bg-amber-50/50' : 'hover:bg-slate-50'}`}
+                                                className={`flex items-center justify-center w-12 md:w-16 h-full transition-all duration-300 rounded-r-2xl ${isSelected ? 'bg-amber-50/50' : 'hover:bg-slate-50'}`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleNavigationToDetail(hotspot);
