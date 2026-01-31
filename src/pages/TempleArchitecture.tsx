@@ -225,7 +225,10 @@ export default function TempleArchitecture() {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif truncate flex-1 leading-tight">
+              <h1 className={cn(
+                "font-heading font-bold text-[#0f3c6e] font-serif truncate flex-1 leading-tight transition-all duration-300",
+                isScrolled ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"
+              )}>
                 {temple.name}
               </h1>
 
