@@ -211,15 +211,15 @@ export default function TempleArchitecture() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8">
+    <div className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8 animate-in fade-in duration-300">
       {/* Header Section */}
       <div
-        className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-md shadow-sm border-y border-[#0f3c6e] py-3"
+        className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-[#c7c6c6] py-3"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Content Block */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80" onClick={() => navigate('/explore')}>
             <ChevronLeft className="w-7 h-7 text-blue-900" />
           </Button>
 

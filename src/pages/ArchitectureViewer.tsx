@@ -288,16 +288,26 @@ export default function ArchitectureViewer() {
 
     return (
         <div
-            className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8 overflow-x-hidden"
+            className="min-h-screen bg-[#F9F6F0] lg:bg-white pb-8 overflow-x-hidden animate-in fade-in duration-300"
             onClick={() => handleSelectHotspot(null, null)}
         >
 
             {/* Header: Back, Heading, 'i' */}
             <div
-                className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-slate-200 py-3"
+                className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-[#c7c6c6] py-3"
             >
                 <div className="flex items-center gap-3 max-w-6xl mx-auto">
-                    <Button variant="ghost" size="icon" className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80" onClick={() => navigate(-1)}>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80"
+                        onClick={() => {
+                            setZoom(1);
+                            setPan({ x: 0, y: 0 });
+                            setSelectedHotspotId(null);
+                            navigate(`/temple/${id}/architecture`);
+                        }}
+                    >
                         <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <h1 className="flex-1 font-heading font-bold text-xl md:text-2xl text-[#0f3c6e] font-serif truncate leading-tight">
@@ -428,14 +438,14 @@ export default function ArchitectureViewer() {
 
                                                 <div className="relative flex items-center justify-center">
                                                     {isActive ? (
-                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-900 border-2 border-amber-700 flex items-center justify-center shadow-lg transition-all duration-300">
+                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-amber-600 border-2 border-amber-700 flex items-center justify-center shadow-lg transition-all duration-300">
                                                             <span className="text-[9px] md:text-xs font-semibold text-white">
                                                                 {hotspot.number}
                                                             </span>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-transparent border border-amber-700 flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
-                                                            <span className="text-[8px] md:text-[10px] font-medium text-white drop-shadow-sm">
+                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white/80 border border-amber-700 flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
+                                                            <span className="text-[8px] md:text-[10px] font-bold text-amber-700 drop-shadow-sm">
                                                                 {hotspot.number}
                                                             </span>
                                                         </div>

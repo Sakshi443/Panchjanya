@@ -75,21 +75,21 @@ export default function SthanaDetail() {
     if (!hotspot) return <div className="min-h-screen flex items-center justify-center">Sthana not found</div>;
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] flex flex-col">
+        <div className="min-h-screen bg-[#F9F6F0] flex flex-col animate-in fade-in duration-300">
             {/* Header */}
             <div
-                className="sticky top-0 z-30 px-2 bg-white/95 backdrop-blur-md shadow-sm border-y border-[#0f3c6e] py-3"
+                className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-[#c7c6c6] py-4 md:py-5"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Mobile: All in one row */}
                 <div className="md:hidden flex items-center gap-3 w-full">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view`)} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-9 w-9 rounded-full">
+                    <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-9 w-9 rounded-full">
                         <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
                         {hotspot.number}
                     </div>
-                    <h1 className="text-xl md:text-2xl font-heading font-medium text-[#0f3c6e] font-serif leading-tight truncate flex-1">
+                    <h1 className="text-xl md:text-2xl font-heading font-bold text-[#0f3c6e] font-serif leading-tight truncate flex-1">
                         {hotspot.title}
                     </h1>
                 </div>
@@ -98,7 +98,7 @@ export default function SthanaDetail() {
                 {/* Desktop: Existing layout */}
                 <div className="hidden md:flex items-center justify-center relative">
                     <div className="absolute left-6 flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view`)} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-10 w-10 rounded-full">
+                        <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-10 w-10 rounded-full">
                             <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                         </Button>
                         <div className="w-10 h-10 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold flex items-center justify-center text-lg">
@@ -106,7 +106,7 @@ export default function SthanaDetail() {
                         </div>
                     </div>
 
-                    <h1 className="text-xl md:text-2xl font-heading font-medium text-[#0f3c6e] text-center px-16 leading-tight max-w-2xl truncate font-serif">
+                    <h1 className="text-xl md:text-2xl font-heading font-bold text-[#0f3c6e] text-center px-16 leading-tight max-w-2xl truncate font-serif">
                         {hotspot.title}
                     </h1>
                 </div>
@@ -146,7 +146,7 @@ export default function SthanaDetail() {
 
                     {/* Image Viewer */}
                     <div className="px-2 md:px-0">
-                        <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden border-4 border-white bg-gray-200 group">
+                        <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden border-4 border-white bg-gray-300 group">
                             <img
                                 src={displayImages[currentImageIndex]}
                                 alt={hotspot.title}

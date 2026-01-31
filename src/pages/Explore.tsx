@@ -273,14 +273,14 @@ const Explore = () => {
     };
 
     return (
-        <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white">
+        <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white animate-in fade-in duration-300">
             {/* Standard Header */}
             {/* Transparent Header Container */}
             <div className="absolute top-0 left-0 right-0 z-[400] px-4 py-4 flex items-center justify-between pointer-events-none">
 
                 {/* Left: Back & Title */}
                 <div className="flex items-center gap-2 md:gap-3 pointer-events-auto">
-                    <Button variant="ghost" size="icon" className="-ml-1 md:-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full w-9 h-9 md:w-10 md:h-10" onClick={() => navigate(-1)}>
+                    <Button variant="ghost" size="icon" className="-ml-1 md:-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full w-9 h-9 md:w-10 md:h-10" onClick={() => navigate('/')}>
                         <ChevronLeft className="w-6 h-6 md:w-7 md:h-7 text-[#0f3c6e]" />
                     </Button>
                     <h1 className="text-sm md:text-xl font-heading font-bold text-[#0f3c6e] font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 rounded-full border border-white/20 whitespace-nowrap">
