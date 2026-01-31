@@ -714,7 +714,7 @@ export default function ArchitectureViewer() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="w-10 h-10 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 transition-all shadow-sm"
+                                        className="w-10 h-10 rounded-full border border-amber-600/40 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 transition-all shadow-sm"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             sthanaListRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
