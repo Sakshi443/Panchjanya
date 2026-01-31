@@ -533,11 +533,11 @@ export default function ArchitectureViewer() {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-9 w-9 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
+                                                className="h-9 w-9 rounded-full shadow-lg bg-[#CE1124] hover:bg-[#CE1124] text-white backdrop-blur-md border border-white/20"
                                                 onClick={() => setShowHotspots(!showHotspots)}
                                                 title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                             >
-                                                {showHotspots ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                                {showHotspots ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
                                             </Button>
                                             <Button
                                                 size="icon"
@@ -567,11 +567,11 @@ export default function ArchitectureViewer() {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-8 w-8 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
+                                                className="h-8 w-8 rounded-full shadow-lg bg-[#CE1124] hover:bg-[#CE1124] text-white backdrop-blur-md border border-white/20"
                                                 onClick={() => setShowHotspots(!showHotspots)}
                                                 title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                             >
-                                                {showHotspots ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                                {showHotspots ? <Eye className="w-4 h-4 text-white" /> : <EyeOff className="w-4 h-4 text-white" />}
                                             </Button>
                                         </div>
                                         <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
@@ -599,10 +599,18 @@ export default function ArchitectureViewer() {
                             setExpandedHotspots({});
                         }
                         if (open) {
+                            // Auto-scroll to selected item if exists
                             setTimeout(() => {
-                                const section = document.getElementById('segmented-buttons-section');
-                                if (section) {
-                                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                if (selectedHotspotId) {
+                                    const selectedEl = document.getElementById(`pothi-item-${selectedHotspotId}`);
+                                    if (selectedEl) {
+                                        selectedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                } else {
+                                    const section = document.getElementById('segmented-buttons-section');
+                                    if (section) {
+                                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
                                 }
                             }, 100);
                         }
@@ -626,10 +634,12 @@ export default function ArchitectureViewer() {
                             {hotspots.map((h) => {
                                 const isExpanded = expandedHotspots[h.id];
                                 // Selection in pothi only shows if it matches AND (pothi is open)
-                                const isSelectedInPothi = selectedHotspotId === h.id && isPothiOpen;
+                                // Highlight if it matches the selected hotspot
+                                const isSelectedInPothi = selectedHotspotId === h.id;
                                 return (
                                     <div
                                         key={h.id}
+                                        id={`pothi-item-${h.id}`}
                                         className="border-b border-slate-50 last:border-0 transition-all"
                                     >
                                         <div
@@ -645,9 +655,9 @@ export default function ArchitectureViewer() {
                                             onMouseLeave={() => setHoveredHotspotId(null)}
                                         >
                                             <div className="flex-1 min-w-0 px-1 py-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-6 bg-amber-600 rounded-full shrink-0"></div>
-                                                    <h4 className={`font-heading font-bold uppercase text-lg tracking-wider transition-colors truncate ${isSelectedInPothi ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-1 h-6 bg-amber-600 shrink-0"></div>
+                                                    <h4 className={`font-heading font-bold text-xl tracking-wider transition-colors truncate ${isSelectedInPothi ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
                                                 </div>
                                             </div>
                                             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all bg-transparent border-none">
@@ -678,8 +688,8 @@ export default function ArchitectureViewer() {
                     {/* Sthans Overview & List - Combined Scrollable Area */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-6 bg-amber-600 rounded-full"></div>
-                            <h3 className="font-heading font-bold text-lg text-blue-900">Sthan's Description</h3>
+                            <div className="w-1 h-6 bg-amber-600"></div>
+                            <h3 className="font-heading text-xl font-bold text-blue-900">Sthan's Description</h3>
                         </div>
 
                         <div
@@ -709,9 +719,9 @@ export default function ArchitectureViewer() {
                                                         e.stopPropagation();
                                                         handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                                     }}
-                                                    className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-0 py-1 bg-transparent rounded-2xl transition-all duration-300 group cursor-pointer ${isSelected
-                                                        ? 'border-[0.5px] border-transparent bg-amber-50/50'
-                                                        : 'border-[0.5px] border-transparent hover:bg-amber-50/40'
+                                                    className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-3 md:px-6 py-1 bg-white rounded-2xl transition-all duration-300 group cursor-pointer shadow-sm border border-slate-100 ${isSelected
+                                                        ? 'bg-amber-50 border-amber-200'
+                                                        : 'hover:bg-slate-50 hover:border-amber-200'
                                                         }`}
                                                     onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
                                                     onMouseLeave={() => setHoveredHotspotId(null)}

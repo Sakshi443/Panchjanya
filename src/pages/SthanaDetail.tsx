@@ -214,12 +214,13 @@ export default function SthanaDetail() {
                         {contentMode === 'details' ? (
                             <div className="space-y-3">
                                 {/* Significance */}
-                                <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                                    <div className="relative z-10">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                            <h3 className="text-amber-800 font-bold tracking-widest text-sm">Description</h3>
-                                        </div>
+                                {/* Significance */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
+                                        <h3 className="text-amber-800 font-bold tracking-widest text-sm">Description</h3>
+                                    </div>
+                                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative z-10">
                                         <p className="font-serif text-lg text-slate-800 leading-relaxed">
                                             {hotspot.significance || hotspot.description || "No info available"}
                                         </p>
