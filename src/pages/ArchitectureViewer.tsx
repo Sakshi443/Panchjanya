@@ -647,7 +647,7 @@ export default function ArchitectureViewer() {
                             ref={sthanaListRef}
                             className="h-[500px] overflow-y-auto scroll-smooth pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
-                            <div className="space-y-4 pb-8">
+                            <div className="space-y-4 pb-[450px]">
                                 {/* Description Card */}
                                 <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-md text-slate-600 leading-relaxed font-serif">
                                     {temple.description_text || temple.description || "No description available for this architecture."}
@@ -709,17 +709,20 @@ export default function ArchitectureViewer() {
                                     })()}
                                 </div>
 
-                                {/* Bottom Scroll-to-Top & Text */}
-                                <div className="flex flex-col items-center gap-2 pt-8 pb-12">
+                                {/* Back to Top Button */}
+                                <div className="flex flex-col items-center gap-2 pt-8">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="w-12 h-12 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 transition-all shadow-sm"
-                                        onClick={() => sthanaListRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                                        className="w-10 h-10 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 transition-all shadow-sm"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            sthanaListRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
                                     >
-                                        <ChevronUp className="w-6 h-6" />
+                                        <ChevronUp className="w-5 h-5" />
                                     </Button>
-                                    <span className="text-slate-400 font-serif italic text-sm">Back to Top</span>
+                                    <span className="text-xs text-slate-400 font-serif italic">Back to Top</span>
                                 </div>
                             </div>
 

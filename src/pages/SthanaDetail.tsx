@@ -264,7 +264,7 @@ export default function SthanaDetail() {
                                             >
                                                 <button
                                                     onClick={() => setExpandedLeelaId(isExpanded ? null : leelaId)}
-                                                    className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors ${isExpanded ? 'bg-amber-50' : ''}`}
+                                                    className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors ${isExpanded ? 'bg-white' : 'bg-transparent'}`}
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>
