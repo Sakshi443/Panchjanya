@@ -58,6 +58,13 @@ export default function TempleArchitecture() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { t } = useLanguage();
 
+  const displayImages = (temple?.images && temple.images.length > 0
+    ? temple.images
+    : [temple?.architectureImage || "/placeholder-temple.jpg"]);
+
+  const nextImage = () => setSelectedImageIndex((p) => (p + 1) % displayImages.length);
+  const prevImage = () => setSelectedImageIndex((p) => (p - 1 + displayImages.length) % displayImages.length);
+
   useEffect(() => {
     if (!id) return;
 
@@ -271,7 +278,7 @@ export default function TempleArchitecture() {
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl border border-slate-100 hover:bg-blue-50 flex items-center justify-center gap-2 md:gap-3 font-bold shadow-md"
+                className="flex-[2] bg-white text-blue-900 h-12 md:h-14 rounded-2xl border border-slate-200 transition-all duration-300 hover:bg-slate-50 flex items-center justify-center gap-2 md:gap-3 font-bold shadow-md"
               >
                 <img
                   src="/icons/signpost.png"
@@ -302,7 +309,7 @@ export default function TempleArchitecture() {
 
           {/* Map/Navigation Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0 shadow-md"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 flex items-center justify-center shrink-0 shadow-md"
             onClick={handleNavigation}
             title="Navigate"
           >
@@ -311,7 +318,7 @@ export default function TempleArchitecture() {
 
           {/* Share Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 border border-blue-100/50 flex items-center justify-center shrink-0 shadow-md"
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 flex items-center justify-center shrink-0 shadow-md"
             onClick={handleShare}
             title="Share"
           >
@@ -390,11 +397,11 @@ export default function TempleArchitecture() {
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/80 hover:bg-blue-200 text-blue-900 border border-blue-100/50 shadow-md">
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 shadow-md">
                   <span className="font-serif italic font-bold text-lg leading-none drop-shadow-sm">i</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[90%] rounded-2xl">
+              <DialogContent className="max-w-[90%] rounded-2xl z-[10000]">
                 <DialogHeader>
                   <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
                 </DialogHeader>
@@ -440,22 +447,52 @@ export default function TempleArchitecture() {
 
       {/* Full-Screen Image Modal */}
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-none">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none z-[1001] flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
             <img
-              src={(temple?.images && temple.images.length > 0 ? temple.images : [temple?.architectureImage || "/placeholder-temple.jpg"])[selectedImageIndex]}
+              src={displayImages[selectedImageIndex]}
               alt={`${temple?.name} - Full view`}
-              className="max-w-full max-h-[95vh] object-contain"
+              className="max-w-full max-h-[100vh] object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
               }}
             />
+
+            {/* Close Button - High Z-index and responsive */}
             <button
               onClick={() => setIsImageModalOpen(false)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-2xl backdrop-blur-sm transition-all"
+              className="absolute top-4 right-4 z-[1002] w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-lg"
             >
-              ×
+              <X className="w-6 h-6" />
             </button>
+
+            {/* Navigation Arrows inside Modal */}
+            {displayImages.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-[1002] w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md bg-black/20 rounded-full backdrop-blur-sm"
+                >
+                  <ChevronLeft className="w-10 h-10" strokeWidth={3} />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-[1002] w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md bg-black/20 rounded-full backdrop-blur-sm"
+                >
+                  <ChevronRight className="w-10 h-10" strokeWidth={3} />
+                </button>
+
+                {/* Indicator Dots inside Modal */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-[1002]">
+                  {displayImages.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${idx === selectedImageIndex ? 'bg-amber-500 w-5' : 'bg-white/40'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

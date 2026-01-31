@@ -156,10 +156,10 @@ export default function SthanaDetail() {
                             />
                             {displayImages.length > 1 && (
                                 <>
-                                    <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md">
+                                    <button onClick={prevImage} className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md">
                                         <ChevronLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
                                     </button>
-                                    <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md">
+                                    <button onClick={nextImage} className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md">
                                         <ChevronRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={3} />
                                     </button>
                                     {/* Indicator Dots */}
@@ -298,19 +298,52 @@ export default function SthanaDetail() {
             </div>
             {/* Full-Screen Image Modal */}
             <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-                <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-none">
+                <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none z-[1001] flex items-center justify-center">
                     <div className="relative w-full h-full flex items-center justify-center">
                         <img
                             src={displayImages[currentImageIndex]}
                             alt={`${hotspot.title} - Full view`}
-                            className="max-w-full max-h-[95vh] object-contain"
+                            className="max-w-full max-h-[100vh] object-contain"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/placeholder-temple.jpg';
+                            }}
                         />
+
+                        {/* Close Button - High Z-index and responsive */}
                         <button
                             onClick={() => setIsImageModalOpen(false)}
-                            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-2xl backdrop-blur-sm transition-all"
+                            className="absolute top-4 right-4 z-[1002] w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-lg"
                         >
                             <X className="w-6 h-6" />
                         </button>
+
+                        {/* Navigation Arrows inside Modal */}
+                        {displayImages.length > 1 && (
+                            <>
+                                <button
+                                    onClick={prevImage}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-[1002] w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md bg-black/20 rounded-full backdrop-blur-sm"
+                                >
+                                    <ChevronLeft className="w-10 h-10" strokeWidth={3} />
+                                </button>
+                                <button
+                                    onClick={nextImage}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-[1002] w-12 h-12 flex items-center justify-center text-white/90 hover:text-white transition-all hover:scale-110 drop-shadow-md bg-black/20 rounded-full backdrop-blur-sm"
+                                >
+                                    <ChevronRight className="w-10 h-10" strokeWidth={3} />
+                                </button>
+
+                                {/* Indicator Dots inside Modal */}
+                                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-[1002]">
+                                    {displayImages.map((_, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-amber-500 w-5' : 'bg-white/40'}`}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
