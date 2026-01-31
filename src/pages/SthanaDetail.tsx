@@ -258,13 +258,13 @@ export default function SthanaDetail() {
                                             <div
                                                 key={leelaId}
                                                 className={`overflow-hidden transition-all duration-300 rounded-2xl border ${isExpanded
-                                                    ? 'border-amber-900/40 bg-amber-50/50 shadow-md mb-4'
-                                                    : 'border-[0.5px] border-slate-100 bg-white hover:border-amber-900/40 mb-2'
+                                                    ? 'border-amber-900/40 bg-white shadow-md mb-4'
+                                                    : 'border-[0.5px] border-amber-200 bg-amber-50 hover:border-amber-900/40 mb-2'
                                                     }`}
                                             >
                                                 <button
                                                     onClick={() => setExpandedLeelaId(isExpanded ? null : leelaId)}
-                                                    className="w-full flex items-center justify-between p-4 text-left gap-4"
+                                                    className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors ${isExpanded ? 'bg-amber-50' : ''}`}
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>

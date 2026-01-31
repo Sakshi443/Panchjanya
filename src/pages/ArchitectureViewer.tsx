@@ -493,8 +493,8 @@ export default function ArchitectureViewer() {
                                         <div className="absolute right-4 top-4 z-10 flex gap-2">
                                             <Button
                                                 size="icon"
-                                                variant="secondary"
-                                                className="h-9 w-9 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white backdrop-blur-sm"
+                                                variant="destructive"
+                                                className="h-9 w-9 rounded-full shadow-lg backdrop-blur-sm"
                                                 onClick={() => setShowHotspots(!showHotspots)}
                                                 title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                             >
@@ -527,8 +527,8 @@ export default function ArchitectureViewer() {
                                         <div className="absolute right-4 top-4 z-10">
                                             <Button
                                                 size="icon"
-                                                variant="secondary"
-                                                className="h-8 w-8 rounded-full shadow-lg bg-blue-900 hover:bg-blue-800 text-white"
+                                                variant="destructive"
+                                                className="h-8 w-8 rounded-full shadow-lg"
                                                 onClick={() => setShowHotspots(!showHotspots)}
                                                 title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                             >
@@ -582,7 +582,7 @@ export default function ArchitectureViewer() {
                             align="center"
                             avoidCollisions={false}
                             sideOffset={8}
-                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto rounded-2xl p-3 bg-white shadow-2xl border-blue-50 z-50 px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto rounded-2xl p-1 bg-white shadow-2xl border-blue-50 z-50 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
                             {hotspots.map((h) => {
                                 const isExpanded = expandedHotspots[h.id];
@@ -594,7 +594,7 @@ export default function ArchitectureViewer() {
                                         className="border-b border-slate-50 last:border-0 transition-all"
                                     >
                                         <div
-                                            className={`h-12 md:h-14 flex items-center justify-between gap-3 px-2 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'border border-amber-700/40 bg-amber-50/50 shadow-sm' : 'border border-transparent hover:border-amber-700/40 hover:bg-amber-50/40'}`}
+                                            className={`h-12 md:h-14 flex items-center justify-between gap-3 px-0 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'bg-amber-50/50 shadow-sm' : 'hover:bg-amber-50/40'}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 // Minimal selection for map sync, without triggering pop-up/scroll
@@ -671,14 +671,14 @@ export default function ArchitectureViewer() {
                                                 e.stopPropagation();
                                                 handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'list');
                                             }}
-                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-2 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
-                                                ? 'border-[0.5px] border-amber-700/40 bg-amber-50/50'
-                                                : 'border-[0.5px] border-transparent hover:border-amber-700/40 hover:bg-amber-50/40'
+                                            className={`w-full h-12 md:h-14 flex flex-row items-center justify-between px-0 py-1 bg-white rounded-2xl shadow-md transition-all duration-300 group cursor-pointer ${isSelected
+                                                ? 'border-[0.5px] border-transparent bg-amber-50/50'
+                                                : 'border-[0.5px] border-transparent hover:bg-amber-50/40'
                                                 }`}
                                             onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
                                             onMouseLeave={() => setHoveredHotspotId(null)}
                                         >
-                                            <div className="flex-1 h-full flex items-center px-1 py-2 gap-3 overflow-hidden">
+                                            <div className="flex-1 h-full flex items-center px-1 py-2 gap-2 overflow-hidden">
                                                 <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center border shrink-0 text-sm md:text-base transition-all duration-200 ${isSelected
                                                     ? 'bg-amber-600 text-white border-amber-600'
                                                     : 'bg-[#F9F6F0] text-amber-600 border-amber-600 group-hover:bg-amber-600 group-hover:text-white group-hover:border-amber-600'
