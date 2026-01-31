@@ -215,10 +215,10 @@ export default function SthanaDetail() {
                             <div className="space-y-3">
                                 {/* Significance */}
                                 {/* Significance */}
-                                <div>
+                                <div className="pl-2">
                                     <div className="flex items-center gap-2 mb-2">
                                         <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                        <h3 className="text-amber-800 font-bold tracking-widest text-sm">Description</h3>
+                                        <h3 className="text-amber-800 font-bold tracking-widest text-xl">Description</h3>
                                     </div>
                                     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative z-10">
                                         <p className="font-serif text-lg text-slate-800 leading-relaxed">
@@ -259,13 +259,13 @@ export default function SthanaDetail() {
                                             <div
                                                 key={leelaId}
                                                 className={`overflow-hidden transition-all duration-300 rounded-2xl border ${isExpanded
-                                                    ? 'border-amber-900/40 bg-white shadow-md mb-4'
-                                                    : 'border-[0.5px] border-amber-200 bg-amber-50 hover:border-amber-900/40 mb-2'
+                                                    ? 'border-amber-100 bg-amber-50/40 shadow-md mb-4'
+                                                    : 'border-[0.5px] border-slate-200 bg-white hover:bg-amber-50/40 hover:border-amber-200 mb-2'
                                                     }`}
                                             >
                                                 <button
                                                     onClick={() => setExpandedLeelaId(isExpanded ? null : leelaId)}
-                                                    className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors ${isExpanded ? 'bg-white' : 'bg-transparent'}`}
+                                                    className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors bg-transparent`}
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>
@@ -299,7 +299,7 @@ export default function SthanaDetail() {
             </div>
             {/* Full-Screen Image Modal */}
             <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-                <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none z-[1001] flex items-center justify-center">
+                <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none flex items-center justify-center">
                     <div className="relative w-full h-full flex items-center justify-center">
                         <img
                             src={displayImages[currentImageIndex]}

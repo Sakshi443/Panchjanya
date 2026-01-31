@@ -397,7 +397,7 @@ export default function TempleArchitecture() {
             {/* Info Button for Abbreviations - Moved to Header */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 shadow-md">
+                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 shadow-md">
                   <span className="font-serif italic font-bold text-lg leading-none drop-shadow-sm">i</span>
                 </Button>
               </DialogTrigger>
@@ -447,7 +447,7 @@ export default function TempleArchitecture() {
 
       {/* Full-Screen Image Modal */}
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none z-[1001] flex items-center justify-center">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
             <img
               src={displayImages[selectedImageIndex]}
@@ -487,7 +487,7 @@ export default function TempleArchitecture() {
                   {displayImages.map((_, idx) => (
                     <div
                       key={idx}
-                      className={`w-2.5 h-2.5 rounded-full transition-all ${idx === selectedImageIndex ? 'bg-amber-500 w-5' : 'bg-white/40'}`}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${idx === selectedImageIndex ? 'bg-slate-500 w-5' : 'bg-white/40'}`}
                     />
                   ))}
                 </div>

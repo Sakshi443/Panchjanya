@@ -285,6 +285,7 @@ export default function ArchitectureViewer() {
     };
 
     const toggleFullScreen = () => {
+        handleResetOrientation(); // Reset zoom/pan for correctness
         if (!isFullScreen && imageContainerRef.current) {
             if (imageContainerRef.current.requestFullscreen) {
                 imageContainerRef.current.requestFullscreen();
@@ -401,7 +402,7 @@ export default function ArchitectureViewer() {
                 <div className="flex justify-center">
                     <div
                         ref={imageContainerRef}
-                        className="relative aspect-square md:aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden border-4 border-white bg-slate-50 group touch-none"
+                        className="relative aspect-square md:aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden border-4 border-white bg-slate-50 group touch-none transition-all duration-500 ease-in-out"
                     >
                         <div
                             className="w-full h-full cursor-move"
@@ -533,7 +534,7 @@ export default function ArchitectureViewer() {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-9 w-9 rounded-full shadow-lg bg-[#CE1124] hover:bg-[#CE1124] text-white backdrop-blur-md border border-white/20"
+                                                className="h-9 w-9 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
                                                 onClick={() => setShowHotspots(!showHotspots)}
                                                 title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                             >
@@ -542,7 +543,7 @@ export default function ArchitectureViewer() {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-9 w-9 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/70 text-white backdrop-blur-md border border-white/20"
+                                                className="h-9 w-9 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20"
                                                 onClick={toggleFullScreen}
                                                 title="Exit Full Screen"
                                             >
@@ -550,13 +551,13 @@ export default function ArchitectureViewer() {
                                             </Button>
                                         </div>
                                         <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-3">
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/70 text-white backdrop-blur-md border border-white/20" onClick={handleZoomIn}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleZoomIn}>
                                                 <ZoomIn className="w-5 h-5" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/70 text-white backdrop-blur-md border border-white/20" onClick={handleZoomOut}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleZoomOut}>
                                                 <ZoomOut className="w-5 h-5" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/70 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation}>
                                                 <RotateCcw className="w-5 h-5" />
                                             </Button>
                                         </div>
@@ -567,7 +568,7 @@ export default function ArchitectureViewer() {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-8 w-8 rounded-full shadow-lg bg-[#CE1124] hover:bg-[#CE1124] text-white backdrop-blur-md border border-white/20"
+                                                className="h-8 w-8 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
                                                 onClick={() => setShowHotspots(!showHotspots)}
                                                 title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
                                             >
@@ -575,10 +576,10 @@ export default function ArchitectureViewer() {
                                             </Button>
                                         </div>
                                         <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/70 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation} title="Reset">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation} title="Reset">
                                                 <RotateCcw className="w-4 h-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/70 text-white backdrop-blur-md border border-white/20" onClick={toggleFullScreen} title="Interactive Full Screen">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={toggleFullScreen} title="Interactive Full Screen">
                                                 <Maximize className="w-4 h-4" />
                                             </Button>
                                         </div>
@@ -784,7 +785,7 @@ export default function ArchitectureViewer() {
 
                 {/* Full-Screen Image Modal */}
                 <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-                    <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none z-[1001] flex items-center justify-center">
+                    <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none flex items-center justify-center">
                         <div className="relative w-full h-full flex items-center justify-center">
                             <img
                                 src={imageUrl}
@@ -824,7 +825,7 @@ export default function ArchitectureViewer() {
                                         {displayImages.map((_, idx) => (
                                             <div
                                                 key={idx}
-                                                className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-amber-500 w-5' : 'bg-white/40'}`}
+                                                className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-slate-500 w-5' : 'bg-white/40'}`}
                                             />
                                         ))}
                                     </div>
