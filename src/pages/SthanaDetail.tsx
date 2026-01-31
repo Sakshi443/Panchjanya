@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen, Check } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Temple } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,6 +20,7 @@ export default function SthanaDetail() {
     const [viewMode, setViewMode] = useState("present"); // 'present' | 'old'
     const [contentMode, setContentMode] = useState("details"); // 'details' | 'leela'
     const [allHotspots, setAllHotspots] = useState<any[]>([]);
+    const [expandedLeelaId, setExpandedLeelaId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchTemple = async () => {
@@ -89,7 +90,7 @@ export default function SthanaDetail() {
                     <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
                         {hotspot.number}
                     </div>
-                    <h1 className="text-xl md:text-2xl font-heading font-bold text-[#0f3c6e] font-serif leading-tight truncate flex-1">
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif leading-tight truncate flex-1">
                         {hotspot.title}
                     </h1>
                 </div>
@@ -106,7 +107,7 @@ export default function SthanaDetail() {
                         </div>
                     </div>
 
-                    <h1 className="text-xl md:text-2xl font-heading font-bold text-[#0f3c6e] text-center px-16 leading-tight max-w-2xl truncate font-serif">
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] text-center px-16 leading-tight max-w-2xl truncate font-serif">
                         {hotspot.title}
                     </h1>
                 </div>
@@ -227,19 +228,69 @@ export default function SthanaDetail() {
 
                             </div>
                         ) : (
-                            <div className="space-y-3">
-                                {/* Leela Section */}
-                                <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                                    <div className="relative z-10">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                            <h3 className="text-amber-800 font-bold tracking-widest uppercase text-sm">...</h3>
-                                        </div>
-                                        <p className="font-serif text-lg text-slate-800 leading-relaxed">
-                                            {hotspot.leela || "या स्थानाशी संबंधित लीळाचरित्र लवकरच उपलब्ध होईल."}
-                                        </p>
-                                    </div>
-                                </div>
+                            <div className="space-y-3 pb-4">
+                                {/* Leela Section - Accordion Style */}
+                                {(() => {
+                                    // Sample data for demonstration if no data is found
+                                    const sampleLeelas = [
+                                        "पूर्बार्ध - 356) पुणतांबा गावाउत्तरे पाताळगुंफे वस्ति : ।। :",
+                                        "पूर्बार्ध - 359) पुनरपि पुणतांबा पाताळगुंफे अवस्थान : ।। :",
+                                        "पूर्बार्ध - 360) साळातीर्थ आसन : ।। :",
+                                        "पूर्बार्ध - 361) कारटमढी आसन : ।। :"
+                                    ];
+
+                                    // Handle both array and string (split by newline if string)
+                                    let leelas = Array.isArray(hotspot.leelas)
+                                        ? hotspot.leelas
+                                        : (hotspot.leela ? hotspot.leela.split('\n').filter((l: string) => l.trim()) : []);
+
+                                    // If no leelas found, use sample data for demo
+                                    if (leelas.length === 0) {
+                                        leelas = sampleLeelas;
+                                    }
+
+                                    return leelas.map((leela: any, index: number) => {
+                                        const leelaId = typeof leela === 'object' ? (leela.id || index.toString()) : index.toString();
+                                        const content = typeof leela === 'object' ? leela.description : leela;
+                                        const isExpanded = expandedLeelaId === leelaId;
+
+                                        return (
+                                            <div
+                                                key={leelaId}
+                                                className={`overflow-hidden transition-all duration-300 rounded-2xl border ${isExpanded
+                                                    ? 'border-amber-900/40 bg-amber-50/50 shadow-md mb-4'
+                                                    : 'border-[0.5px] border-slate-100 bg-white hover:border-amber-900/40 mb-2'
+                                                    }`}
+                                            >
+                                                <button
+                                                    onClick={() => setExpandedLeelaId(isExpanded ? null : leelaId)}
+                                                    className="w-full flex items-center justify-between p-4 text-left gap-4"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 ${isExpanded ? 'text-amber-700 font-bold' : 'text-slate-700 hover:text-amber-700'
+                                                            }`}>
+                                                            {content.length > 60 ? content.substring(0, 60) + '...' : content}
+                                                        </span>
+                                                    </div>
+                                                    <div className={`shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-amber-600' : 'text-slate-400'}`}>
+                                                        <ChevronDown className="w-5 h-5" />
+                                                    </div>
+                                                </button>
+
+                                                <div
+                                                    className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[1000px] opacity-100 pb-5 px-5' : 'max-h-0 opacity-0'
+                                                        }`}
+                                                >
+                                                    <div className="pt-2 border-t border-amber-100">
+                                                        <p className="font-serif text-lg text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                                            {content}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         )}
                     </div>

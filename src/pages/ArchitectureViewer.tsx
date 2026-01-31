@@ -466,14 +466,14 @@ export default function ArchitectureViewer() {
 
                                                 <div className="relative flex items-center justify-center">
                                                     {isActive ? (
-                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-amber-600 border-2 border-amber-700 flex items-center justify-center shadow-lg transition-all duration-300">
-                                                            <span className="text-[9px] md:text-xs font-semibold text-white">
+                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-amber-600 border border-white/20 flex items-center justify-center shadow-lg transition-all duration-300 transform scale-110">
+                                                            <span className="text-[9px] md:text-xs font-bold text-white">
                                                                 {hotspot.number}
                                                             </span>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-transparent border border-amber-700 flex items-center justify-center shadow-sm transition-all backdrop-blur-none">
-                                                            <span className="text-[8px] md:text-[10px] font-bold text-amber-700 drop-shadow-sm">
+                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#0f3c6e] border border-white/20 flex items-center justify-center transition-all shadow-sm">
+                                                            <span className="text-[8px] md:text-[10px] font-bold text-white">
                                                                 {hotspot.number}
                                                             </span>
                                                         </div>
@@ -640,7 +640,7 @@ export default function ArchitectureViewer() {
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-amber-600 rounded-full"></div>
-                            <h3 className="font-heading font-bold text-lg text-blue-900">Sthans Overview</h3>
+                            <h3 className="font-heading font-bold text-lg text-blue-900">Sthan's Description</h3>
                         </div>
                         <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-sm text-slate-600 leading-relaxed font-serif">
                             {temple.description_text || temple.description || "No description available for this architecture."}

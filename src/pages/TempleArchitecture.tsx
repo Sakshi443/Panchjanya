@@ -422,7 +422,7 @@ export default function TempleArchitecture() {
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 bg-amber-600"></div>
             <h3 className="font-heading text-xl font-bold text-blue-900">
-              {temple.sthana_info_title || "Sthan Description"}
+              {temple.sthana_info_title || "Sthan Overview"}
             </h3>
           </div>
 
