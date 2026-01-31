@@ -566,8 +566,8 @@ export default function ArchitectureViewer() {
                                         >
                                             <div className="flex-1 min-w-0 px-1 py-2">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-4 bg-amber-500 rounded-full shrink-0"></div>
-                                                    <h4 className={`font-heading font-bold uppercase text-xs tracking-wider transition-colors truncate ${isSelected ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
+                                                    <div className="w-1.5 h-6 bg-amber-600 rounded-full shrink-0"></div>
+                                                    <h4 className={`font-heading font-bold uppercase text-base md:text-lg tracking-wider transition-colors truncate ${isSelected ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
                                                 </div>
                                             </div>
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all ${isExpanded ? 'bg-amber-50 border-amber-200' : isSelected ? 'bg-amber-600/10 border-amber-200' : 'bg-[#fcfaf5] border-slate-200 group-hover:bg-amber-50 group-hover:border-amber-200'}`}>
@@ -576,7 +576,7 @@ export default function ArchitectureViewer() {
                                         </div>
                                         {isExpanded && (
                                             <div className="px-2 pb-3 pt-2">
-                                                <p className="text-sm text-slate-600 font-serif leading-relaxed pl-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                <p className="text-lg text-slate-600 font-serif leading-relaxed pl-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
                                                     {h.description || "Historical records of this sacred site are being updated."}
                                                 </p>
                                             </div>
@@ -589,7 +589,7 @@ export default function ArchitectureViewer() {
                                     <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
                                         <BookOpen className="w-6 h-6 text-slate-300" />
                                     </div>
-                                    <p className="text-sm text-slate-400 italic font-serif">Historical data not yet cataloged.</p>
+                                    <p className="text-lg text-slate-400 italic font-serif">Historical data not yet cataloged.</p>
                                 </div>
                             )}
                         </DropdownMenuContent>
@@ -598,7 +598,7 @@ export default function ArchitectureViewer() {
                     {/* Sthans Overview */}
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <div className="w-1 h-6 bg-amber-600"></div>
+                            <div className="w-1.5 h-6 bg-amber-600 rounded-full"></div>
                             <h3 className="font-heading font-bold text-lg text-blue-900">Sthans Overview</h3>
                         </div>
                         <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-sm text-slate-600 leading-relaxed font-serif">
