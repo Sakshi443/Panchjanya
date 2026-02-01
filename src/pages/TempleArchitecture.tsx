@@ -314,7 +314,7 @@ export default function TempleArchitecture() {
             onClick={handleNavigation}
             title="Navigate"
           >
-            <Navigation className="w-6 h-6 md:w-7 md:h-7" />
+            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
 
           {/* Share Button */}
@@ -324,7 +324,7 @@ export default function TempleArchitecture() {
             onClick={handleShare}
             title="Share"
           >
-            <Share2 className="w-6 h-6 md:w-7 md:h-7" />
+            <Share2 className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
         </div>
 
