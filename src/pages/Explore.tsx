@@ -384,10 +384,10 @@ const Explore = () => {
                 <div className="px-4 pt-3 pb-1 flex items-center justify-center pointer-events-auto z-[410]">
                     <div className="relative w-full max-w-4xl flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-sm py-1.5 px-4">
                         {/* Logo - Absolute Left */}
-                        <img src="/logo.png" alt="Logo" className="absolute left-4 w-12 h-12 object-contain" />
+                        <img src="/logo.jpg" alt="Logo" className="absolute left-2 w-12 h-12 object-contain" />
 
                         {/* Title - Center */}
-                        <h1 className="w-full px-16 text-center text-lg md:text-2xl font-heading font-bold text-[#0f3c6e] font-serif whitespace-nowrap">
+                        <h1 className="w-full px-10 text-center text-xl md:text-2xl font-heading font-bold text-[#0f3c6e] font-serif whitespace-nowrap">
                             Panchajanya Heritage Map
                         </h1>
                     </div>

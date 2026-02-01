@@ -30,7 +30,7 @@ export const Sidebar = () => {
         <div className="h-24 flex items-center justify-center px-4 border-b border-sidebar-border/50 relative">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/20 border-2 border-accent flex-shrink-0 overflow-hidden">
-              <img src="/logo.png" alt="Panchajanya Logo" className="w-full h-full object-cover" />
+              <img src="/logo.jpg" alt="Panchajanya Logo" className="w-full h-full object-cover" />
             </div>
             <span
               className={cn(

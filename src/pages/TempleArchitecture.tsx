@@ -283,7 +283,7 @@ export default function TempleArchitecture() {
                 <img
                   src="/icons/signpost.png"
                   alt="Directions"
-                  className="w-5 h-5 md:w-6 md:h-6 object-contain"
+                  className="w-6 h-6 md:w-6 md:h-6 object-contain"
                 />
                 <span className="text-sm md:text-base">{temple.directions_title || "Way to reach"}</span>
               </Button>
