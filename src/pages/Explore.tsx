@@ -44,6 +44,14 @@ const exploreIcon = new L.Icon({
     popupAnchor: [0, -20],
 });
 
+// Custom Blue Temple Icon for Pin Points
+const templePinIcon = new L.Icon({
+    iconUrl: '/icons/Blue temple icon.png',
+    iconSize: [60, 60],
+    iconAnchor: [30, 60], // Bottom center
+    popupAnchor: [0, -60],
+});
+
 // Inner Map Component to handle center/zoom updates
 function MapEffect({ temples }: { temples: Temple[] }) {
     const map = useMap();
@@ -124,12 +132,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
     return (
         <Marker
             position={[temple.latitude || 0, temple.longitude || 0]}
-            icon={L.divIcon({
-                className: "custom-explore-marker",
-                html: `<div style="background-color: #d97706; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.3), 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.2)'; this.style.boxShadow='0 0 0 8px rgba(217, 119, 6, 0.4), 0 4px 12px rgba(0,0,0,0.3)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 0 6px rgba(217, 119, 6, 0.3), 0 2px 8px rgba(0,0,0,0.2)';"></div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
-            })}
+            icon={templePinIcon}
             eventHandlers={{
                 click: () => onSelect(temple),
                 popupopen: () => setIsPopupOpen(true),
