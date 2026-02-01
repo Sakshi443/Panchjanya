@@ -310,7 +310,7 @@ export default function TempleArchitecture() {
           {/* Map/Navigation Button */}
           <Button
             variant="outline"
-            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 border-slate-200 flex items-center justify-center shrink-0 shadow-md p-0"
+            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 hover:text-blue-900 border-slate-200 hover:border-slate-200 flex items-center justify-center shrink-0 shadow-md p-0"
             onClick={handleNavigation}
             title="Navigate"
           >
@@ -320,7 +320,7 @@ export default function TempleArchitecture() {
           {/* Share Button */}
           <Button
             variant="outline"
-            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 border-slate-200 flex items-center justify-center shrink-0 shadow-md p-0"
+            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 hover:text-blue-900 border-slate-200 hover:border-slate-200 flex items-center justify-center shrink-0 shadow-md p-0"
             onClick={handleShare}
             title="Share"
           >
