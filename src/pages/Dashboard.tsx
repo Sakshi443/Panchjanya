@@ -21,10 +21,9 @@ const Dashboard = () => {
             <div className="max-w-md mx-auto lg:max-w-4xl px-4 lg:px-6 pb-24 space-y-8 animate-in fade-in duration-500">
 
                 {/* Top Bar */}
-                {/* Top Bar */}
                 <div className="relative flex items-center justify-center py-4">
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-green-900/10 rounded-full flex items-center justify-center border border-green-900/20">
-                        <img src="/logo.jpg" alt="Logo" className="w-6 h-6 object-contain opacity-100" />
+                        <img src="/icons/Logo.svg" alt="Logo" className="w-12 h-12 object-contain opacity-100" />
                     </div>
                     <h1 className="text-2xl font-heading font-bold text-[#0f3c6e]">Panchajanya</h1>
                 </div>
@@ -34,8 +33,8 @@ const Dashboard = () => {
                     <h1 className="text-3xl lg:text-4xl font-heading font-bold text-[#0f3c6e]">
                         {userName}
                     </h1>
-                    <p className="text-amber-600 italic font-medium font-serif text-lg">
-                        Jai Shri Chakradhar !
+                    <p className="text-amber-600 italic text-center font-medium font-serif text-lg">
+                        Jai Shri Chakradhar
                     </p>
                 </div>
 
