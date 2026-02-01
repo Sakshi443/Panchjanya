@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, query, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Temple } from "@/types";
 import { useNavigate } from "react-router-dom";
-import { Search, Compass, MapPin, ChevronRight, Filter, X, Bookmark, ChevronLeft } from "lucide-react";
+import { Search, Compass, MapPin, ChevronRight, Filter, X, Bookmark, CornerDownRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from "react-leaflet";
@@ -11,10 +11,34 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import DataTableFilter from "@/components/ui/data-table-filter";
+
+
+// Custom styles for Leaflet popup close button
+const popupStyles = `
+  .custom-temple-popup .leaflet-popup-content-wrapper {
+    padding: 0;
+    overflow: hidden;
+  }
+  .custom-temple-popup .leaflet-popup-content {
+    margin: 0px 0px 0px 0px;
+  }
+  .custom-temple-popup .leaflet-popup-close-button {
+    top: 8px !important;
+    right: 8px !important;
+    font-size: 18px !important;
+    color: #4b5563 !important; /* gray-600 */
+    z-index: 10;
+  }
+  .custom-temple-popup .leaflet-popup-close-button:hover {
+    color: #111827 !important; /* gray-900 */
+  }
+`;
 
 // Custom Icon for 'Explore' Map (Golden Circle with Symbol)
 const exploreIcon = new L.Icon({
-    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI0ZDQjkwMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHBhdGggZD0iTTIwIDEydjE2TTEyIDIwaDE2IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4=', // Placeholder SVG base64
+    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzAzLm9yZy9yZ2IvMjAwMC9zdmciPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjE4IiBmaWxsPSIjRkNCOTAwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8cGF0aCBkPSJNMjAgMTJ2MTZNMTIgMjBoMTYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg==', // Placeholder SVG base64
     iconSize: [40, 40],
     iconAnchor: [20, 20],
     popupAnchor: [0, -20],
@@ -41,6 +65,9 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
     const { user } = useAuth();
     const [isSaved, setIsSaved] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+    const map = useMap();
 
     // Check if temple is saved
     useEffect(() => {
@@ -104,58 +131,75 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                 iconAnchor: [16, 16]
             })}
             eventHandlers={{
-                click: () => onSelect(temple)
+                click: () => onSelect(temple),
+                popupopen: () => setIsPopupOpen(true),
+                popupclose: () => setIsPopupOpen(false)
             }}
         >
-            {/* Tooltip - Shows on Hover */}
-            <Tooltip
-                direction="top"
-                offset={[0, -12]}
-                className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
-            >
-                <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-amber-600">
-                    <p className="font-heading text-blue-900 font-bold text-sm whitespace-nowrap">{temple.name}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                        {temple.city || temple.district || "Maharashtra"}
-                    </p>
-                </div>
-            </Tooltip>
+            {/* Tooltip - Shows on Hover only when popup is closed */}
+            {!isPopupOpen && (
+                <Tooltip
+                    direction="top"
+                    offset={[0, -12]}
+                    className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
+                >
+                    <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-amber-600">
+                        <p className="font-heading text-blue-900 font-bold text-sm whitespace-nowrap">{temple.name}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                            {temple.city || temple.district || "Maharashtra"}
+                        </p>
+                    </div>
+                </Tooltip>
+            )}
 
             {/* Popup - Shows on Click */}
             <Popup
-                closeButton={true}
+                closeButton={false}
                 className="custom-temple-popup"
                 offset={[0, -5]}
-                minWidth={250}
-                maxWidth={280}
+                minWidth={230}
+                maxWidth={250}
                 autoPan={true}
                 autoPanPaddingTopLeft={[20, 100]}
                 autoPanPaddingBottomRight={[20, 100]}
                 keepInView={true}
             >
-                <div className="p-2">
-                    {/* Horizontal Layout: Left Content + Right Image */}
-                    <div className="flex gap-2 items-stretch">
-                        {/* Left Side: Content (60-70%) */}
-                        <div className="flex-1 flex flex-col justify-between min-w-0">
-                            {/* Temple Name */}
-                            <h3 className="font-heading font-bold text-sm text-blue-900 leading-tight line-clamp-2 mb-1">
-                                {temple.name}
-                            </h3>
+                <div className="px-2.5 py-2 w-full">
+                    <style>{popupStyles}</style>
 
-                            {/* Location */}
-                            <div className="flex items-start gap-1 text-[10px] text-muted-foreground mb-2">
-                                <MapPin className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
-                                <span className="leading-tight line-clamp-1">
+                    {/* Block A: Title + Close Button Row */}
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                        <h3 className="font-heading font-bold text-base text-blue-900 leading-tight">
+                            {temple.name}
+                        </h3>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                map.closePopup();
+                            }}
+                            className="text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+                        >
+                            <X size={16} />
+                        </button>
+                    </div>
+
+                    {/* Content Body: Left Col (Subtitle + Buttons) & Right Col (Image) */}
+                    <div className="flex gap-3 items-start">
+                        {/* Left Side: Subtitle + Block B */}
+                        <div className="flex-1 flex flex-col">
+                            {/* Location Subtitle */}
+                            <div className="flex items-start gap-1 text-[11px] text-muted-foreground mb-1">
+                                <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                <span className="leading-tight line-clamp-2">
                                     {temple.city && temple.city !== temple.district ? `${temple.city}, ` : ""}
                                     {temple.district || "Maharashtra"}
                                 </span>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex gap-1.5 mt-auto">
+                            {/* Block B: Action Buttons */}
+                            <div className="flex gap-2">
                                 <Button
-                                    className="flex-1 bg-blue-900 hover:bg-blue-800 text-white h-8 rounded-lg shadow-sm text-xs font-bold px-3"
+                                    className="flex-1 bg-blue-900 hover:bg-blue-800 text-white h-9 rounded-lg shadow-sm text-xs font-bold px-0"
                                     onClick={() => navigate(`/temple/${temple.id}/architecture`)}
                                 >
                                     Details
@@ -163,7 +207,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="h-8 w-8 rounded-lg border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 flex-shrink-0"
+                                    className="h-9 w-9 rounded-lg border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 flex-shrink-0"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (temple.latitude && temple.longitude) {
@@ -171,13 +215,13 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                                         }
                                     }}
                                 >
-                                    <MapPin className="w-3.5 h-3.5" />
+                                    <div className="w-5 h-5 bg-amber-600" style={{ WebkitMaskImage: "url(/direction_icon.png)", maskImage: "url(/direction_icon.png)", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat" }} />
                                 </Button>
                             </div>
                         </div>
 
-                        {/* Right Side: Image (30-40%) - fills height of content */}
-                        <div className="w-20 rounded-lg overflow-hidden bg-slate-100 relative flex-shrink-0">
+                        {/* Right Side: Image - height matches content (till Block A) */}
+                        <div className="w-14 h-14 relative flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
                             <img
                                 src={temple.images?.[0] || "/placeholder-temple.jpg"}
                                 alt={temple.name}
@@ -207,94 +251,172 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
 
 const Explore = () => {
     const [temples, setTemples] = useState<Temple[]>([]);
+    const [allTemplesForOptions, setAllTemplesForOptions] = useState<Temple[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilters, setShowFilters] = useState(false);
-    const [selectedDistrict, setSelectedDistrict] = useState<string>("");
-    const [selectedTaluka, setSelectedTaluka] = useState<string>("");
+
+    // Pending states (for UI dropdowns)
+    const [pendingDistrict, setPendingDistrict] = useState<string>("");
+    const [pendingTaluka, setPendingTaluka] = useState<string>("");
+    const [pendingSthanaType, setPendingSthanaType] = useState<string>("");
+
+    // Applied states (for Firestore query and results)
+    const [appliedDistrict, setAppliedDistrict] = useState<string>("");
+    const [appliedTaluka, setAppliedTaluka] = useState<string>("");
+    const [appliedSthanaType, setAppliedSthanaType] = useState<string>("");
+
     const navigate = useNavigate();
     const { t } = useLanguage();
-
-    // Default Hampi/Selected Temple for the card
     const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
 
+    // 1. Fetch all temples ONCE to populate filter options (Districts/Talukas)
     useEffect(() => {
         const unsubscribe = onSnapshot(collection(db, "temples"), (snapshot) => {
             const data = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
             })) as Temple[];
-
-            console.log("Total temples loaded:", data.length);
-            console.log("All temples:", data.map(t => ({
-                name: t.name,
-                hasCoords: !!(t.latitude && t.longitude),
-                latitude: t.latitude,
-                longitude: t.longitude
-            })));
-
-            // Check for temples without coordinates
-            const templesWithoutCoords = data.filter(t => !t.latitude || !t.longitude);
-            if (templesWithoutCoords.length > 0) {
-                console.warn("Temples missing coordinates:", templesWithoutCoords.map(t => t.name));
-            }
-
-            setTemples(data);
-            if (data.length > 0) {
-                // Set a default selected temple (e.g., first one or Hampi if found)
-                const hampi = data.find(t => t.name.toLowerCase().includes("hampi"));
-                setSelectedTemple(hampi || data[0]);
-            }
+            setAllTemplesForOptions(data);
         });
         return () => unsubscribe();
     }, []);
 
-    // Get unique districts and talukas
-    const districts = Array.from(new Set(temples.map(t => t.district).filter(Boolean))).sort();
-    const talukas = Array.from(new Set(temples.map(t => t.taluka).filter(Boolean))).sort();
+    // 2. Main Temple Listener - Querying Firestore based on Applied Filters
+    useEffect(() => {
+        let templesRef = collection(db, "temples");
+        let q = query(templesRef);
 
-    // Filter temples based on search, district, and taluka
+        const conditions = [];
+        if (appliedDistrict) {
+            conditions.push(where("district", "==", appliedDistrict));
+        }
+        if (appliedTaluka) {
+            conditions.push(where("taluka", "==", appliedTaluka));
+        }
+
+        if (conditions.length > 0) {
+            console.log("🔍 Fetching temples with database filters:", conditions.length);
+            q = query(templesRef, ...conditions);
+        } else {
+            console.log("📜 Fetching all temples (no database filters)");
+        }
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            })) as Temple[];
+
+            console.log(`✅ Loaded ${data.length} temples from database`);
+            setTemples(data);
+
+            if (data.length > 0 && !selectedTemple) {
+                const hampi = data.find(t => t.name.toLowerCase().includes("hampi"));
+                setSelectedTemple(hampi || data[0]);
+            }
+        }, (error) => {
+            console.error("❌ Firestore query error:", error);
+        });
+
+        return () => unsubscribe();
+    }, [appliedDistrict, appliedTaluka]);
+
+    // 3. Derived Filter Options with Counts from Database
+    const districts = Array.from(new Set(allTemplesForOptions.map(t => t.district).filter(Boolean)))
+        .sort()
+        .map(d => ({
+            value: d,
+            label: `${d} (${allTemplesForOptions.filter(t => t.district === d).length})`
+        }));
+
+    const talukas = Array.from(new Set(
+        allTemplesForOptions
+            .filter(t => !pendingDistrict || t.district === pendingDistrict)
+            .map(t => t.taluka)
+            .filter(Boolean)
+    ))
+        .sort()
+        .map(t => ({
+            value: t,
+            label: `${t} (${allTemplesForOptions.filter(curr => curr.taluka === t && (!pendingDistrict || curr.district === pendingDistrict)).length})`
+        }));
+
+    // 4. Sthana Category Options with Counts from Database
+    const sthanaOptions = [
+        { value: "Avasthan Sthan", label: "Avasthan Sthan" },
+        { value: "Aasan Sthan", label: "Aasan Sthan" },
+        { value: "Vasti sthan", label: "Vasti sthan" },
+        { value: "Mandlik Sthan", label: "Mandlik Sthan" },
+    ].map(opt => {
+        const count = allTemplesForOptions.filter(t =>
+            (t.sthana && t.sthana.toLowerCase().includes(opt.value.toLowerCase())) ||
+            (t.description_text && t.description_text.toLowerCase().includes(opt.value.toLowerCase())) ||
+            (t.description && t.description.toLowerCase().includes(opt.value.toLowerCase()))
+        ).length;
+        return { ...opt, label: `${opt.label} (${count})` };
+    });
+
+    // Client-side filtering for Search and Sthana Category (Substring matches)
     const filteredTemples = temples.filter(temple => {
         const matchesSearch = !searchQuery ||
             temple.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             temple.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             temple.district?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesDistrict = !selectedDistrict || temple.district === selectedDistrict;
-        const matchesTaluka = !selectedTaluka || temple.taluka === selectedTaluka;
+        const matchesSthana = !appliedSthanaType || (
+            (temple.sthana && temple.sthana.toLowerCase().includes(appliedSthanaType.toLowerCase())) ||
+            (temple.description_text && temple.description_text.toLowerCase().includes(appliedSthanaType.toLowerCase())) ||
+            (temple.description && temple.description.toLowerCase().includes(appliedSthanaType.toLowerCase()))
+        );
 
-        return matchesSearch && matchesDistrict && matchesTaluka;
+        return matchesSearch && matchesSthana;
     });
 
-    const activeFiltersCount = (selectedDistrict ? 1 : 0) + (selectedTaluka ? 1 : 0);
+    const activeFiltersCount = (appliedDistrict ? 1 : 0) + (appliedTaluka ? 1 : 0) + (appliedSthanaType ? 1 : 0);
+
+    const handleApplyFilters = () => {
+        console.log("🎯 Applying Filters to Database:", { pendingDistrict, pendingTaluka, pendingSthanaType });
+        setAppliedDistrict(pendingDistrict);
+        setAppliedTaluka(pendingTaluka);
+        setAppliedSthanaType(pendingSthanaType);
+        setShowFilters(false);
+    };
 
     const clearFilters = () => {
-        setSelectedDistrict("");
-        setSelectedTaluka("");
+        setPendingDistrict("");
+        setPendingTaluka("");
+        setPendingSthanaType("");
+        setAppliedDistrict("");
+        setAppliedTaluka("");
+        setAppliedSthanaType("");
     };
 
     return (
         <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white animate-in fade-in duration-300">
             {/* Standard Header */}
-            {/* Transparent Header Container */}
-            <div className="absolute top-0 left-0 right-0 z-[400] px-4 py-4 flex items-center justify-between pointer-events-none">
+            {/* Header Container */}
+            <div className="absolute top-0 left-0 right-0 z-[400] flex flex-col pointer-events-none gap-1">
 
-                {/* Left: Back & Title */}
-                <div className="flex items-center gap-2 md:gap-3 pointer-events-auto">
-                    <Button variant="ghost" size="icon" className="-ml-1 md:-ml-2 hover:bg-white/20 bg-white/10 backdrop-blur-md rounded-full w-9 h-9 md:w-10 md:h-10" onClick={() => navigate('/')}>
-                        <ChevronLeft className="w-6 h-6 md:w-7 md:h-7 text-[#0f3c6e]" />
-                    </Button>
-                    <h1 className="text-sm md:text-xl font-heading font-bold text-[#0f3c6e] font-serif drop-shadow-sm bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 rounded-full border border-white/20 whitespace-nowrap">
-                        Explore
-                    </h1>
+                {/* Top Row: Unified Glass Header */}
+                <div className="px-4 pt-3 pb-1 flex items-center justify-center pointer-events-auto z-[410]">
+                    <div className="relative w-full max-w-4xl flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-sm py-1.5 px-4">
+                        {/* Logo - Absolute Left */}
+                        <img src="/logo.png" alt="Logo" className="absolute left-4 w-12 h-12 object-contain" />
+
+                        {/* Title - Center */}
+                        <h1 className="w-full px-16 text-center text-lg md:text-2xl font-heading font-bold text-[#0f3c6e] font-serif whitespace-nowrap">
+                            Panchajanya Heritage Map
+                        </h1>
+                    </div>
                 </div>
 
-                {/* Center: Search Bar */}
-                <div className="pointer-events-auto w-full max-w-sm mx-4">
-                    <div className="relative rounded-full bg-white/95 backdrop-blur-md border border-white/40 flex items-center">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                {/* Second Row: Search Bar - Responsive & Centered */}
+                <div className="pointer-events-auto w-full max-w-xs mx-auto px-4">
+                    <div className="relative rounded-full bg-white/95 backdrop-blur-md border border-white/40 flex items-center shadow-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3" />
                         <Input
-                            placeholder={t("explore.searchPlaceholder")}
-                            className="pl-10 pr-10 h-11 rounded-full border-none bg-transparent focus-visible:ring-0 text-sm placeholder:text-gray-400"
+                            placeholder="Explore Holy Legacy"
+                            className="pl-9 pr-9 h-9 rounded-full border-none bg-transparent focus-visible:ring-0 text-xs placeholder:text-gray-400"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -313,17 +435,12 @@ const Explore = () => {
                         </button>
                     </div>
                 </div>
-
-                {/* Right: Logo */}
-                <div className="bg-white/90 backdrop-blur-md p-2 md:p-2.5 rounded-full border border-white/20 flex-shrink-0 pointer-events-auto">
-                    <Compass className="w-5 h-5 md:w-6 md:h-6 text-amber-600" />
-                </div>
             </div>
 
             {/* Filter Panel */}
             {showFilters && (
-                <div className="absolute top-32 left-4 right-4 z-[400] pointer-events-auto">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-100/50 p-6">
+                <div className="absolute top-36 left-4 right-4 z-[400] pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-100/50 p-6 shadow-xl">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-heading font-bold text-lg text-blue-900">Filters</h3>
                             <button
@@ -334,56 +451,73 @@ const Explore = () => {
                             </button>
                         </div>
 
-                        <div className="space-y-4">
-                            {/* District Filter */}
-                            <div>
-                                <label className="block text-sm font-bold text-blue-900 mb-2">District</label>
-                                <select
-                                    value={selectedDistrict}
-                                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-                                >
-                                    <option value="">All Districts</option>
-                                    {districts.map(district => (
-                                        <option key={district} value={district}>{district}</option>
-                                    ))}
-                                </select>
+                        <div className="space-y-6">
+                            {/* 1. Area wise */}
+                            <div className="space-y-4">
+                                {/* <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest">1. Area wise</h4> */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* District Filter */}
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-blue-900/60 mb-1.5 uppercase tracking-wider">District</label>
+                                        <DataTableFilter
+                                            label="All Districts"
+                                            options={districts}
+                                            selectedValues={pendingDistrict ? [pendingDistrict] : []}
+                                            onChange={(values) => {
+                                                setPendingDistrict(values[0] || "");
+                                                setPendingTaluka(""); // Reset taluka when district changes for cascading effect
+                                            }}
+                                            className="w-full bg-white border-gray-200"
+                                        />
+                                    </div>
+
+                                    {/* Taluka Filter */}
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-blue-900/60 mb-1.5 uppercase tracking-wider">Taluka</label>
+                                        <DataTableFilter
+                                            label="All Talukas"
+                                            options={talukas}
+                                            selectedValues={pendingTaluka ? [pendingTaluka] : []}
+                                            onChange={(values) => setPendingTaluka(values[0] || "")}
+                                            className="w-full bg-white border-gray-200"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Taluka Filter */}
-                            <div>
-                                <label className="block text-sm font-bold text-blue-900 mb-2">Taluka</label>
-                                <select
-                                    value={selectedTaluka}
-                                    onChange={(e) => setSelectedTaluka(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-                                >
-                                    <option value="">All Talukas</option>
-                                    {talukas.map(taluka => (
-                                        <option key={taluka} value={taluka}>{taluka}</option>
-                                    ))}
-                                </select>
+                            {/* 2. Sthana Wise */}
+                            <div className="space-y-4 pt-2">
+                                {/* <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest">2. Sthana Wise</h4> */}
+                                <div>
+                                    <label className="block text-[11px] font-bold text-blue-900/60 mb-1.5 uppercase tracking-wider">Sthana Category</label>
+                                    <DataTableFilter
+                                        label="All Sthana Types"
+                                        options={sthanaOptions}
+                                        selectedValues={pendingSthanaType ? [pendingSthanaType] : []}
+                                        onChange={(values) => setPendingSthanaType(values[0] || "")}
+                                        className="w-full bg-white border-gray-200"
+                                    />
+                                </div>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex gap-3 pt-2">
+                            <div className="flex gap-3 pt-6 border-t mt-4">
                                 <Button
                                     onClick={clearFilters}
                                     variant="outline"
-                                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-12 rounded-xl"
                                 >
                                     Clear All
                                 </Button>
                                 <Button
-                                    onClick={() => setShowFilters(false)}
-                                    className="flex-1 bg-blue-900 hover:bg-blue-800 text-white"
+                                    onClick={handleApplyFilters}
+                                    className="flex-1 bg-blue-900 hover:bg-blue-800 text-white h-12 rounded-xl shadow-md"
                                 >
                                     Apply Filters
                                 </Button>
                             </div>
-
                             {/* Results Count */}
-                            <div className="text-center text-sm text-muted-foreground pt-2 border-t">
+                            <div className="text-center text-[11px] font-bold text-amber-600 uppercase tracking-widest pt-4 border-t mt-4">
                                 Showing {filteredTemples.length} of {temples.length} temples
                             </div>
                         </div>
@@ -424,4 +558,3 @@ const Explore = () => {
 };
 
 export default Explore;
-
