@@ -309,20 +309,22 @@ export default function TempleArchitecture() {
 
           {/* Map/Navigation Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 flex items-center justify-center shrink-0 shadow-md"
+            variant="outline"
+            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 border-slate-200 flex items-center justify-center shrink-0 shadow-md p-0"
             onClick={handleNavigation}
             title="Navigate"
           >
-            <Navigation className="w-5 h-5 md:w-6 md:h-6 drop-shadow-sm" />
+            <Navigation className="w-6 h-6 md:w-7 md:h-7" />
           </Button>
 
           {/* Share Button */}
           <Button
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/80 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 flex items-center justify-center shrink-0 shadow-md"
+            variant="outline"
+            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 border-slate-200 flex items-center justify-center shrink-0 shadow-md p-0"
             onClick={handleShare}
             title="Share"
           >
-            <Share2 className="w-5 h-5 md:w-6 md:h-6 drop-shadow-sm" />
+            <Share2 className="w-6 h-6 md:w-7 md:h-7" />
           </Button>
         </div>
 
