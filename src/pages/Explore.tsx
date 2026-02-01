@@ -46,10 +46,10 @@ const exploreIcon = new L.Icon({
 
 // Custom Blue Temple Icon for Pin Points
 const templePinIcon = new L.Icon({
-    iconUrl: '/icons/Blue temple icon.png',
+    iconUrl: '/icons/Untitled design.png',
     iconSize: [60, 60],
     iconAnchor: [30, 60], // Bottom center
-    popupAnchor: [0, -60],
+    popupAnchor: [0, -55], // Adjusted for new icon height
 });
 
 // Inner Map Component to handle center/zoom updates
