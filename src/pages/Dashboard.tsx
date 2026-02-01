@@ -46,7 +46,7 @@ const Dashboard = () => {
                     <Link to="/literature" className="group">
                         <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-amber-50 rounded-xl text-[#d4af37] group-hover:scale-110 transition-transform duration-300">
                                     <BookOpen className="w-6 h-6" />
                                 </div>
                             </div>
@@ -65,7 +65,7 @@ const Dashboard = () => {
                     <Link to="/e-library" className="group">
                         <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-amber-50 rounded-xl text-[#d4af37] group-hover:scale-110 transition-transform duration-300">
                                     <Library className="w-6 h-6" />
                                 </div>
                             </div>
@@ -84,7 +84,7 @@ const Dashboard = () => {
                     <Link to="/whats-new" className="group">
                         <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-amber-50 rounded-xl text-[#d4af37] group-hover:scale-110 transition-transform duration-300">
                                     <Sparkles className="w-6 h-6" />
                                 </div>
                             </div>
@@ -103,7 +103,7 @@ const Dashboard = () => {
                     <Link to="/jigyasa" className="group">
                         <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-amber-50 rounded-xl text-[#d4af37] group-hover:scale-110 transition-transform duration-300">
                                     <BrainCircuit className="w-6 h-6" />
                                 </div>
                             </div>
@@ -162,7 +162,7 @@ const Dashboard = () => {
                         <Link to="/help-center">
                             <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-amber-50 text-amber-600 rounded-full">
+                                    <div className="p-2 bg-amber-50 text-[#d4af37] rounded-full">
                                         <HelpCircle className="w-5 h-5" />
                                     </div>
                                     <span className="font-medium text-foreground">About Panchajanya</span>
@@ -174,7 +174,7 @@ const Dashboard = () => {
                         <Link to="/profile">
                             <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-amber-50 text-amber-600 rounded-full">
+                                    <div className="p-2 bg-amber-50 text-[#d4af37] rounded-full">
                                         <User className="w-5 h-5" />
                                     </div>
                                     <span className="font-medium text-foreground">My Account</span>
