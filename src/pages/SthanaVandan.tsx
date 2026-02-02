@@ -139,35 +139,37 @@ const SthanaVandan = () => {
                 </div>
             </div>
 
-            <div className="px-6 space-y-12">
-                {/* Swami Virahan Card */}
-                <Card className="p-5 bg-white border-none rounded-3xl overflow-hidden relative">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full blur-2xl -translate-y-10 translate-x-10" />
+            <div className="px-6 space-y-8">
+                {/* Raj Viharan Heading */}
+                <div className="flex items-center justify-between border-l-[6px] border-[#ab8b39] pl-4 rounded-sm mt-4">
+                    <h2 className="font-serif font-bold text-2xl text-slate-900 tracking-tight">Raj Viharan</h2>
+                </div>
+
+                {/* Swami Viharan Card */}
+                <Card className="p-8 bg-white border-none rounded-3xl overflow-hidden relative shadow-sm">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gray-50/50 rounded-full blur-3xl -translate-y-12 translate-x-12" />
                     <div className="relative z-10">
-                        <h2 className="font-heading font-bold text-xl text-blue-900 mb-2">Raj Viharan</h2>
-                        <p className="text-muted-foreground text-sm mb-6 max-w-[80%] leading-relaxed">
+                        <p className="text-slate-600 text-lg mb-8 max-w-[90%] leading-relaxed font-medium">
                             Map your spiritual journey across ancient heritage sites with personalized itineraries.
                         </p>
                         <Button
                             onClick={() => navigate('/yatra')}
-                            className="w-full bg-[#0f3c6e] hover:bg-[#0a2a4d] text-white py-6 rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-3"
+                            className="w-full bg-[#0f3c6e] hover:bg-[#0a2a4d] text-white py-8 rounded-2xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-4 group"
                         >
-                            <div className="p-0.5 bg-amber-500 rounded-full">
-                                <Compass className="w-4 h-4 text-white" />
+                            <div className="p-1 bg-amber-500 rounded-full group-hover:scale-110 transition-transform">
+                                <Compass className="w-5 h-5 text-white" />
                             </div>
-                            <span className="font-medium text-base">See the viharan</span>
+                            <span className="font-bold text-lg tracking-wide">See the viharan</span>
                         </Button>
                     </div>
                 </Card>
-
-
             </div>
 
 
             <div className="space-y-6 pt-2 px-6">
-                <div className="flex items-center justify-between border-l-4 border-amber-600 pl-3">
-                    <h2 className="font-heading font-bold text-xl text-blue-900">Heritage Map</h2>
-                    <Link to="/explore" className="text-xs font-bold text-amber-600 uppercase tracking-widest cursor-pointer hover:text-amber-700">
+                <div className="flex items-center justify-between border-l-[6px] border-[#ab8b39] pl-4 rounded-sm">
+                    <h2 className="font-serif font-bold text-2xl text-slate-900 tracking-tight">Heritage Map</h2>
+                    <Link to="/explore" className="text-[10px] font-black text-[#ab8b39] uppercase tracking-[0.2em] cursor-pointer hover:text-amber-700 transition-colors">
                         view all
                     </Link>
                 </div>
@@ -251,9 +253,9 @@ const SthanaVandan = () => {
 
             {/* Architectural Archive Section */}
             <div className="space-y-6 pt-4 pb-10 px-6">
-                <div className="flex items-center justify-between border-l-4 border-amber-600 pl-3">
-                    <h2 className="font-heading font-bold text-xl text-blue-900">Architectural Archive</h2>
-                    <Button variant="link" className="text-xs font-bold text-amber-600 uppercase tracking-widest p-0 h-auto">VIEW ALL</Button>
+                <div className="flex items-center justify-between border-l-[6px] border-[#ab8b39] pl-4 rounded-sm">
+                    <h2 className="font-serif font-bold text-2xl text-slate-900 tracking-tight">Architectural Archive</h2>
+                    <Button variant="link" className="text-[10px] font-black text-[#ab8b39] uppercase tracking-[0.2em] p-0 h-auto cursor-pointer hover:text-amber-700 transition-colors">VIEW ALL</Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
