@@ -141,8 +141,8 @@ const SthanaVandan = () => {
 
             <div className="px-6 space-y-8">
                 {/* Raj Viharan Heading */}
-                <div className="flex items-center justify-between border-l-[6px] border-[#ab8b39] pl-4 rounded-sm mt-4">
-                    <h2 className="font-serif font-bold text-2xl text-slate-900 tracking-tight">Raj Viharan</h2>
+                <div className="flex items-center justify-between border-l-4 border-amber-600 pl-3 mt-4">
+                    <h2 className="font-heading font-bold text-xl text-blue-900">Raj Viharan</h2>
                 </div>
 
                 {/* Swami Viharan Card */}
@@ -167,9 +167,9 @@ const SthanaVandan = () => {
 
 
             <div className="space-y-6 pt-2 px-6">
-                <div className="flex items-center justify-between border-l-[6px] border-[#ab8b39] pl-4 rounded-sm">
-                    <h2 className="font-serif font-bold text-2xl text-slate-900 tracking-tight">Heritage Map</h2>
-                    <Link to="/explore" className="text-[10px] font-black text-[#ab8b39] uppercase tracking-[0.2em] cursor-pointer hover:text-amber-700 transition-colors">
+                <div className="flex items-center justify-between border-l-4 border-amber-600 pl-3">
+                    <h2 className="font-heading font-bold text-xl text-blue-900">Heritage Map</h2>
+                    <Link to="/explore" className="text-xs font-bold text-amber-600 uppercase tracking-widest cursor-pointer hover:text-amber-700">
                         view all
                     </Link>
                 </div>
@@ -253,9 +253,9 @@ const SthanaVandan = () => {
 
             {/* Architectural Archive Section */}
             <div className="space-y-6 pt-4 pb-10 px-6">
-                <div className="flex items-center justify-between border-l-[6px] border-[#ab8b39] pl-4 rounded-sm">
-                    <h2 className="font-serif font-bold text-2xl text-slate-900 tracking-tight">Architectural Archive</h2>
-                    <Button variant="link" className="text-[10px] font-black text-[#ab8b39] uppercase tracking-[0.2em] p-0 h-auto cursor-pointer hover:text-amber-700 transition-colors">VIEW ALL</Button>
+                <div className="flex items-center justify-between border-l-4 border-amber-600 pl-3">
+                    <h2 className="font-heading font-bold text-xl text-blue-900">Architectural Archive</h2>
+                    <Button variant="link" className="text-xs font-bold text-amber-600 uppercase tracking-widest p-0 h-auto">VIEW ALL</Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
