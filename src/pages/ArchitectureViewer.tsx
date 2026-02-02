@@ -27,6 +27,7 @@ interface Hotspot {
     id: string;
     x: number;
     y: number;
+    imageIndex?: number;
     title: string;
     description: string;
     number?: number;
@@ -79,6 +80,14 @@ export default function ArchitectureViewer() {
     const handleSelectHotspot = (id: string | null, source: 'image' | 'list' | 'dropdown' | null) => {
         setSelectedHotspotId(id);
         setSelectionSource(source);
+
+        if (id && source && source !== 'image') {
+            const h = (imageType === 'architectural' ? hotspots : presentHotspots).find(hotspot => hotspot.id === id);
+            if (h && (h.imageIndex || 0) !== currentImageIndex) {
+                setCurrentImageIndex(h.imageIndex || 0);
+                handleResetOrientation();
+            }
+        }
     };
 
     const toggleHotspot = (id: string) => {
@@ -181,9 +190,18 @@ export default function ArchitectureViewer() {
                 // Get architectural and present images
                 const archImg = data.architectureImage || data.images?.[0] || "";
                 const presImg = data.presentImage || data.images?.[0] || "";
+                const archImgs = data.architectureImages || [];
+                const presImgs = data.presentImages || [];
 
                 setArchitecturalImage(archImg);
                 setPresentImage(presImg);
+                // We'll store supplemental images in the temple object or local state if needed
+                // But for now, temple state already has them through data.
+                setTemple({
+                    ...data,
+                    architectureImages: archImgs,
+                    presentImages: presImgs
+                });
 
                 // Add numbers to hotspots if they don't have them
                 const hotspotsWithNumbers = (data.hotspots || []).map((h, index) => ({
@@ -209,8 +227,8 @@ export default function ArchitectureViewer() {
     }, [id, navigate]);
 
     const displayImages = imageType === 'architectural'
-        ? [architecturalImage]
-        : [presentImage];
+        ? [architecturalImage, ...(temple?.architectureImages || [])].filter(Boolean)
+        : [presentImage, ...(temple?.presentImages || [])].filter(Boolean);
 
     const imageUrl = displayImages[currentImageIndex] || architecturalImage;
 
@@ -483,62 +501,64 @@ export default function ArchitectureViewer() {
                                     )}
 
                                     {/* Hotspot Rendering */}
-                                    {(showHotspots || selectedHotspotId) && (imageType === 'architectural' ? hotspots : presentHotspots).map((hotspot) => {
-                                        const isSelected = selectedHotspotId === hotspot.id;
-                                        const isHovered = hoveredHotspotId === hotspot.id;
+                                    {(showHotspots || selectedHotspotId) && (imageType === 'architectural' ? hotspots : presentHotspots)
+                                        .filter(h => (h.imageIndex || 0) === currentImageIndex)
+                                        .map((hotspot) => {
+                                            const isSelected = selectedHotspotId === hotspot.id;
+                                            const isHovered = hoveredHotspotId === hotspot.id;
 
-                                        // Hotspot is active (highlighted) if:
-                                        // 1. Hovered
-                                        // 2. Selected from image/list
-                                        // 3. Selected from dropdown AND dropdown is open
-                                        const isActive = isHovered || (isSelected && (
-                                            selectionSource !== 'dropdown' || isPothiOpen
-                                        ));
+                                            // Hotspot is active (highlighted) if:
+                                            // 1. Hovered
+                                            // 2. Selected from image/list
+                                            // 3. Selected from dropdown AND dropdown is open
+                                            const isActive = isHovered || (isSelected && (
+                                                selectionSource !== 'dropdown' || isPothiOpen
+                                            ));
 
-                                        // Hotspot is visible if showHotspots is on, OR if it's the active one
-                                        const isVisible = showHotspots || isActive;
-                                        if (!isVisible) return null;
+                                            // Hotspot is visible if showHotspots is on, OR if it's the active one
+                                            const isVisible = showHotspots || isActive;
+                                            if (!isVisible) return null;
 
-                                        return (
-                                            <div
-                                                key={hotspot.id}
-                                                className={`absolute pointer-events-none ${isActive ? 'z-50' : 'z-10'}`}
-                                                style={{
-                                                    left: `${hotspot.x}%`,
-                                                    top: `${hotspot.y}%`,
-                                                    transform: 'translate(-50%, -50%)',
-                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                                                }}
-                                            >
+                                            return (
                                                 <div
-                                                    className="absolute w-8 h-8 md:w-10 md:h-10 rounded-full z-[70] cursor-pointer pointer-events-auto"
-                                                    style={{ transform: 'translate(-50%, -50%)', left: '50%', top: '50%' }}
-                                                    onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
-                                                    onMouseLeave={() => setHoveredHotspotId(null)}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'image');
+                                                    key={hotspot.id}
+                                                    className={`absolute pointer-events-none ${isActive ? 'z-50' : 'z-10'}`}
+                                                    style={{
+                                                        left: `${hotspot.x}%`,
+                                                        top: `${hotspot.y}%`,
+                                                        transform: 'translate(-50%, -50%)',
+                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                                     }}
-                                                />
+                                                >
+                                                    <div
+                                                        className="absolute w-8 h-8 md:w-10 md:h-10 rounded-full z-[70] cursor-pointer pointer-events-auto"
+                                                        style={{ transform: 'translate(-50%, -50%)', left: '50%', top: '50%' }}
+                                                        onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
+                                                        onMouseLeave={() => setHoveredHotspotId(null)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleSelectHotspot(isSelected ? null : hotspot.id, isSelected ? null : 'image');
+                                                        }}
+                                                    />
 
-                                                <div className="relative flex items-center justify-center">
-                                                    {isActive ? (
-                                                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-amber-600 border border-white/20 flex items-center justify-center shadow-lg transition-all duration-300 transform scale-110">
-                                                            <span className="text-[9px] md:text-xs font-bold text-white">
-                                                                {hotspot.number}
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#0f3c6e] border border-white/20 flex items-center justify-center transition-all shadow-sm">
-                                                            <span className="text-[8px] md:text-[10px] font-bold text-white">
-                                                                {hotspot.number}
-                                                            </span>
-                                                        </div>
-                                                    )}
+                                                    <div className="relative flex items-center justify-center">
+                                                        {isActive ? (
+                                                            <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-amber-600 border border-white/20 flex items-center justify-center shadow-lg transition-all duration-300 transform scale-110">
+                                                                <span className="text-[9px] md:text-xs font-bold text-white">
+                                                                    {hotspot.number}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#0f3c6e] border border-white/20 flex items-center justify-center transition-all shadow-sm">
+                                                                <span className="text-[8px] md:text-[10px] font-bold text-white">
+                                                                    {hotspot.number}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
                                 </div>
                             </div>
                         </div>

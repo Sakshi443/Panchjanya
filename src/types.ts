@@ -23,8 +23,10 @@ export interface Temple {
     leela?: string; // Leela
     history?: string; // Temple history
     images?: string[];
-    architectureImage?: string; // For architecture view
-    presentImage?: string; // For present view
+    architectureImage?: string; // Main architecture image for hotspots
+    architectureImages?: string[]; // Multiple architecture images
+    presentImage?: string; // Main present image for hotspots
+    presentImages?: string[]; // Multiple present images
     hotspots?: any[]; // For architecture view
     presentHotspots?: any[]; // For present image hotspots
     sections?: { title: string; content: string }[]; // Backward compatibility for some existing structure
