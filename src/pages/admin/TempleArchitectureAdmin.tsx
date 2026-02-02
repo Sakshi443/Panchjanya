@@ -338,33 +338,29 @@ export default function TempleArchitectureAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F6F0]">
-      {/* Brand Header */}
-      <div className="bg-white border-b px-6 py-4 mb-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-serif font-bold text-primary">Raj Viharan</h1>
+    <div className="min-h-screen bg-[#F9F6F0] pb-12">
+      <div className="max-w-7xl mx-auto px-6 pt-8 space-y-8">
+        {/* Brand Heading - Styled like Heritage Map */}
+        <div className="flex items-center gap-4">
+          <div className="w-1.5 h-10 bg-[#ab8b39] rounded-full shadow-sm" />
+          <h1 className="text-3xl font-serif font-bold text-primary tracking-tight">Raj Viharan</h1>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-12 space-y-6">
-        {/* Navigation & Title */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-4">
+        {/* Navigation & Context */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4">
             <Button
               variant="ghost"
               onClick={() => navigate("/admin")}
-              className="w-fit p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-primary transition-colors"
+              className="w-fit p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-primary transition-colors flex items-center"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
 
-            <div className="flex items-center gap-4">
-              <div className="w-1.5 h-10 bg-[#ab8b39] rounded-full shadow-sm" />
-              <div>
-                <h2 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">{templeName}</h2>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/80 mt-1">Architecture Management</p>
-              </div>
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-800">{templeName}</h2>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/80 mt-1">Architecture Management</p>
             </div>
           </div>
 
