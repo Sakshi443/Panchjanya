@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff, Maximize, Check, ChevronRight, ChevronUp, Expand } from "lucide-react";
@@ -55,12 +55,15 @@ export default function ArchitectureViewer() {
 
     const [temple, setTemple] = useState<Temple | null>(null);
     const [hotspots, setHotspots] = useState<Hotspot[]>([]);
+    const [presentHotspots, setPresentHotspots] = useState<Hotspot[]>([]); // New state for present hotspots
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [loading, setLoading] = useState(true);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showHotspots, setShowHotspots] = useState(true);
-    const [imageType, setImageType] = useState<'architectural' | 'present'>('architectural');
+    const [searchParams] = useSearchParams();
+    const initialView = searchParams.get('view') as 'architectural' | 'present' | null;
+    const [imageType, setImageType] = useState<'architectural' | 'present'>(initialView || 'architectural');
     const [architecturalImage, setArchitecturalImage] = useState<string>("");
     const [presentImage, setPresentImage] = useState<string>("");
     const [imageRatio, setImageRatio] = useState<number | null>(null);
@@ -177,7 +180,7 @@ export default function ArchitectureViewer() {
                 // Get architectural and present images
                 // Get architectural and present images
                 const archImg = data.architectureImage || data.images?.[0] || "";
-                const presImg = data.images?.[0] || "";
+                const presImg = data.presentImage || data.images?.[0] || "";
 
                 setArchitecturalImage(archImg);
                 setPresentImage(presImg);
@@ -189,6 +192,12 @@ export default function ArchitectureViewer() {
                 }));
                 // Cast to Hotspot[] to satisfy the new interface (optional fields are fine)
                 setHotspots(hotspotsWithNumbers as Hotspot[]);
+
+                const presentHotspotsWithNumbers = (data.presentHotspots || []).map((h, index) => ({
+                    ...h,
+                    number: h.number || index + 1
+                }));
+                setPresentHotspots(presentHotspotsWithNumbers as Hotspot[]);
             } catch (error) {
                 console.error("Error fetching temple:", error);
             } finally {
@@ -201,7 +210,7 @@ export default function ArchitectureViewer() {
 
     const displayImages = imageType === 'architectural'
         ? [architecturalImage]
-        : (temple?.images && temple.images.length > 0 ? temple.images : [presentImage]);
+        : [presentImage];
 
     const imageUrl = displayImages[currentImageIndex] || architecturalImage;
 
@@ -299,7 +308,7 @@ export default function ArchitectureViewer() {
 
     // Navigate to Detail Page
     const handleNavigationToDetail = (hotspot: Hotspot) => {
-        navigate(`/temple/${id}/architecture/sthana/${hotspot.id}`);
+        navigate(`/temple/${id}/architecture/sthana/${hotspot.id}?view=${imageType}`);
     };
 
     if (loading) {
@@ -413,7 +422,14 @@ export default function ArchitectureViewer() {
                             onTouchStart={handleTouchStart}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={handleTouchEnd}
-                            onClick={() => handleSelectHotspot(null, null)}
+                            onClick={(e) => {
+                                // Coordinate capture for backend support
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                                console.log(`Clicked coordinates: x: ${x.toFixed(2)}%, y: ${y.toFixed(2)}%`);
+                                handleSelectHotspot(null, null);
+                            }}
                         >
                             <div
                                 style={{
@@ -466,7 +482,8 @@ export default function ArchitectureViewer() {
                                         </>
                                     )}
 
-                                    {imageType === 'architectural' && (showHotspots || selectedHotspotId) && hotspots.map((hotspot) => {
+                                    {/* Hotspot Rendering */}
+                                    {(showHotspots || selectedHotspotId) && (imageType === 'architectural' ? hotspots : presentHotspots).map((hotspot) => {
                                         const isSelected = selectedHotspotId === hotspot.id;
                                         const isHovered = hoveredHotspotId === hotspot.id;
 
@@ -526,67 +543,65 @@ export default function ArchitectureViewer() {
                             </div>
                         </div>
 
-                        {imageType === 'architectural' && (
-                            <>
-                                {isFullScreen ? (
-                                    <>
-                                        <div className="absolute right-4 top-4 z-10 flex gap-2">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-9 w-9 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
-                                                onClick={() => setShowHotspots(!showHotspots)}
-                                                title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
-                                            >
-                                                {showHotspots ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-9 w-9 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20"
-                                                onClick={toggleFullScreen}
-                                                title="Exit Full Screen"
-                                            >
-                                                <X className="w-5 h-5" />
-                                            </Button>
-                                        </div>
-                                        <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-3">
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleZoomIn}>
-                                                <ZoomIn className="w-5 h-5" />
-                                            </Button>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleZoomOut}>
-                                                <ZoomOut className="w-5 h-5" />
-                                            </Button>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation}>
-                                                <RotateCcw className="w-5 h-5" />
-                                            </Button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="absolute right-4 top-4 z-10">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-8 w-8 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
-                                                onClick={() => setShowHotspots(!showHotspots)}
-                                                title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
-                                            >
-                                                {showHotspots ? <Eye className="w-4 h-4 text-white" /> : <EyeOff className="w-4 h-4 text-white" />}
-                                            </Button>
-                                        </div>
-                                        <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation} title="Reset">
-                                                <RotateCcw className="w-4 h-4" />
-                                            </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={toggleFullScreen} title="Interactive Full Screen">
-                                                <Maximize className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
+                        <>
+                            {isFullScreen ? (
+                                <>
+                                    <div className="absolute right-4 top-4 z-10 flex gap-2">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-9 w-9 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
+                                            onClick={() => setShowHotspots(!showHotspots)}
+                                            title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
+                                        >
+                                            {showHotspots ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                                        </Button>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-9 w-9 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20"
+                                            onClick={toggleFullScreen}
+                                            title="Exit Full Screen"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </Button>
+                                    </div>
+                                    <div className="absolute right-4 bottom-4 z-10 flex flex-col gap-3">
+                                        <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleZoomIn}>
+                                            <ZoomIn className="w-5 h-5" />
+                                        </Button>
+                                        <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleZoomOut}>
+                                            <ZoomOut className="w-5 h-5" />
+                                        </Button>
+                                        <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation}>
+                                            <RotateCcw className="w-5 h-5" />
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="absolute right-4 top-4 z-10">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-8 w-8 rounded-full shadow-lg bg-red-600/80 hover:bg-red-600 text-white backdrop-blur-md border border-white/20"
+                                            onClick={() => setShowHotspots(!showHotspots)}
+                                            title={showHotspots ? "Hide Hotspots" : "Show Hotspots"}
+                                        >
+                                            {showHotspots ? <Eye className="w-4 h-4 text-white" /> : <EyeOff className="w-4 h-4 text-white" />}
+                                        </Button>
+                                    </div>
+                                    <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={handleResetOrientation} title="Reset">
+                                            <RotateCcw className="w-4 h-4" />
+                                        </Button>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full shadow-lg bg-slate-600/50 hover:bg-slate-600/50 text-white backdrop-blur-md border border-white/20" onClick={toggleFullScreen} title="Interactive Full Screen">
+                                            <Maximize className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                        </>
                     </div>
                 </div>
 
@@ -632,7 +647,7 @@ export default function ArchitectureViewer() {
                             sideOffset={8}
                             className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[75vh] md:max-h-[80vh] overflow-y-auto rounded-2xl p-1 bg-white shadow-2xl border-blue-50 z-50 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
-                            {hotspots.map((h) => {
+                            {(imageType === 'architectural' ? hotspots : presentHotspots).map((h) => {
                                 const isExpanded = expandedHotspots[h.id];
                                 // Selection in pothi only shows if it matches AND (pothi is open)
                                 // Highlight if it matches the selected hotspot
@@ -706,7 +721,7 @@ export default function ArchitectureViewer() {
                                 {/* Sthana List */}
                                 <div className="flex flex-col gap-2 md:gap-4">
                                     {(() => {
-                                        const displayHotspots = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
+                                        const displayHotspots = [...(imageType === 'architectural' ? hotspots : presentHotspots)].sort((a, b) => (a.number || 0) - (b.number || 0));
 
                                         return displayHotspots.map((hotspot) => {
                                             const isSelected = selectedHotspotId === hotspot.id;
@@ -776,7 +791,7 @@ export default function ArchitectureViewer() {
                                 </div>
                             </div>
 
-                            {hotspots.length === 0 && (
+                            {(imageType === 'architectural' ? hotspots : presentHotspots).length === 0 && (
                                 <p className="text-sm text-muted-foreground italic">No sthana hotspots found.</p>
                             )}
                         </div>

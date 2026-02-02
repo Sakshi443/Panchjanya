@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -12,6 +12,8 @@ import { Link } from "react-router-dom";
 export default function SthanaDetail() {
     const { id, sthanaId } = useParams<{ id: string; sthanaId: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const viewParam = searchParams.get('view') || 'architectural';
     const [hotspot, setHotspot] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -29,14 +31,18 @@ export default function SthanaDetail() {
                 const snap = await getDoc(doc(db, "temples", id));
                 if (snap.exists()) {
                     const data = snap.data() as Temple;
-                    const hotspots = (data.hotspots || []).map((h, index) => ({
+                    const hotspotsToUse = viewParam === 'present'
+                        ? (data.presentHotspots || [])
+                        : (data.hotspots || []);
+
+                    const formattedHotspots = hotspotsToUse.map((h, index) => ({
                         ...h,
                         number: h.number || index + 1
-                    })).sort((a, b) => a.number - b.number);
+                    })).sort((a, b) => (a.number || 0) - (b.number || 0));
 
-                    setAllHotspots(hotspots);
+                    setAllHotspots(formattedHotspots);
 
-                    const found = hotspots.find((h: any) => h.id === sthanaId);
+                    const found = formattedHotspots.find((h: any) => h.id === sthanaId);
                     if (found) {
                         setHotspot(found);
                     }
@@ -84,7 +90,7 @@ export default function SthanaDetail() {
             >
                 {/* Mobile: All in one row */}
                 <div className="md:hidden flex items-center gap-3 w-full">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-9 w-9 rounded-full">
+                    <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view?view=${viewParam}`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-9 w-9 rounded-full">
                         <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
@@ -99,7 +105,7 @@ export default function SthanaDetail() {
                 {/* Desktop: Existing layout */}
                 <div className="hidden md:flex items-center justify-center relative">
                     <div className="absolute left-6 flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-10 w-10 rounded-full">
+                        <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view?view=${viewParam}`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-10 w-10 rounded-full">
                             <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                         </Button>
                         <div className="w-10 h-10 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold flex items-center justify-center text-lg">
@@ -119,7 +125,7 @@ export default function SthanaDetail() {
                     {/* Sthana Navigation Pagination (Refined Theme) */}
                     <div className="flex items-center justify-between max-w-sm mx-auto px-4 w-full mt-2 mb-2">
                         <button
-                            onClick={() => prevSthana && navigate(`/temple/${id}/architecture/sthana/${prevSthana.id}`, { replace: true })}
+                            onClick={() => prevSthana && navigate(`/temple/${id}/architecture/sthana/${prevSthana.id}?view=${viewParam}`, { replace: true })}
                             disabled={!prevSthana}
                             className={`w-28 h-10 border rounded-full duration-150 transition-all flex items-center justify-center font-bold text-sm ${!prevSthana
                                 ? 'border-gray-200 text-gray-300 cursor-not-allowed opacity-50'
@@ -134,7 +140,7 @@ export default function SthanaDetail() {
                         </div>
 
                         <button
-                            onClick={() => nextSthana && navigate(`/temple/${id}/architecture/sthana/${nextSthana.id}`, { replace: true })}
+                            onClick={() => nextSthana && navigate(`/temple/${id}/architecture/sthana/${nextSthana.id}?view=${viewParam}`, { replace: true })}
                             disabled={!nextSthana}
                             className={`w-28 h-10 border rounded-full duration-150 transition-all flex items-center justify-center font-bold text-sm ${!nextSthana
                                 ? 'border-gray-200 text-gray-300 cursor-not-allowed opacity-50'

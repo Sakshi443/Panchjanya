@@ -35,8 +35,11 @@ export default function TempleArchitectureAdmin() {
   const { toast } = useToast();
 
   const [templeName, setTempleName] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
+  const [viewType, setViewType] = useState<'architectural' | 'present'>('architectural');
+  const [archImageUrl, setArchImageUrl] = useState("");
+  const [presentImageUrl, setPresentImageUrl] = useState("");
+  const [archHotspots, setArchHotspots] = useState<Hotspot[]>([]);
+  const [presentHotspots, setPresentHotspots] = useState<Hotspot[]>([]);
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -61,8 +64,10 @@ export default function TempleArchitectureAdmin() {
 
         const data = snap.data();
         setTempleName(data.name || "Unknown Temple");
-        setImageUrl(data.architectureImage || "");
-        setHotspots(data.hotspots || []);
+        setArchImageUrl(data.architectureImage || "");
+        setPresentImageUrl(data.presentImage || data.images?.[0] || "");
+        setArchHotspots(data.hotspots || []);
+        setPresentHotspots(data.presentHotspots || []);
       } catch (error) {
         console.error("Error fetching temple:", error);
         toast({
@@ -99,6 +104,9 @@ export default function TempleArchitectureAdmin() {
     setModalOpen(true);
   };
 
+  const currentHotspots = viewType === 'architectural' ? archHotspots : presentHotspots;
+  const currentImageUrl = viewType === 'architectural' ? archImageUrl : presentImageUrl;
+
   const handleHotspotEdit = (hotspot: Hotspot, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedHotspot(hotspot);
@@ -108,15 +116,21 @@ export default function TempleArchitectureAdmin() {
   const saveHotspot = async () => {
     if (!selectedHotspot || !id) return;
 
-    const updatedHotspots = hotspots.some((h) => h.id === selectedHotspot.id)
-      ? hotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
-      : [...hotspots, selectedHotspot];
+    const hotspotsToUpdate = viewType === 'architectural' ? archHotspots : presentHotspots;
+    const updatedHotspots = hotspotsToUpdate.some((h) => h.id === selectedHotspot.id)
+      ? hotspotsToUpdate.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
+      : [...hotspotsToUpdate, selectedHotspot];
 
-    setHotspots(updatedHotspots);
+    if (viewType === 'architectural') {
+      setArchHotspots(updatedHotspots);
+    } else {
+      setPresentHotspots(updatedHotspots);
+    }
 
     try {
+      const fieldToUpdate = viewType === 'architectural' ? "hotspots" : "presentHotspots";
       await updateDoc(doc(db, "temples", id), {
-        hotspots: updatedHotspots,
+        [fieldToUpdate]: updatedHotspots,
       });
 
       toast({
@@ -139,12 +153,19 @@ export default function TempleArchitectureAdmin() {
   const deleteHotspot = async () => {
     if (!selectedHotspot || !id) return;
 
-    const updatedHotspots = hotspots.filter((h) => h.id !== selectedHotspot.id);
-    setHotspots(updatedHotspots);
+    const hotspotsToUpdate = viewType === 'architectural' ? archHotspots : presentHotspots;
+    const updatedHotspots = hotspotsToUpdate.filter((h) => h.id !== selectedHotspot.id);
+
+    if (viewType === 'architectural') {
+      setArchHotspots(updatedHotspots);
+    } else {
+      setPresentHotspots(updatedHotspots);
+    }
 
     try {
+      const fieldToUpdate = viewType === 'architectural' ? "hotspots" : "presentHotspots";
       await updateDoc(doc(db, "temples", id), {
-        hotspots: updatedHotspots,
+        [fieldToUpdate]: updatedHotspots,
       });
 
       toast({
@@ -164,28 +185,29 @@ export default function TempleArchitectureAdmin() {
     }
   };
 
-  const handleArchitectureImageUpload = async (url: string) => {
+  const handleImageUpload = async (url: string) => {
     if (!id) return;
     try {
+      const fieldToUpdate = viewType === 'architectural' ? "architectureImage" : "presentImage";
       await updateDoc(doc(db, "temples", id), {
-        architectureImage: url,
+        [fieldToUpdate]: url,
       });
-      setImageUrl(url);
-      toast({
-        title: "Success",
-        description: "Architecture image updated",
-      });
-    } catch (error: any) {
-      console.error("Error updating image:", error);
 
-      let errorMessage = "Failed to update architecture image";
-      if (error.code === 'permission-denied') {
-        errorMessage = "Permission denied! Update Firestore Rules in Firebase Console.";
+      if (viewType === 'architectural') {
+        setArchImageUrl(url);
+      } else {
+        setPresentImageUrl(url);
       }
 
       toast({
+        title: "Success",
+        description: `${viewType === 'architectural' ? 'Architecture' : 'Present'} image updated`,
+      });
+    } catch (error: any) {
+      console.error("Error updating image:", error);
+      toast({
         title: "Error",
-        description: errorMessage,
+        description: "Failed to update image",
         variant: "destructive",
       });
     }
@@ -241,42 +263,64 @@ export default function TempleArchitectureAdmin() {
           </div>
         </div>
 
-        {/* Architecture Image Upload */}
+        {/* View Switcher Tabs */}
+        <div className="flex justify-center bg-muted p-1 rounded-xl w-fit mx-auto">
+          <button
+            onClick={() => setViewType('architectural')}
+            className={`px-6 py-2 rounded-lg font-medium transition-all ${viewType === 'architectural'
+                ? 'bg-white shadow-sm text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+              }`}
+          >
+            Architecture View
+          </button>
+          <button
+            onClick={() => setViewType('present')}
+            className={`px-6 py-2 rounded-lg font-medium transition-all ${viewType === 'present'
+                ? 'bg-white shadow-sm text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+              }`}
+          >
+            Present View
+          </button>
+        </div>
+
+        {/* Image Upload */}
         <Card>
           <CardHeader>
-            <CardTitle>Architecture Image</CardTitle>
+            <CardTitle>{viewType === 'architectural' ? 'Architecture' : 'Present'} Image</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!imageUrl ? (
+            {!currentImageUrl ? (
               <div className="text-center py-8 border-2 border-dashed rounded-lg">
                 <Upload className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
                 <p className="text-muted-foreground mb-4">
-                  No architecture image set. Upload one below.
+                  No {viewType} image set. Upload one below.
                 </p>
               </div>
             ) : (
               <div className="text-sm text-muted-foreground mb-2">
-                Current image set. Upload new one to replace.
+                Current {viewType} image set. Upload new one to replace.
               </div>
             )}
 
             <ImageUpload
-              folderPath={`architecture/${id}`}
-              onUpload={handleArchitectureImageUpload}
-              label="Upload Architecture Image"
+              folderPath={`${viewType}/${id}`}
+              onUpload={handleImageUpload}
+              label={`Upload ${viewType === 'architectural' ? 'Architecture' : 'Present'} Image`}
             />
           </CardContent>
         </Card>
 
-        {/* Interactive Architecture Map */}
-        {imageUrl && (
+        {/* Interactive Map */}
+        {currentImageUrl && (
           <Card>
             <CardHeader>
               <CardTitle>
-                Interactive Hotspots ({hotspots.length})
+                Interactive Hotspots ({currentHotspots.length})
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Click on the image to add hotspots. Click existing hotspots to edit them.
+                Click on the {viewType} image to add hotspots. Click existing hotspots to edit them.
               </p>
             </CardHeader>
             <CardContent>
@@ -291,13 +335,13 @@ export default function TempleArchitectureAdmin() {
                   }}
                 >
                   <img
-                    src={imageUrl}
-                    alt="Temple Architecture"
+                    src={currentImageUrl}
+                    alt={`${viewType} View`}
                     className="w-full rounded-lg shadow-md"
                   />
 
                   {/* Hotspot Markers */}
-                  {hotspots.map((hotspot) => (
+                  {currentHotspots.map((hotspot) => (
                     <div
                       key={hotspot.id}
                       className="absolute group"
@@ -329,14 +373,14 @@ export default function TempleArchitectureAdmin() {
         )}
 
         {/* Hotspot List */}
-        {hotspots.length > 0 && (
+        {currentHotspots.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Hotspot List</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {hotspots.map((hotspot, index) => (
+                {currentHotspots.map((hotspot, index) => (
                   <div
                     key={hotspot.id}
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer"
@@ -457,7 +501,7 @@ export default function TempleArchitectureAdmin() {
           )}
 
           <DialogFooter className="gap-2">
-            {selectedHotspot && hotspots.some((h) => h.id === selectedHotspot.id) && (
+            {selectedHotspot && currentHotspots.some((h) => h.id === selectedHotspot.id) && (
               <Button variant="destructive" onClick={deleteHotspot}>
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete

@@ -24,7 +24,9 @@ export interface Temple {
     history?: string; // Temple history
     images?: string[];
     architectureImage?: string; // For architecture view
+    presentImage?: string; // For present view
     hotspots?: any[]; // For architecture view
+    presentHotspots?: any[]; // For present image hotspots
     sections?: { title: string; content: string }[]; // Backward compatibility for some existing structure
     createdAt?: any;
     updatedAt?: any;
