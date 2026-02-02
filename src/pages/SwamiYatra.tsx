@@ -304,7 +304,7 @@ const SwamiYatra = () => {
                 <div
                     className="relative pl-4 space-y-12"
                     style={{
-                        backgroundImage: 'url("/icons/route-arrow.png")',
+                        backgroundImage: 'url("/icons/left-arrow.png")',
                         backgroundRepeat: 'repeat-y',
                         backgroundPosition: 'left 27px top',
                         backgroundSize: '16px auto'

@@ -1,6 +1,6 @@
-import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 
 export interface YatraLocation {
@@ -66,16 +66,102 @@ interface YatraMapProps {
     locations: YatraLocation[];
 }
 
-export default function YatraMap({ locations }: YatraMapProps) {
-    // Route line coordinates
+function RouteArrows({ locations }: { locations: YatraLocation[] }) {
+    const map = useMap();
+    const [zoom, setZoom] = useState(map.getZoom());
+
+    useEffect(() => {
+        const syncZoom = () => setZoom(map.getZoom());
+        syncZoom();
+        map.on('zoomend moveend load resize', syncZoom);
+        return () => {
+            map.off('zoomend moveend load resize', syncZoom);
+        };
+    }, [map, locations]);
+
+    useMapEvents({
+        zoomend: () => setZoom(map.getZoom()),
+        moveend: () => setZoom(map.getZoom()),
+    });
+
+    // Desired visual gap between arrows in pixels for a continuous look
+    const desiredPixelGap = 12;
+
     const routeCoordinates = locations
         .sort((a, b) => a.sequence - b.sequence)
-        .map(l => [l.latitude, l.longitude] as [number, number]);
+        .map(l => ({ lat: l.latitude, lng: l.longitude, id: l.id }));
 
+    if (routeCoordinates.length < 2) return null;
+
+    const arrows: JSX.Element[] = [];
+
+    routeCoordinates.slice(0, -1).forEach((coord, idx) => {
+        const nextCoord = routeCoordinates[idx + 1];
+
+        // Project to pixel coordinates at current zoom level
+        const p1 = map.project(L.latLng(coord.lat, coord.lng), zoom);
+        const p2 = map.project(L.latLng(nextCoord.lat, nextCoord.lng), zoom);
+
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+
+        // Calculate how many arrows fit with the desired pixel gap
+        const numArrows = Math.floor(pixelDistance / desiredPixelGap);
+
+        // Use pixel-based angle for rotation (Leaflet Y increases downwards)
+        // Add 180 because left-arrow.png points Left by default
+        const angle = (Math.atan2(dy, dx) * (180 / Math.PI)) + 180;
+
+        // Skip near endpoints to avoid marker overlap
+        const skipPixels = 10; // Pixels to skip from each end
+
+        for (let i = 1; i <= numArrows; i++) {
+            const currentPixelDist = i * desiredPixelGap;
+
+            // Boundary checks in pixels
+            if (currentPixelDist < skipPixels || currentPixelDist > pixelDistance - skipPixels) {
+                continue;
+            }
+
+            const ratio = currentPixelDist / pixelDistance;
+            const arrowLat = coord.lat + (nextCoord.lat - coord.lat) * ratio;
+            const arrowLng = coord.lng + (nextCoord.lng - coord.lng) * ratio;
+
+            arrows.push(
+                <Marker
+                    key={`arrow-${coord.id}-${nextCoord.id}-${i}`}
+                    position={[arrowLat, arrowLng]}
+                    icon={L.divIcon({
+                        className: 'arrow-marker',
+                        html: `
+                            <div style="
+                                transform: rotate(${angle}deg);
+                                width: 20px;
+                                height: 20px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">
+                                <img src="/icons/left-arrow.png" style="width: 100%; height: auto; opacity: 1;" />
+                            </div>
+                        `,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10],
+                    })}
+                />
+            );
+        }
+    });
+
+    return <>{arrows}</>;
+}
+
+export default function YatraMap({ locations }: YatraMapProps) {
     return (
         <div className="w-full h-full relative z-0">
             <MapContainer
-                center={[20.5937, 78.9629]} // Center of India (fallback)
+                center={[25.3176, 82.9739]} // Initial fallback
                 zoom={5}
                 style={{ width: "100%", height: "100%" }}
                 zoomControl={false}
@@ -88,65 +174,7 @@ export default function YatraMap({ locations }: YatraMapProps) {
                 />
 
                 <MapBounds locations={locations} />
-
-                {/* Route Path made of Arrows (>>>>) */}
-                {routeCoordinates.length > 1 && (
-                    <>
-                        {routeCoordinates.slice(0, -1).map((coord, idx) => {
-                            const nextCoord = routeCoordinates[idx + 1];
-                            const arrows: JSX.Element[] = [];
-
-                            // Calculate distance between points
-                            const latDiff = nextCoord[0] - coord[0];
-                            const lngDiff = nextCoord[1] - coord[1];
-                            const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
-
-                            // Dense arrows to form the line (one arrow every ~0.05 degrees for continuity)
-                            const numArrows = Math.max(5, Math.floor(distance / 0.05));
-
-                            // Calculate angle for arrow direction
-                            const angle = Math.atan2(latDiff, lngDiff) * (180 / Math.PI);
-
-                            // Create dense arrows to form the path, but skip near endpoints to avoid overlap with markers
-                            const skipRatio = 0.08; // Skip first and last 8% to avoid numbered circles
-                            for (let i = 0; i <= numArrows; i++) {
-                                const ratio = i / numArrows;
-
-                                // Skip arrows too close to start or end points
-                                if (ratio < skipRatio || ratio > (1 - skipRatio)) {
-                                    continue;
-                                }
-
-                                const arrowLat = coord[0] + latDiff * ratio;
-                                const arrowLng = coord[1] + lngDiff * ratio;
-
-                                arrows.push(
-                                    <Marker
-                                        key={`arrow-${idx}-${i}`}
-                                        position={[arrowLat, arrowLng]}
-                                        icon={L.divIcon({
-                                            className: 'arrow-marker',
-                                            html: `
-                                                <div style="
-                                                    transform: rotate(${angle}deg);
-                                                    font-size: 14px;
-                                                    color: #F59E0B;
-                                                    text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
-                                                    font-weight: bold;
-                                                    line-height: 1;
-                                                ">▶</div>
-                                            `,
-                                            iconSize: [14, 14],
-                                            iconAnchor: [7, 7],
-                                        })}
-                                    />
-                                );
-                            }
-
-                            return arrows;
-                        })}
-                    </>
-                )}
+                <RouteArrows locations={locations} />
 
                 {/* Markers */}
                 {locations.map((loc) => (
