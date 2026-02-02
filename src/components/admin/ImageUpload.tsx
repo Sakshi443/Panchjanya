@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Upload, X, Loader2, CheckCircle, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ImageUploadProps {
@@ -88,63 +89,81 @@ export function ImageUpload({ onUpload, folderPath, label = "Upload Image", clas
     };
 
     return (
-        <div className={`space-y-4 ${className}`}>
+        <div className={`p-4 bg-white ${className}`}>
             <Tabs defaultValue="upload" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="upload">
-                        <Upload className="w-4 h-4 mr-2" /> Upload
+                <TabsList className="grid w-full grid-cols-2 p-1 bg-slate-100 rounded-xl h-11">
+                    <TabsTrigger
+                        value="upload"
+                        className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                    >
+                        <Upload className="w-4 h-4 mr-2" />
+                        <span className="font-medium">Upload</span>
                     </TabsTrigger>
-                    <TabsTrigger value="url">
-                        <LinkIcon className="w-4 h-4 mr-2" /> URL
+                    <TabsTrigger
+                        value="url"
+                        className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                    >
+                        <LinkIcon className="w-4 h-4 mr-2" />
+                        <span className="font-medium">URL</span>
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="upload" className="space-y-4">
-                    <div className="flex items-center gap-4">
-                        <div className="relative w-full">
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                disabled={uploading}
-                                className="hidden"
-                                id={`image-upload-${label.replace(/\s+/g, "-")}`}
-                            />
-                            <label
-                                htmlFor={`image-upload-${label.replace(/\s+/g, "-")}`}
-                                className={`flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 bg-muted/50 hover:bg-muted rounded-lg cursor-pointer transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""
-                                    }`}
-                            >
-                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                    <ImageIcon className="w-8 h-8" />
-                                    <span className="text-sm font-medium">{uploading ? "Uploading..." : "Click to select image"}</span>
+                <TabsContent value="upload" className="mt-4">
+                    <div className="relative">
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            disabled={uploading}
+                            className="hidden"
+                            id={`image-upload-${label.replace(/\s+/g, "-")}`}
+                        />
+                        <label
+                            htmlFor={`image-upload-${label.replace(/\s+/g, "-")}`}
+                            className={`flex flex-col items-center justify-center w-full aspect-[4/3] border-2 border-dashed border-slate-200 hover:border-primary/50 bg-slate-50 hover:bg-slate-100 rounded-xl cursor-pointer transition-all ${uploading ? "opacity-50 cursor-not-allowed" : ""
+                                }`}
+                        >
+                            <div className="flex flex-col items-center gap-3 text-slate-400">
+                                <div className="p-3 bg-white rounded-xl shadow-sm">
+                                    <ImageIcon className="w-8 h-8 text-slate-400" />
                                 </div>
-                            </label>
-                        </div>
+                                <span className="text-sm font-semibold tracking-wide">
+                                    {uploading ? "Uploading..." : "Click to select image"}
+                                </span>
+                            </div>
+                        </label>
                     </div>
 
                     {uploading && (
-                        <div className="space-y-1">
-                            <Progress value={progress} className="h-2" />
-                            <p className="text-xs text-muted-foreground text-right">{Math.round(progress)}%</p>
+                        <div className="mt-4 space-y-2">
+                            <Progress value={progress} className="h-1.5" />
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right">
+                                {Math.round(progress)}% Complete
+                            </p>
                         </div>
                     )}
                 </TabsContent>
 
-                <TabsContent value="url" className="space-y-4">
-                    <div className="flex gap-2">
-                        <Input
-                            placeholder="Paste image URL here..."
-                            value={urlInput}
-                            onChange={(e) => setUrlInput(e.target.value)}
-                        />
-                        <Button onClick={handleUrlSubmit} type="button" size="sm">
-                            Add
-                        </Button>
+                <TabsContent value="url" className="mt-4 space-y-3">
+                    <div className="flex flex-col gap-2">
+                        <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Paste Image Address</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="https://example.com/image.jpg"
+                                value={urlInput}
+                                onChange={(e) => setUrlInput(e.target.value)}
+                                className="bg-slate-50 border-slate-200"
+                            />
+                            <Button onClick={handleUrlSubmit} type="button" size="sm" className="shrink-0">
+                                Add
+                            </Button>
+                        </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Paste a direct link to an image (e.g., from Google Drive, Unsplash, or another website).
-                    </p>
+                    <div className="bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">
+                        <p className="text-[10px] text-blue-600/70 leading-relaxed italic">
+                            Tip: Use direct links from Google Drive, Unsplash, or Pexels for better results.
+                        </p>
+                    </div>
                 </TabsContent>
             </Tabs>
 

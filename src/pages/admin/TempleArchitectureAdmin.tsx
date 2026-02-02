@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { X, Save, Trash2, Upload, ArrowLeft, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { X, Save, Trash2, Upload, ArrowLeft, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus, ChevronDown, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +17,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
@@ -48,6 +53,7 @@ export default function TempleArchitectureAdmin() {
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [adminImageIndex, setAdminImageIndex] = useState(0);
+  const [hoveredHotspotId, setHoveredHotspotId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -332,32 +338,63 @@ export default function TempleArchitectureAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+    <div className="min-h-screen bg-[#F9F6F0]">
+      {/* Brand Header */}
+      <div className="bg-white border-b px-6 py-4 mb-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-2xl font-serif font-bold text-primary">Raj Viharan</h1>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pb-12 space-y-6">
+        {/* Navigation & Title */}
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex flex-col gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate("/admin")}
-              className="mb-2"
+              className="w-fit p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold">{templeName}</h1>
-            <p className="text-muted-foreground">Architecture Management</p>
+
+            <div className="flex items-center gap-4">
+              <div className="w-1.5 h-10 bg-[#ab8b39] rounded-full shadow-sm" />
+              <div>
+                <h2 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">{templeName}</h2>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/80 mt-1">Architecture Management</p>
+              </div>
+            </div>
           </div>
+
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => setZoom(Math.max(zoom - 0.2, 0.5))}>
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <span className="text-sm font-medium min-w-[60px] text-center">
-              {Math.round(zoom * 100)}%
-            </span>
-            <Button variant="outline" size="icon" onClick={() => setZoom(Math.min(zoom + 0.2, 3))}>
-              <ZoomIn className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2 mr-4 bg-muted p-1 rounded-lg">
+              <Button variant="ghost" size="icon" onClick={() => setZoom(Math.max(zoom - 0.2, 0.5))}>
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <span className="text-sm font-medium min-w-[50px] text-center">
+                {Math.round(zoom * 100)}%
+              </span>
+              <Button variant="ghost" size="icon" onClick={() => setZoom(Math.min(zoom + 0.2, 3))}>
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Image
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0 overflow-hidden border-2 shadow-xl" align="end">
+                <ImageUpload
+                  folderPath={`${viewType}/${id}/supplemental`}
+                  onUpload={handleSupplementalImageUpload}
+                  label="Add New Image"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -390,183 +427,226 @@ export default function TempleArchitectureAdmin() {
         </div>
 
         {/* Unified Multi-Image Management Slider */}
-        <Card className="overflow-hidden border-2 border-slate-200">
-          <CardHeader className="bg-slate-50 border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Unified Image & Hotspot Management</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Browse images, add new ones, and click anywhere to place hotspots on the active image.
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <ImageUpload
-                  folderPath={`${viewType}/${id}/supplemental`}
-                  onUpload={handleSupplementalImageUpload}
-                  label="Add New Image"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                />
-              </div>
+        <Card className="overflow-hidden border-none shadow-none bg-transparent">
+          <CardHeader className="px-0 pt-0 pb-4">
+            <div>
+              <CardTitle className="text-xl">Interactive Image Editor</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Click anywhere on the image to place or edit hotspots. Use the gallery below to switch between images.
+              </p>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="flex flex-col md:flex-row min-h-[500px]">
-              {/* Image Editor Area */}
-              <div className="flex-1 bg-slate-900 flex items-center justify-center relative group min-h-[400px]">
-                {/* Navigation Arrows */}
-                {displayImages.length > 1 && (
+          <CardContent className="p-0 space-y-6">
+            {/* 1. Large Image Editor Area */}
+            <div className="bg-slate-950 rounded-2xl overflow-hidden border-4 border-slate-800 shadow-2xl relative group min-h-[400px] md:min-h-[600px] flex items-center justify-center">
+              {/* Navigation Arrows */}
+              {displayImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setAdminImageIndex((p) => (p - 1 + displayImages.length) % displayImages.length)}
+                    className="absolute left-4 z-20 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-xl transition-all border border-white/10 hover:scale-110 active:scale-95"
+                  >
+                    <ChevronLeft className="w-8 h-8" />
+                  </button>
+                  <button
+                    onClick={() => setAdminImageIndex((p) => (p + 1) % displayImages.length)}
+                    className="absolute right-4 z-20 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-xl transition-all border border-white/10 hover:scale-110 active:scale-95"
+                  >
+                    <ChevronRight className="w-8 h-8" />
+                  </button>
+                </>
+              )}
+
+              {/* Hotspot Interaction Plane */}
+              <div
+                className="relative cursor-crosshair transition-all duration-500 ease-out"
+                style={{
+                  transform: `scale(${zoom})`,
+                  filter: loading ? 'blur(10px)' : 'none'
+                }}
+                onClick={handleImageClick}
+              >
+                {displayImages[adminImageIndex] ? (
                   <>
-                    <button
-                      onClick={() => setAdminImageIndex((p) => (p - 1 + displayImages.length) % displayImages.length)}
-                      className="absolute left-4 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-md transition-all"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={() => setAdminImageIndex((p) => (p + 1) % displayImages.length)}
-                      className="absolute right-4 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-md transition-all"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
-                  </>
-                )}
+                    <img
+                      src={displayImages[adminImageIndex]}
+                      alt="Active View"
+                      className="max-h-[80vh] w-auto shadow-2xl transition-transform duration-700 select-none"
+                      draggable={false}
+                    />
 
-                {/* Hotspot Interaction Plane */}
-                <div
-                  className="relative cursor-crosshair transition-transform duration-300"
-                  style={{ transform: `scale(${zoom})` }}
-                  onClick={handleImageClick}
-                >
-                  {displayImages[adminImageIndex] ? (
-                    <>
-                      <img
-                        src={displayImages[adminImageIndex]}
-                        alt="Active View"
-                        className="max-h-[70vh] w-auto shadow-2xl rounded"
-                      />
-
-                      {/* Active Image Hotspots */}
-                      {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).map((hotspot) => (
+                    {/* Active Image Hotspots */}
+                    {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).map((hotspot) => (
+                      <div
+                        key={hotspot.id}
+                        className="absolute group z-30"
+                        style={{
+                          top: `${hotspot.y}%`,
+                          left: `${hotspot.x}%`,
+                          transform: "translate(-50%, -50%)",
+                        }}
+                        onClick={(e) => handleHotspotEdit(hotspot, e)}
+                      >
                         <div
-                          key={hotspot.id}
-                          className="absolute group z-30"
-                          style={{
-                            top: `${hotspot.y}%`,
-                            left: `${hotspot.x}%`,
-                            transform: "translate(-50%, -50%)",
-                          }}
-                          onClick={(e) => handleHotspotEdit(hotspot, e)}
+                          className="relative"
+                          onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
+                          onMouseLeave={() => setHoveredHotspotId(null)}
                         >
-                          <div className="w-6 h-6 bg-red-600 rounded-full border-2 border-white shadow-lg group-hover:bg-red-500 group-hover:scale-125 transition-all flex items-center justify-center cursor-pointer">
-                            <Plus className="w-3 h-3 text-white" />
+                          <div className="absolute -inset-2 bg-red-600/30 rounded-full animate-ping opacity-75"></div>
+                          <div className="w-8 h-8 bg-red-600 rounded-full border-2 border-white shadow-xl group-hover:bg-red-500 group-hover:scale-125 transition-all flex items-center justify-center cursor-pointer relative z-10">
+                            <Plus className="w-4 h-4 text-white" />
                           </div>
                         </div>
-                      ))}
-                    </>
-                  ) : (
-                    <div className="text-white text-center p-12 border-2 border-dashed border-white/20 rounded-xl">
-                      <p>No images available. Please upload an image to begin.</p>
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="text-white text-center p-20 border-4 border-dashed border-white/10 rounded-3xl backdrop-blur-sm">
+                    <Upload className="w-16 h-16 mx-auto mb-4 text-slate-500" />
+                    <p className="text-xl font-medium text-slate-300">No images available</p>
+                    <p className="text-slate-500 mt-2">Upload a main or supplemental image to begin</p>
+                  </div>
+                )}
+              </div>
 
-                {/* Badge for Image Type */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900 shadow-md">
-                  {adminImageIndex === 0 ? "Main Hotspot Image" : `Supplemental Image ${adminImageIndex}`}
+              {/* Status Badges */}
+              <div className="absolute top-6 left-6 flex gap-2">
+                <div className="bg-black/60 backdrop-blur-xl px-4 py-2 rounded-xl text-xs font-bold text-white border border-white/10 shadow-2xl flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${adminImageIndex === 0 ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                  {adminImageIndex === 0 ? "PRIMARY IMAGE" : `SUPPLEMENTAL PHOTO ${adminImageIndex}`}
                 </div>
+              </div>
 
-                {/* Delete Supplemental Button */}
+              {/* Image Controls Overlay */}
+              <div className="absolute bottom-6 right-6 flex gap-2">
                 {adminImageIndex > 0 && (
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="absolute bottom-4 right-4 shadow-lg"
+                    className="bg-red-600/20 hover:bg-red-600 text-red-100 backdrop-blur-xl border border-red-600/30 shadow-2xl"
                     onClick={() => removeSupplementalImage(adminImageIndex - 1)}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Supplemental Image
+                    Remove Image
                   </Button>
                 )}
-
-                {/* Update Main Image Button */}
                 {adminImageIndex === 0 && (
-                  <div className="absolute bottom-4 right-4">
-                    <ImageUpload
-                      folderPath={`${viewType}/${id}`}
-                      onUpload={handleImageUpload}
-                      label="Replace Main Image"
-                      className="bg-white/90 text-slate-900 hover:bg-white"
-                    />
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/10 shadow-2xl"
+                      >
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        Change Main Image
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-0 overflow-hidden border-2 shadow-xl" align="end">
+                      <ImageUpload
+                        folderPath={`${viewType}/${id}`}
+                        onUpload={handleImageUpload}
+                        label="Change Main Image"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 )}
               </div>
+            </div>
 
-              {/* Sidebar: Image Thumbnails & Hotspot List */}
-              <div className="w-full md:w-80 bg-white border-l flex flex-col">
-                <div className="p-4 border-b bg-slate-50">
-                  <h3 className="font-bold text-slate-900">Image Gallery ({displayImages.length})</h3>
-                </div>
+            {/* 2. Thumbnail Strip (Middle Section) */}
+            <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                  <ChevronDown className="w-4 h-4" />
+                  Photo Gallery ({displayImages.length})
+                </h3>
+                <p className="text-xs text-slate-500">Pick an image to manage its hotspots</p>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                {displayImages.map((url, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setAdminImageIndex(idx)}
+                    className={`relative shrink-0 rounded-xl overflow-hidden border-4 transition-all w-48 aspect-video snap-center group ${adminImageIndex === idx
+                      ? 'border-primary shadow-xl scale-105 z-10'
+                      : 'border-white hover:border-slate-200'
+                      }`}
+                  >
+                    <img src={url} alt={`Thumb ${idx}`} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                    <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3 transition-opacity ${adminImageIndex === idx ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                      <span className="text-xs text-white font-bold">{idx === 0 ? 'PRIMARY' : `GALLERY ${idx}`}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                {/* Thumbnail Strip */}
-                <div className="flex md:flex-col gap-2 p-2 overflow-auto max-h-[200px] md:max-h-none border-b">
-                  {displayImages.map((url, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setAdminImageIndex(idx)}
-                      className={`relative shrink-0 rounded-md overflow-hidden border-2 transition-all aspect-video w-32 md:w-full ${adminImageIndex === idx ? 'border-primary ring-2 ring-primary/20 scale-95' : 'border-transparent hover:border-slate-300'}`}
-                    >
-                      <img src={url} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <span className="text-[10px] text-white font-bold">{idx === 0 ? 'Main' : `Supp ${idx}`}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+            {/* 3. Hotspot List (Bottom Section) */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  Hotspots on Selected Image
+                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black">
+                    {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).length}
+                  </span>
+                </h3>
+              </div>
 
-                {/* Hotspot List for Current Image */}
-                <div className="flex-1 overflow-y-auto p-4 bg-slate-50/50">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-sm text-slate-700 uppercase tracking-wider">Hotspots on this image</h3>
-                    <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                      {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).length}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).map((hotspot, idx) => (
-                      <div
-                        key={hotspot.id}
-                        className="group flex flex-col p-3 bg-white border rounded-lg hover:border-primary/50 hover:shadow-sm cursor-pointer transition-all"
-                        onClick={(e) => handleHotspotEdit(hotspot, e)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900 text-sm">
-                            {idx + 1}. {hotspot.title || "Untitled"}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedHotspot(hotspot);
-                              deleteHotspot();
-                            }}
-                            className="text-slate-400 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).map((hotspot, idx) => (
+                  <Card
+                    key={hotspot.id}
+                    className={`group transition-all cursor-pointer overflow-hidden border-2 ${hoveredHotspotId === hotspot.id
+                      ? 'border-primary shadow-lg bg-primary/5 ring-4 ring-primary/10'
+                      : 'hover:border-primary/50 hover:shadow-lg'
+                      }`}
+                    onClick={(e) => handleHotspotEdit(hotspot, e)}
+                    onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
+                    onMouseLeave={() => setHoveredHotspotId(null)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-slate-900 group-hover:text-primary transition-colors">
+                            {idx + 1}. {hotspot.title || "Untitled Hotspot"}
+                          </h4>
+                          <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
+                            {hotspot.description || "No description provided for this architectural element."}
+                          </p>
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
-                          {hotspot.description || "No description provided"}
-                        </p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedHotspot(hotspot);
+                            deleteHotspot();
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                    ))}
+                      <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span>Position: {hotspot.x.toFixed(1)}%, {hotspot.y.toFixed(1)}%</span>
+                        <span className="flex items-center gap-1 group-hover:text-primary">
+                          Edit Details <ChevronRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
 
-                    {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).length === 0 && (
-                      <div className="text-center py-8 text-slate-400 text-xs italic">
-                        No hotspots on this image yet.<br />Click on the image to add one.
-                      </div>
-                    )}
+                {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).length === 0 && (
+                  <div className="col-span-full py-16 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                      <Plus className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="text-slate-500 font-medium">No hotspots mapped to this image yet</p>
+                    <p className="text-slate-400 text-sm mt-1">Click anywhere on the large editor at the top to add one</p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </CardContent>
