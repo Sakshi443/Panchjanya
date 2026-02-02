@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export const BottomNav = () => {
     const location = useLocation();
-    const isSthanaVandan = location.pathname.includes("sthana-vandan") || location.pathname.includes("/yatra");
+    const isSthanaVandan = location.pathname.includes("sthana-vandan") || location.pathname.includes("/raj-viharan");
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 w-full z-50 bg-white border-t border-gray-200 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
@@ -33,7 +33,7 @@ export const BottomNav = () => {
                         </NavLink>
 
                         {/* Viharan (Yatra) */}
-                        <NavLink to="/yatra" className={({ isActive }) => cn("flex flex-col items-center gap-1 text-gray-400 hover:text-amber-600 transition-colors", isActive && "text-amber-600")}>
+                        <NavLink to="/raj-viharan" className={({ isActive }) => cn("flex flex-col items-center gap-1 text-gray-400 hover:text-amber-600 transition-colors", isActive && "text-amber-600")}>
                             <Footprints className="w-6 h-6" />
                             <span className="text-[10px] font-bold uppercase tracking-wider">Viharan</span>
                         </NavLink>

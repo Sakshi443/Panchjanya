@@ -153,7 +153,7 @@ const SthanaVandan = () => {
                             Map your spiritual journey across ancient heritage sites with personalized itineraries.
                         </p>
                         <Button
-                            onClick={() => navigate('/yatra')}
+                            onClick={() => navigate('/raj-viharan')}
                             className="w-full bg-[#0f3c6e] hover:bg-[#0a2a4d] text-white py-8 rounded-2xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-4 group"
                         >
                             <div className="p-1 bg-amber-500 rounded-full group-hover:scale-110 transition-transform">

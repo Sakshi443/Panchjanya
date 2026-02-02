@@ -127,7 +127,7 @@ const Profile = () => {
                 </Card>
 
                 {/* Completed Yatras */}
-                <Card className="p-4 bg-white border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/yatra")}>
+                <Card className="p-4 bg-white border-none rounded-xl hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate("/raj-viharan")}>
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <CheckCircle className="w-5 h-5 text-[#0f3c6e]" />

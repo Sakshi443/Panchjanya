@@ -140,7 +140,7 @@ const App = () => {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/dashboard/sthana-vandan" element={<SthanaVandan />} />
-                    <Route path="/yatra" element={<SwamiYatra />} />
+                    <Route path="/raj-viharan" element={<SwamiYatra />} />
                     <Route path="/explore" element={<Explore />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/share" element={<Share />} />

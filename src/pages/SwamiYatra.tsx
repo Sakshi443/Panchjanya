@@ -185,7 +185,7 @@ const SwamiYatra = () => {
                         <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
                     </Button>
                     <div className="text-center">
-                        <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">My Yatra</h1>
+                        <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif">Raj Viharan</h1>
                     </div>
                     <Button variant="ghost" size="icon" className="-mr-2 hover:bg-black/5">
                         <Share2 className="w-6 h-6 text-[#0f3c6e]" />
@@ -301,7 +301,15 @@ const SwamiYatra = () => {
                 </div>
 
                 {/* Timeline Container */}
-                <div className="relative pl-4 border-l-2 border-dashed border-amber-300/50 space-y-12">
+                <div
+                    className="relative pl-4 space-y-12"
+                    style={{
+                        backgroundImage: 'url("/icons/route-arrow.png")',
+                        backgroundRepeat: 'repeat-y',
+                        backgroundPosition: 'left 27px top',
+                        backgroundSize: '16px auto'
+                    }}
+                >
                     {places.length > 0 ? (
                         places.map((place) => (
                             <div key={place.id} className="relative pl-6">

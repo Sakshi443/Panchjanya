@@ -7,7 +7,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Explore Sthanas", href: "/explore", icon: Map },
-  { name: "Swami's Yatra", href: "/share", icon: Compass },
+  { name: "Raj Viharan", href: "/raj-viharan", icon: Compass },
   { name: "About Panchajanya", href: "/about", icon: BookOpen },
 ];
 
