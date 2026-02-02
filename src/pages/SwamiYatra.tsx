@@ -19,7 +19,25 @@ interface YatraPlace {
     time?: string;
     isLive?: boolean;
     attendees?: string;
+    route?: string;
+    subRoute?: string;
 }
+
+const ROUTES = [
+    {
+        id: "swami-complete",
+        name: "Swami's complete journey",
+        subRoutes: [
+            { id: "ekant", name: "Ekant" },
+            { id: "purvardh", name: "Purvardh" },
+            { id: "uttarardh", name: "Uttarardh" }
+        ]
+    },
+    { id: "dattatray", name: "Shri Dattatray Prabhu Viharan" },
+    { id: "govind", name: "Shri Govind Prabhu Viharan" },
+    { id: "chakrapani", name: "Shri Chakrapani Prabhu Viharan" },
+    { id: "krishna", name: "Shri Krishna Prabhu Viharan" }
+];
 
 const SwamiYatra = () => {
     const navigate = useNavigate();
@@ -30,7 +48,12 @@ const SwamiYatra = () => {
         image?: string;
         isLive?: boolean;
         attendees?: string;
+        route?: string;
+        subRoute?: string;
     })[]>([]);
+
+    const [selectedRoute, setSelectedRoute] = useState(ROUTES[0].id);
+    const [selectedSubRoute, setSelectedSubRoute] = useState<string | null>(null);
 
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [panelHeight, setPanelHeight] = useState(40); // Percentage of viewport height
@@ -58,42 +81,22 @@ const SwamiYatra = () => {
             const fetchedPlaces = snapshot.docs.map((doc) => {
                 const data = doc.data() as YatraPlace;
 
-                console.log(`📍 Place: ${data.name}`, {
-                    sequence: data.sequence,
-                    status: data.status,
-                    coordinates: [data.latitude, data.longitude],
-                    hasImage: !!data.image,
-                    time: data.time,
-                    isLive: data.isLive
-                });
-
-                // Default coordinates if missing (Varanasi center)
-                const lat = data.latitude || 25.3176;
-                const lng = data.longitude || 83.0062;
-
-                // Validate and cast status
-                let status: YatraLocation["status"] = "upcoming";
-                if (data.status === "visited") status = "completed";
-                else if (data.status === "stayed") status = "current";
-                else if (data.status === "current") status = "current";
-                else if (data.status === "upcoming") status = "upcoming";
-                else if (["completed", "current", "upcoming"].includes(data.status)) {
-                    status = data.status as YatraLocation["status"];
-                }
-
                 return {
                     id: doc.id,
                     name: data.name,
-                    latitude: lat,
-                    longitude: lng,
+                    latitude: data.latitude || 25.3176,
+                    longitude: data.longitude || 83.0062,
                     sequence: data.sequence,
-                    status: status,
+                    status: (data.status === "visited" ? "completed" :
+                        data.status === "stayed" || data.status === "current" ? "current" : "upcoming") as YatraLocation["status"],
                     time: data.time || "TBD",
                     title: data.name,
                     description: data.description || "Sacred pilgrimage destination",
                     image: data.image || "/placeholder-temple.jpg",
                     isLive: data.isLive || false,
-                    attendees: data.attendees || ""
+                    attendees: data.attendees || "",
+                    route: data.route,
+                    subRoute: data.subRoute
                 };
             });
 
@@ -202,7 +205,13 @@ const SwamiYatra = () => {
                 style={!isFullScreen ? { height: `${100 - panelHeight}vh` } : {}}
             >
                 <div className="w-full h-full">
-                    <YatraMap locations={places} />
+                    <YatraMap locations={places.filter(p => {
+                        if (selectedRoute === "swami-complete") {
+                            if (selectedSubRoute) return p.subRoute === selectedSubRoute;
+                            return !p.route || p.route === "swami-complete"; // Default to complete if no route
+                        }
+                        return p.route === selectedRoute;
+                    })} />
                 </div>
 
                 {/* Floating "Confirmed" Badge */}
@@ -272,123 +281,182 @@ const SwamiYatra = () => {
 
             {/* Timeline Section - Bottom Half (Scrollable) with Dynamic Height */}
             <div
-                className="flex-1 bg-[#F9F6F0] relative z-10 px-6 pt-6 pb-6 space-y-8 overflow-y-auto"
+                className="flex-1 bg-[#F9F6F0] relative z-10 space-y-0 overflow-y-auto"
                 style={!isFullScreen ? { minHeight: `${panelHeight}vh`, height: `${panelHeight}vh` } : {}}
             >
-                <div className="flex items-center justify-between mb-2">
-                    <h2 className="font-heading font-bold text-xl text-blue-900">Yatra Itinerary</h2>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8"
-                            onClick={() => setPanelHeight(panelHeight === 20 ? 40 : 20)}
-                        >
-                            {panelHeight === 20 ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="18 15 12 9 6 15"></polyline>
-                                </svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                            )}
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8">
-                            <Share2 className="w-4 h-4" />
-                        </Button>
+                {/* Route Selector sticky top within timeline */}
+                <div className="sticky top-0 z-20 bg-[#F9F6F0]/95 backdrop-blur-sm border-b border-gray-100 px-4 py-4 space-y-3">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                        {ROUTES.map((route) => (
+                            <button
+                                key={route.id}
+                                onClick={() => {
+                                    setSelectedRoute(route.id);
+                                    setSelectedSubRoute(null);
+                                }}
+                                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 border-2 ${selectedRoute === route.id
+                                    ? "bg-[#0f3c6e] text-white border-[#0f3c6e]"
+                                    : "bg-white text-slate-500 border-slate-100 hover:border-slate-300 shadow-sm"
+                                    }`}
+                            >
+                                {route.name}
+                            </button>
+                        ))}
                     </div>
-                </div>
 
-                {/* Timeline Container */}
-                <div
-                    className="relative pl-4 space-y-12"
-                    style={{
-                        backgroundImage: 'url("/icons/left-arrow.png")',
-                        backgroundRepeat: 'repeat-y',
-                        backgroundPosition: 'left 27px top',
-                        backgroundSize: '16px auto'
-                    }}
-                >
-                    {places.length > 0 ? (
-                        places.map((place) => (
-                            <div key={place.id} className="relative pl-6">
-                                {/* Sequence Marker */}
-                                <div className={`absolute -left-[27px] top-0 flex items-center justify-center w-8 h-8 rounded-full border-4 border-[#F9F6F0] z-10 ${place.status === 'completed' ? 'bg-[#0f3c6e] text-white' :
-                                    place.status === 'current' ? 'bg-[#0f3c6e] text-white' :
-                                        'bg-white border-slate-200 text-slate-400'
-                                    }`}>
-                                    {place.status === 'completed' ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12" /></svg>
-                                    ) : place.status === 'current' ? (
-                                        <MapPin className="w-4 h-4" />
-                                    ) : (
-                                        <div className="w-2 h-2 rounded-full bg-slate-300" />
-                                    )}
-                                </div>
-
-                                {/* Content */}
-                                <div className="space-y-3">
-                                    <span className={`text-[10px] font-bold tracking-widest uppercase ${place.status === 'current' ? 'text-amber-600' : 'text-slate-400'
-                                        }`}>
-                                        {place.time}
-                                    </span>
-
-                                    <Card className={`p-4 rounded-2xl border-none overflow-hidden flex gap-4 ${place.status === 'current' ? 'bg-white ring-1 ring-amber-100' : 'bg-white'}`}>
-                                        <div className="flex-1 space-y-2">
-                                            <h3 className="font-heading font-bold text-lg text-blue-900 leading-tight">
-                                                {place.title}
-                                            </h3>
-                                            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                                                {place.description}
-                                            </p>
-
-                                            {place.isLive && (
-                                                <div className="inline-flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-full mt-2">
-                                                    <div className="relative flex h-2 w-2">
-                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                                                    </div>
-                                                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">
-                                                        Live Location
-                                                    </span>
-                                                    <span className="text-[10px] text-amber-600 italic border-l border-amber-200 pl-2">
-                                                        {place.attendees}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Thumbnail Image */}
-                                        <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
-                                            <img
-                                                src={place.image}
-                                                alt={place.title}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
-                                            />
-                                            <div className="hidden w-full h-full items-center justify-center bg-gray-200 text-gray-400">
-                                                <MapPin className="w-6 h-6 opacity-20" />
-                                            </div>
-                                        </div>
-                                    </Card>
-                                </div>
+                    {/* Sub-route Selector */}
+                    {selectedRoute === "swami-complete" && (
+                        <div className="flex items-center gap-3 pl-2 animate-in slide-in-from-left-2 duration-300">
+                            <div className="w-1 h-8 bg-amber-500/20 rounded-full" />
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                                <button
+                                    onClick={() => setSelectedSubRoute(null)}
+                                    className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-[11px] font-bold tracking-wider uppercase transition-all ${selectedSubRoute === null
+                                        ? "text-amber-600 bg-amber-50"
+                                        : "text-slate-400 hover:text-slate-600"
+                                        }`}
+                                >
+                                    All Phases
+                                </button>
+                                {ROUTES.find(r => r.id === "swami-complete")?.subRoutes?.map((sub) => (
+                                    <button
+                                        key={sub.id}
+                                        onClick={() => setSelectedSubRoute(sub.id)}
+                                        className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-[11px] font-bold tracking-wider uppercase transition-all ${selectedSubRoute === sub.id
+                                            ? "text-amber-600 bg-amber-50"
+                                            : "text-slate-400 hover:text-slate-600"
+                                            }`}
+                                    >
+                                        {sub.name}
+                                    </button>
+                                ))}
                             </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-10 text-muted-foreground">
-                            <p>Loading journey...</p>
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* Start Navigation sticky footer */}
-            <div className="fixed bottom-20 lg:bottom-4 left-6 right-6 z-50">
-                <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white text-base font-bold py-6 rounded-2xl flex items-center justify-center gap-2 uppercase tracking-wide">
-                    <Compass className="w-5 h-5 animate-pulse" />
-                    Start Navigation
-                </Button>
+                <div className="px-6 pt-4 pb-6 space-y-8">
+                    <div className="flex items-center justify-between mb-2">
+                        <h2 className="font-heading font-bold text-xl text-blue-900">Yatra Itinerary</h2>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8"
+                                onClick={() => setPanelHeight(panelHeight === 20 ? 40 : 20)}
+                            >
+                                {panelHeight === 20 ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="18 15 12 9 6 15"></polyline>
+                                    </svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                )}
+                            </Button>
+                            <Button variant="ghost" size="icon" className="text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-full h-8 w-8">
+                                <Share2 className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Timeline Container */}
+                    <div className="relative pl-4 space-y-12">
+                        {/* Timeline vertical line */}
+                        <div className="absolute left-[-11px] top-0 bottom-0 w-0.5 bg-slate-200 z-0" />
+                        {(() => {
+                            const filtered = places.filter(p => {
+                                if (selectedRoute === "swami-complete") {
+                                    if (selectedSubRoute) return p.subRoute === selectedSubRoute;
+                                    return !p.route || p.route === "swami-complete";
+                                }
+                                return p.route === selectedRoute;
+                            });
+
+                            return filtered.length > 0 ? (
+                                filtered.map((place) => (
+                                    <div key={place.id} className="relative pl-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                        {/* Sequence Marker */}
+                                        <div className={`absolute -left-[27px] top-0 flex items-center justify-center w-8 h-8 rounded-full border-4 border-[#F9F6F0] z-10 ${place.status === 'completed' ? 'bg-[#0f3c6e] text-white' :
+                                            place.status === 'current' ? 'bg-[#0f3c6e] text-white' :
+                                                'bg-white border-slate-200 text-slate-400'
+                                            }`}>
+                                            {place.status === 'completed' ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12" /></svg>
+                                            ) : place.status === 'current' ? (
+                                                <MapPin className="w-4 h-4" />
+                                            ) : (
+                                                <div className="w-2 h-2 rounded-full bg-slate-300" />
+                                            )}
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="space-y-3">
+                                            <span className={`text-[10px] font-bold tracking-widest uppercase ${place.status === 'current' ? 'text-amber-600' : 'text-slate-400'
+                                                }`}>
+                                                {place.time}
+                                            </span>
+
+                                            <Card className={`p-4 rounded-2xl border-none overflow-hidden flex gap-4 ${place.status === 'current' ? 'bg-white ring-1 ring-amber-100' : 'bg-white shadow-sm'}`}>
+                                                <div className="flex-1 space-y-2">
+                                                    <h3 className="font-heading font-bold text-lg text-blue-900 leading-tight">
+                                                        {place.title}
+                                                    </h3>
+                                                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                                                        {place.description}
+                                                    </p>
+
+                                                    {place.isLive && (
+                                                        <div className="inline-flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-full mt-2">
+                                                            <div className="relative flex h-2 w-2">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">
+                                                                Live Location
+                                                            </span>
+                                                            <span className="text-[10px] text-amber-600 italic border-l border-amber-200 pl-2">
+                                                                {place.attendees}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Thumbnail Image */}
+                                                <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
+                                                    <img
+                                                        src={place.image}
+                                                        alt={place.title}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                                                    />
+                                                    <div className="hidden w-full h-full items-center justify-center bg-gray-200 text-gray-400">
+                                                        <MapPin className="w-6 h-6 opacity-20" />
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-100">
+                                    <MapPin className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+                                    <h3 className="text-slate-500 font-bold">No places found</h3>
+                                    <p className="text-slate-400 text-xs mt-1">Information for this route segment will be added soon.</p>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* Start Navigation sticky footer */}
+                <div className="fixed bottom-20 lg:bottom-4 left-6 right-6 z-50">
+                    <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white text-base font-bold py-6 rounded-2xl flex items-center justify-center gap-2 uppercase tracking-wide">
+                        <Compass className="w-5 h-5 animate-pulse" />
+                        Start Navigation
+                    </Button>
+                </div>
             </div>
         </div>
     );
