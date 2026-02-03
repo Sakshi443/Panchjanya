@@ -9,7 +9,8 @@ import {
   Settings,
   BarChart3,
   PlusCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Compass
 } from "lucide-react";
 
 export default function AdminSidebar() {
@@ -17,6 +18,7 @@ export default function AdminSidebar() {
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
     { icon: Users, label: "User Management", path: "/admin/users" },
     { icon: Landmark, label: "Sthana Directory", path: "/admin/sthana-directory" },
+    { icon: Compass, label: "Raj Viharan", path: "/admin/raj-viharan" },
     { icon: BookOpen, label: "Literature Hub", path: "/admin/literature" },
     { icon: Library, label: "Digital Library", path: "/admin/e-library" },
   ];

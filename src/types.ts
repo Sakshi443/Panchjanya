@@ -29,15 +29,27 @@ export interface DescriptionSection {
     content: string;
 }
 
+export interface GlanceItem {
+    id: string;
+    icon: string;
+    description: string;
+}
+
+export interface CustomBlock {
+    id: string;
+    title: string;
+    content: string;
+}
+
 export interface Temple {
     id: string;
     name: string;
     todaysName?: string; // New: Today's name subtitle
     address?: string;
-    wayToReach?: string; // New: Way to reach instructions
     locationLink?: string; // New: Direction link or coordinates
     contactName?: string;
     contactNumber?: string;
+    contactDetails?: string; // New: Additional contact info for Navigation
     city: string;
     taluka?: string;
     district: string;
@@ -47,6 +59,8 @@ export interface Temple {
     description?: string;
     description_title?: string;
     description_text?: string;
+    glanceItems?: GlanceItem[];
+    customBlocks?: CustomBlock[];
     architectureDescription?: string; // New: Overall architectural description
     descriptionSections?: DescriptionSection[]; // New: Dynamic content blocks
     sthana?: string;
@@ -65,4 +79,20 @@ export interface Temple {
     presentHotspots?: Hotspot[];
     createdAt?: any;
     updatedAt?: any;
+}
+
+export interface YatraPlace {
+    id: string;
+    name: string;
+    description: string;
+    sequence: number;
+    status: "visited" | "stayed" | "revisited" | "current" | "upcoming";
+    latitude?: number;
+    longitude?: number;
+    image?: string;
+    time?: string;
+    isLive?: boolean;
+    attendees?: string;
+    route?: string;
+    subRoute?: string;
 }

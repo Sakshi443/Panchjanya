@@ -47,6 +47,7 @@ import AdminCsvImport from "@/pages/admin/AdminCsvImport";
 import AdminCsvUpload from "./pages/admin/AdminCsvUpload";
 import TempleArchitectureAdmin from "@/pages/admin/TempleArchitectureAdmin";
 import ManageYatra from "@/pages/admin/ManageYatra";
+import RajViharanAdmin from "@/pages/admin/RajViharanAdmin";
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,15 @@ const App = () => {
                     element={
                       <PrivateRoute adminRequired={true}>
                         <ManageYatra />
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/admin/raj-viharan"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <RajViharanAdmin />
                       </PrivateRoute>
                     }
                   />

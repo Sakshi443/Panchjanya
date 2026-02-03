@@ -7,21 +7,7 @@ import { ChevronLeft, Share2, Compass, MapPin, GripHorizontal } from "lucide-rea
 import YatraMap, { YatraLocation } from "@/components/features/YatraMap";
 import { Card } from "@/components/ui/card";
 
-interface YatraPlace {
-    id: string;
-    name: string;
-    description: string;
-    sequence: number;
-    status: "visited" | "stayed" | "revisited" | "current" | "upcoming";
-    latitude?: number;
-    longitude?: number;
-    image?: string;
-    time?: string;
-    isLive?: boolean;
-    attendees?: string;
-    route?: string;
-    subRoute?: string;
-}
+import { YatraPlace } from "@/types";
 
 const ROUTES = [
     {
