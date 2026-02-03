@@ -276,7 +276,7 @@ export default function SthanaDirectory() {
                                         variant="ghost"
                                         size="icon"
                                         className="flex-1 sm:flex-none h-10 w-10 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-100"
-                                        onClick={() => navigate(`/admin/temples/edit/${temple.id}`)}
+                                        onClick={() => navigate(`/admin/architecture/${temple.id}`)}
                                         title="Edit Sthana"
                                     >
                                         <Edit className="w-4 h-4" />

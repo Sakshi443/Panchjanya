@@ -43,7 +43,6 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import SthanaDirectory from "@/pages/admin/SthanaDirectory";
 
 import AdminAddTemple from "@/pages/admin/AdminAddTemple";
-import AdminTempleEdit from "@/pages/admin/AdminTempleEdit";
 import AdminCsvImport from "@/pages/admin/AdminCsvImport";
 import AdminCsvUpload from "./pages/admin/AdminCsvUpload";
 import TempleArchitectureAdmin from "@/pages/admin/TempleArchitectureAdmin";
@@ -99,14 +98,6 @@ const App = () => {
                     }
                   />
 
-                  <Route
-                    path="/admin/temples/edit/:id"
-                    element={
-                      <PrivateRoute adminRequired={true} >
-                        <AdminTempleEdit />
-                      </PrivateRoute>
-                    }
-                  />
 
                   <Route
                     path="/admin/csv-import"

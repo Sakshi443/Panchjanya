@@ -31,6 +31,18 @@ export default function SthanaDetail() {
                 const snap = await getDoc(doc(db, "temples", id));
                 if (snap.exists()) {
                     const data = snap.data() as Temple;
+
+                    // Always try to find the hotspot in BOTH arrays to get the most complete data
+                    const allHotspotsPool = [...(data.hotspots || []), ...(data.presentHotspots || [])];
+                    const foundInPool = allHotspotsPool.find((h: any) => h.id === sthanaId);
+
+                    if (foundInPool) {
+                        setHotspot({
+                            ...foundInPool,
+                            number: foundInPool.number || (data.hotspots?.findIndex(h => h.id === sthanaId) + 1) || 1
+                        });
+                    }
+
                     const hotspotsToUse = viewParam === 'present'
                         ? (data.presentHotspots || [])
                         : (data.hotspots || []);
@@ -41,11 +53,6 @@ export default function SthanaDetail() {
                     })).sort((a, b) => (a.number || 0) - (b.number || 0));
 
                     setAllHotspots(formattedHotspots);
-
-                    const found = formattedHotspots.find((h: any) => h.id === sthanaId);
-                    if (found) {
-                        setHotspot(found);
-                    }
                 }
             } catch (error) {
                 console.error("Error fetching sthana:", error);
@@ -54,7 +61,7 @@ export default function SthanaDetail() {
             }
         };
         fetchTemple();
-    }, [id, sthanaId]);
+    }, [id, sthanaId, viewParam]);
 
     // Derived State for Images
     const presentImages = hotspot?.images || (hotspot?.image ? [hotspot.image] : []) || [];
@@ -224,12 +231,14 @@ export default function SthanaDetail() {
                                 <div className="pl-2">
                                     <div className="flex items-center gap-2 mb-2">
                                         <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                        <h3 className="text-amber-800 font-bold tracking-widest text-xl">Description</h3>
+                                        <h3 className="text-amber-800 font-bold tracking-widest text-xl">{hotspot.generalDescriptionTitle || "Description"}</h3>
                                     </div>
-                                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative z-10">
-                                        <p className="font-serif text-lg text-slate-800 leading-relaxed">
-                                            {hotspot.significance || hotspot.description || "No info available"}
-                                        </p>
+                                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative z-10 space-y-4">
+                                        <div>
+                                            <p className="font-serif text-lg text-slate-800 leading-relaxed">
+                                                {hotspot.description || hotspot.significance || "No info available"}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -251,10 +260,13 @@ export default function SthanaDetail() {
                                         ? hotspot.leelas
                                         : (hotspot.leela ? hotspot.leela.split('\n').filter((l: string) => l.trim()) : []);
 
-                                    // If no leelas found, use sample data for demo
-                                    if (leelas.length === 0) {
-                                        leelas = sampleLeelas;
+                                    // If no leelas found, check legacy 'leela' property
+                                    if (leelas.length === 0 && hotspot.leela) {
+                                        leelas = hotspot.leela.split('\n').filter((l: string) => l.trim());
                                     }
+
+                                    // If still no leelas found, use sample data for demo ONLY if strictly necessary
+                                    // But let's prioritize showing actual data or empty state
 
                                     return leelas.map((leela: any, index: number) => {
                                         const leelaId = typeof leela === 'object' ? (leela.id || index.toString()) : index.toString();
@@ -274,8 +286,11 @@ export default function SthanaDetail() {
                                                     className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors bg-transparent`}
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <span className={`font-serif text-base md:text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>
-                                                            {content.length > 60 ? content.substring(0, 60) + '...' : content}
+                                                        <span className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
+                                                            {index + 1}
+                                                        </span>
+                                                        <span className={`font-serif text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>
+                                                            {((typeof leela === 'object' && leela.title) ? leela.title : `Leela ${index + 1}`)}
                                                         </span>
                                                     </div>
                                                     <div className={`shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-amber-600' : 'text-slate-400'}`}>

@@ -1,35 +1,68 @@
-// Centralized Temple interface
+// Centralized interfaces for Temple Architecture
+export interface Leela {
+    id: string;
+    title?: string; // New: Title for the leela
+    description: string;
+    number?: number;
+}
+
+export interface Hotspot {
+    id: string;
+    x: number;
+    y: number;
+    title: string;
+    description: string;
+    significance?: string; // Detailed architectural/spiritual info
+    sthanPothiTitle?: string; // New: Title for Sthan Pothi section
+    sthanPothiDescription?: string; // New: Specific description for sthan pothi
+    generalDescriptionTitle?: string; // New: Title for General Description section
+    number?: number; // Sequence number
+    imageIndex?: number; // Map to main (0) or supplemental (1+) images
+    images: string[]; // Present day images
+    oldImages?: string[]; // Historical images
+    leelas?: Leela[]; // Stories associated with this location
+}
+
+export interface DescriptionSection {
+    id: string;
+    title: string;
+    content: string;
+}
+
 export interface Temple {
     id: string;
     name: string;
-    todaysName?: string; // For "Todays name" subtitle
-    address?: string; // New field
-    contactName?: string; // For contact details
-    contactNumber?: string; // For contact details
+    todaysName?: string; // New: Today's name subtitle
+    address?: string;
+    wayToReach?: string; // New: Way to reach instructions
+    locationLink?: string; // New: Direction link or coordinates
+    contactName?: string;
+    contactNumber?: string;
     city: string;
-    taluka?: string; // New field
+    taluka?: string;
     district: string;
-    location: string | { lat: number; lng: number; address?: string }; // Keep for backward compatibility if needed, but we'll try to standardize
+    location: string | { lat: number; lng: number; address?: string };
     latitude: number;
     longitude: number;
     description?: string;
     description_title?: string;
     description_text?: string;
-    sthana?: string; // Sthana Purana (Legacy)
+    architectureDescription?: string; // New: Overall architectural description
+    descriptionSections?: DescriptionSection[]; // New: Dynamic content blocks
+    sthana?: string;
     sthana_info_title?: string;
     sthana_info_text?: string;
     directions_title?: string;
     directions_text?: string;
-    leela?: string; // Leela
-    history?: string; // Temple history
+    leela?: string;
+    history?: string;
     images?: string[];
-    architectureImage?: string; // Main architecture image for hotspots
-    architectureImages?: string[]; // Multiple architecture images
-    presentImage?: string; // Main present image for hotspots
-    presentImages?: string[]; // Multiple present images
-    hotspots?: any[]; // For architecture view
-    presentHotspots?: any[]; // For present image hotspots
-    sections?: { title: string; content: string }[]; // Backward compatibility for some existing structure
+    architectureImage?: string;
+    architectureImages?: string[];
+    presentImage?: string;
+    presentImages?: string[];
+    hotspots?: Hotspot[];
+    presentHotspots?: Hotspot[];
     createdAt?: any;
     updatedAt?: any;
 }

@@ -652,12 +652,20 @@ export default function ArchitectureViewer() {
                         }
                     }}>
                         <DropdownMenuTrigger asChild>
-                            <button id="sthan-pothi-trigger" className="w-full h-12 md:h-14 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl shadow-md flex items-center justify-between px-6 border border-blue-800 group transition-all focus:outline-none">
-                                <div className="flex items-center gap-3">
-                                    <BookOpen className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                            <button id="sthan-pothi-trigger" className="w-full h-12 md:h-14 bg-blue-900 text-white rounded-2xl shadow-md flex items-center justify-between p-0 border border-blue-800 group transition-all focus:outline-none overflow-hidden">
+                                <div
+                                    className="flex-1 flex items-center gap-3 h-full pl-6 cursor-default"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                >
+                                    <BookOpen className="w-6 h-6 text-white" />
                                     <span className="font-heading font-bold tracking-wider text-base md:text-lg">Sthan Pothi</span>
                                 </div>
-                                <ChevronDown className={`w-6 h-6 text-white opacity-80 group-hover:opacity-100 transition-all duration-300 ${isPothiOpen ? 'rotate-180' : ''}`} />
+                                <div className="h-full flex items-center justify-center px-6 border-l border-blue-800 hover:bg-blue-800 transition-colors cursor-pointer">
+                                    <ChevronDown className={`w-6 h-6 text-white opacity-80 group-hover:opacity-100 transition-all duration-300 ${isPothiOpen ? 'rotate-180' : ''}`} />
+                                </div>
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
