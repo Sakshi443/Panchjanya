@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import * as LucideIcons from "lucide-react";
 import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, ChevronRight, Info, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button1 } from "@/components/ui/button-1";
@@ -259,10 +260,10 @@ export default function TempleArchitecture() {
               isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-32 opacity-100 mt-1"
             )}>
               <h2 className="text-base text-[#0f3c6e] font-serif">
-                <span className="font-bold">{temple.todaysName || "Kamalpur"}</span> (Today's name)
+                <span className="font-bold">{temple.todaysName}</span> {temple.todaysName && "(Today's name)"}
               </h2>
               <p className="text-sm font-bold text-amber-600 leading-tight">
-                Shri Chakradhar Mandir, Domegram, Shrirampur, Ahilyanagar
+                {temple.address}
               </p>
             </div>
 
@@ -299,10 +300,34 @@ export default function TempleArchitecture() {
                   {temple.directions_title || "Way to Reach"}
                 </DialogTitle>
               </DialogHeader>
-              <div className="py-4">
-                <div className="text-sm text-slate-700 font-serif leading-relaxed">
-                  {temple.directions_text || "Shri Chakradhar Swami Mandir, Domegram. Road map details will be shown here."}
+              <div className="py-4 space-y-6">
+                <div className="text-sm text-slate-700 font-serif leading-relaxed px-1">
+                  {temple.directions_text || "Directions not available."}
                 </div>
+
+                {(temple.contactName || temple.contactNumber || temple.contactDetails) && (
+                  <div className="mt-2 p-2 rounded-2xl border border-blue-100/50 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                      <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Contact Details</span>
+                    </div>
+                    <div className="space-y-2">
+                      {(temple.contactName || temple.contactNumber) && (
+                        <p className="text-sm font-serif text-slate-900 leading-tight">
+                          {temple.contactName && temple.contactNumber
+                            ? `${temple.contactName} : ${temple.contactNumber}`
+                            : (temple.contactName || temple.contactNumber)}
+                        </p>
+                      )}
+                      {temple.contactDetails && (
+                        <div className="flex gap-2 text-sm text-slate-700 leading-relaxed font-serif pt-1 border-t border-blue-100/50">
+                          <span className="font-bold text-slate-400 not-italic shrink-0">Note:</span>
+                          <p className="italic">{temple.contactDetails}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
@@ -418,12 +443,27 @@ export default function TempleArchitecture() {
             </Dialog>
           </div>
 
-          <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
-            <p className="font-serif text-slate-700 leading-relaxed text-md whitespace-pre-wrap pl-2 pr-4 text-justify columns-2 gap-6">
-              {temple.description_text || temple.description || "No description available."}
-            </p>
-          </div>
+          {temple.glanceItems && temple.glanceItems.length > 0 && (
+            <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 pl-2">
+                {temple.glanceItems.map((item, idx) => (
+                  <div key={item.id || idx} className="flex items-start gap-2 p-1">
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      {item.icon && (
+                        <img src={item.icon} className="w-5 h-5 object-contain" alt="icon" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-serif text-slate-700 leading-relaxed text-sm">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sthana Info */}
@@ -440,7 +480,7 @@ export default function TempleArchitecture() {
             <p className="font-serif text-slate-700 leading-relaxed text-md whitespace-pre-wrap pl-2">
               {temple.sthana_info_text ||
                 temple.sthana ||
-                `${temple.name} हे महाराष्ट्रातील एक प्राचीन व पवित्र स्थान आहे. येथील वास्तुकला आणि ऐतिहासिक महत्त्व अद्वितीय आहे.`}
+                "Information not available."}
             </p>
           </div>
         </div>

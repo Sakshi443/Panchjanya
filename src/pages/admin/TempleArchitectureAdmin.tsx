@@ -4,8 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Hotspot, Leela } from "@/types";
-import { X, Save, Trash2, Upload, ArrowLeft, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus, ChevronDown, Image as ImageIcon, Info, MousePointer2, ExternalLink, FileText } from "lucide-react";
+import { Hotspot, Leela, GlanceItem, CustomBlock } from "@/types";
+import * as LucideIcons from "lucide-react";
+import { X, Save, Trash2, Upload, ArrowLeft, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus, ChevronDown, Image as ImageIcon, Info, MousePointer2, ExternalLink, FileText, Search, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +31,15 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 
 // Local UI state interfaces - The robust interfaces are in @/types
 
+const CUSTOM_ICONS = [
+  { name: "Temple", path: "/icons/Blue_temple_icon-removebg.png" },
+  { name: "Explore", path: "/icons/explore_safari.png" },
+  { name: "Direction", path: "/icons/left-arrow.png" },
+  { name: "Route", path: "/icons/route-arrow.png" },
+  { name: "Signpost", path: "/icons/signpost.png" },
+  { name: "Sthaan", path: "/icons/sthaan.png" },
+];
+
 export default function TempleArchitectureAdmin() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -50,7 +60,7 @@ export default function TempleArchitectureAdmin() {
   const [address, setAddress] = useState("");
   const [taluka, setTaluka] = useState("");
   const [district, setDistrict] = useState("");
-  const [wayToReach, setWayToReach] = useState("");
+  const [directions_text, setDirectionsText] = useState("");
   const [locationLink, setLocationLink] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
@@ -59,7 +69,12 @@ export default function TempleArchitectureAdmin() {
   const [sthana_info_title, setSthanaInfoTitle] = useState("Sthan Description");
   const [sthana_info_text, setSthanaInfoText] = useState("");
   const [descriptionSections, setDescriptionSections] = useState<{ id: string, title: string, content: string }[]>([]);
+  const [glanceItems, setGlanceItems] = useState<GlanceItem[]>([]);
+  const [customBlocks, setCustomBlocks] = useState<CustomBlock[]>([]);
   const [architectureDescription, setArchitectureDescription] = useState("");
+  const [contactDetails, setContactDetails] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
 
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -70,6 +85,7 @@ export default function TempleArchitectureAdmin() {
   const [hoveredHotspotId, setHoveredHotspotId] = useState<string | null>(null);
   const [pendingClickPosition, setPendingClickPosition] = useState<{ x: number, y: number } | null>(null);
   const [hotspotPage, setHotspotPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const HOTSPOTS_PER_PAGE = 6;
 
   useEffect(() => {
@@ -103,7 +119,7 @@ export default function TempleArchitectureAdmin() {
         setAddress(data.address || "");
         setTaluka(data.taluka || "");
         setDistrict(data.district || "");
-        setWayToReach(data.wayToReach || "");
+        setDirectionsText(data.directions_text || data.wayToReach || "");
         setLocationLink(data.locationLink || "");
         setLatitude(data.latitude || "");
         setLongitude(data.longitude || "");
@@ -112,7 +128,12 @@ export default function TempleArchitectureAdmin() {
         setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
         setSthanaInfoText(data.sthana_info_text || data.sthana || "");
         setDescriptionSections(data.descriptionSections || []);
+        setGlanceItems(data.glanceItems || []);
+        setCustomBlocks(data.customBlocks || []);
         setArchitectureDescription(data.architectureDescription || "");
+        setContactDetails(data.contactDetails || "");
+        setContactName(data.contactName || "");
+        setContactNumber(data.contactNumber || "");
       } catch (error) {
         console.error("Error fetching temple:", error);
         toast({
@@ -238,7 +259,7 @@ export default function TempleArchitectureAdmin() {
         address,
         taluka,
         district,
-        wayToReach,
+        directions_text,
         locationLink,
         latitude,
         longitude,
@@ -248,7 +269,12 @@ export default function TempleArchitectureAdmin() {
         sthana_info_title,
         sthana_info_text,
         descriptionSections,
+        glanceItems,
+        customBlocks,
         architectureDescription,
+        contactDetails,
+        contactName,
+        contactNumber,
       });
       toast({ title: "Success", description: "Temple details updated." });
     } catch (e) {
@@ -279,6 +305,50 @@ export default function TempleArchitectureAdmin() {
 
   const removeDescriptionSection = (sId: string) => {
     setDescriptionSections(descriptionSections.filter(s => s.id !== sId));
+  };
+
+  const addGlanceItem = () => {
+    const newItem: GlanceItem = { id: uuidv4(), icon: CUSTOM_ICONS[0].path, description: "" };
+    setGlanceItems([...glanceItems, newItem]);
+  };
+
+  const updateGlanceItem = (gId: string, field: 'icon' | 'description', value: string) => {
+    setGlanceItems(glanceItems.map(g => g.id === gId ? { ...g, [field]: value } : g));
+  };
+
+  const removeGlanceItem = (gId: string) => {
+    setGlanceItems(glanceItems.filter(g => g.id !== gId));
+  };
+
+  const addCustomBlock = () => {
+    const newBlock: CustomBlock = { id: uuidv4(), title: "", content: "" };
+    setCustomBlocks([...customBlocks, newBlock]);
+  };
+
+  const updateCustomBlock = (id: string, field: 'title' | 'content', value: string) => {
+    setCustomBlocks(customBlocks.map(block =>
+      block.id === id ? { ...block, [field]: value } : block
+    ));
+  };
+
+  const removeCustomBlock = (id: string) => {
+    setCustomBlocks(customBlocks.filter(block => block.id !== id));
+  };
+
+  const moveCustomBlock = (index: number, direction: 'up' | 'down') => {
+    const newBlocks = [...customBlocks];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newBlocks.length) return;
+    [newBlocks[index], newBlocks[targetIndex]] = [newBlocks[targetIndex], newBlocks[index]];
+    setCustomBlocks(newBlocks);
+  };
+
+  const moveGlanceItem = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...glanceItems];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) return;
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    setGlanceItems(newItems);
   };
 
   const deleteHotspot = async () => {
@@ -641,12 +711,42 @@ export default function TempleArchitectureAdmin() {
                 </div>
                 <div className="lg:col-span-2 space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-700">How to reach</Label>
+                    <Label className="text-sm font-semibold text-slate-700">Detailed Directions</Label>
                     <Textarea
-                      value={wayToReach}
-                      onChange={(e) => setWayToReach(e.target.value)}
-                      placeholder="Provide detailed instructions for trains, buses, or flights..."
-                      rows={4}
+                      value={directions_text}
+                      onChange={(e) => setDirectionsText(e.target.value)}
+                      placeholder="Detailed instructions for trains, buses, etc..."
+                      rows={3}
+                      className="rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-slate-700">Contact Person <span className="text-slate-400 font-normal">(Optional)</span></Label>
+                      <Input
+                        value={contactName}
+                        onChange={(e) => setContactName(e.target.value)}
+                        placeholder="e.g. Mahant Shri..."
+                        className="rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-slate-700">Contact Number <span className="text-slate-400 font-normal">(Optional)</span></Label>
+                      <Input
+                        value={contactNumber}
+                        onChange={(e) => setContactNumber(e.target.value)}
+                        placeholder="e.g. +91 99XXXXXXXX"
+                        className="rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-700">Note <span className="text-slate-400 font-normal">(Optional)</span></Label>
+                    <Textarea
+                      value={contactDetails}
+                      onChange={(e) => setContactDetails(e.target.value)}
+                      placeholder="Extra information, timings, etc..."
+                      rows={2}
                       className="rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
@@ -761,18 +861,125 @@ export default function TempleArchitectureAdmin() {
                           className="h-12 border-none bg-white rounded-xl font-bold text-lg focus:ring-2 focus:ring-amber-200 transition-all px-4"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">Detailed Narrative</span>
-                          <div className="h-px flex-1 bg-amber-100/50" />
+
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">Iconic Details</span>
+                            <div className="h-px w-20 bg-amber-100/50" />
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={addGlanceItem}
+                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-100/50 font-bold text-xs"
+                          >
+                            <Plus className="w-3 h-3 mr-1" /> Add Detail
+                          </Button>
                         </div>
-                        <Textarea
-                          value={description_text}
-                          onChange={(e) => setDescriptionText(e.target.value)}
-                          placeholder="Summarize the sthan at a glance..."
-                          rows={4}
-                          className="border-none bg-white rounded-xl focus:ring-2 focus:ring-amber-200 transition-all p-4 leading-relaxed"
-                        />
+
+                        <div className="space-y-3">
+                          {glanceItems.map((item, idx) => (
+                            <div key={item.id} className="flex items-start gap-3 bg-white/50 p-3 rounded-2xl border border-amber-100/50 group transition-all hover:bg-white">
+                              <div className="flex flex-col gap-1 mt-1">
+                                <button
+                                  onClick={() => moveGlanceItem(idx, 'up')}
+                                  disabled={idx === 0}
+                                  className="text-slate-300 hover:text-amber-600 disabled:opacity-0 transition-opacity"
+                                >
+                                  <ArrowUp className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => moveGlanceItem(idx, 'down')}
+                                  disabled={idx === glanceItems.length - 1}
+                                  className="text-slate-300 hover:text-amber-600 disabled:opacity-0 transition-opacity"
+                                >
+                                  <ArrowDown className="w-3 h-3" />
+                                </button>
+                              </div>
+
+                              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div className="md:col-span-1">
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" className="w-full justify-between h-10 rounded-xl border-amber-100 bg-white">
+                                        <div className="flex items-center gap-2 truncate">
+                                          {item.icon ? (
+                                            <img src={item.icon} className="w-4 h-4 object-contain" alt="icon" />
+                                          ) : (
+                                            <Info className="w-4 h-4 text-amber-600" />
+                                          )}
+                                          <span className="text-xs font-medium">
+                                            {item.icon.startsWith('http')
+                                              ? "Custom URL"
+                                              : (CUSTOM_ICONS.find(ic => ic.path === item.icon)?.name || "Select Icon")
+                                            }
+                                          </span>
+                                        </div>
+                                        <ChevronDown className="w-3 h-3 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80 p-3 space-y-3">
+                                      <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-slate-400">Select Custom Icon</Label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                          {CUSTOM_ICONS.map(icon => (
+                                            <button
+                                              key={icon.path}
+                                              onClick={() => updateGlanceItem(item.id, 'icon', icon.path)}
+                                              className={`p-3 rounded-lg hover:bg-amber-50 flex flex-col items-center justify-center gap-2 transition-colors border ${item.icon === icon.path ? 'bg-amber-100 border-amber-300' : 'border-slate-200'}`}
+                                              title={icon.name}
+                                            >
+                                              <img src={icon.path} className="w-8 h-8 object-contain" alt={icon.name} />
+                                              <span className="text-[9px] font-medium text-slate-600 truncate w-full text-center">{icon.name}</span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <Separator />
+                                      <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-slate-400">Or Enter Custom URL</Label>
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="https://..."
+                                            value={item.icon.startsWith('http') ? item.icon : ''}
+                                            onChange={(e) => updateGlanceItem(item.id, 'icon', e.target.value)}
+                                            className="h-8 text-xs rounded-lg"
+                                          />
+                                          {item.icon.startsWith('http') && (
+                                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => updateGlanceItem(item.id, 'icon', CUSTOM_ICONS[0].path)}>
+                                              <X className="w-3 h-3" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <div className="md:col-span-3">
+                                  <Input
+                                    value={item.description}
+                                    onChange={(e) => updateGlanceItem(item.id, 'description', e.target.value)}
+                                    placeholder="Brief description..."
+                                    className="h-10 rounded-xl border-amber-100 bg-white text-sm"
+                                  />
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => removeGlanceItem(item.id)}
+                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                          {glanceItems.length === 0 && (
+                            <p className="text-[10px] text-center text-slate-400 italic py-2">
+                              No iconic details added. Click "Add Detail" to begin.
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -931,11 +1138,7 @@ export default function TempleArchitectureAdmin() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <Button onClick={saveTempleDetails} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-8 h-12 shadow-lg shadow-blue-900/20">
-                  <Save className="w-4 h-4 mr-2" /> Save Changes
-                </Button>
-              </div>
+
 
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 mr-4 bg-muted p-1 rounded-lg">
@@ -949,21 +1152,9 @@ export default function TempleArchitectureAdmin() {
                     <ZoomIn className="w-4 h-4" />
                   </Button>
                 </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add New Image
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-0 overflow-hidden border-2 shadow-xl" align="end">
-                    <ImageUpload
-                      folderPath={`${viewType}/${id}/supplemental`}
-                      onUpload={handleSupplementalImageUpload}
-                      label="Add New Image"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Button onClick={saveTempleDetails} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-6 shadow-lg">
+                  <Save className="w-4 h-4 mr-2" /> Save Changes
+                </Button>
               </div>
             </div>
 
@@ -1357,6 +1548,94 @@ export default function TempleArchitectureAdmin() {
               </CardContent>
             </Card>
 
+            {/* Additional Custom Blocks */}
+            <Card className="border-slate-200">
+              <CardHeader className="bg-slate-50 border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-slate-500" />
+                    <CardTitle className="text-lg font-bold text-slate-900">Additional Custom Blocks</CardTitle>
+                  </div>
+                  <Button
+                    onClick={addCustomBlock}
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-900 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Custom Block
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">Add custom descriptive sections to display on the public architecture page</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                {customBlocks.length === 0 ? (
+                  <div
+                    onClick={addCustomBlock}
+                    className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all"
+                  >
+                    <p className="text-slate-400 text-sm">
+                      No additional descriptive blocks added yet.<br />
+                      <span className="text-blue-600 font-medium">Click here to add one</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {customBlocks.map((block, idx) => (
+                      <div key={block.id} className="bg-white p-4 rounded-2xl border border-slate-100 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="flex flex-col gap-1 pt-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveCustomBlock(idx, 'up')}
+                              disabled={idx === 0}
+                              className="h-6 w-6 p-0 hover:bg-slate-100 disabled:opacity-30"
+                            >
+                              <ArrowUp className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveCustomBlock(idx, 'down')}
+                              disabled={idx === customBlocks.length - 1}
+                              className="h-6 w-6 p-0 hover:bg-slate-100 disabled:opacity-30"
+                            >
+                              <ArrowDown className="w-3 h-3" />
+                            </Button>
+                          </div>
+
+                          <div className="flex-1 space-y-3">
+                            <Input
+                              value={block.title}
+                              onChange={(e) => updateCustomBlock(block.id, 'title', e.target.value)}
+                              placeholder="Block Title"
+                              className="font-bold rounded-xl"
+                            />
+                            <Textarea
+                              value={block.content}
+                              onChange={(e) => updateCustomBlock(block.id, 'content', e.target.value)}
+                              placeholder="Block content..."
+                              rows={4}
+                              className="rounded-xl"
+                            />
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeCustomBlock(block.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Hotspot Edit Dialog */}
           </div>
         )}
@@ -1400,52 +1679,75 @@ export default function TempleArchitectureAdmin() {
             </div>
 
             {!selectedHotspot ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {archHotspots.map((h) => (
-                  <Card
-                    key={h.id}
-                    className="group hover:border-primary/50 transition-all cursor-pointer overflow-hidden border-2"
-                    onClick={() => setSelectedHotspot(h)}
-                  >
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black">
-                          {h.number}
-                        </div>
-                        <Badge variant="outline" className="bg-white text-slate-400 capitalize">
-                          {h.images?.length || 0} Photos
-                        </Badge>
+              <div className="space-y-6">
+                {/* Search Bar */}
+                <div className="relative max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    placeholder="Search sthanas by name or description..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {archHotspots
+                    .filter(h =>
+                    (h.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      h.description?.toLowerCase().includes(searchQuery.toLowerCase()))
+                    )
+                    .map((h) => (
+                      <Card
+                        key={h.id}
+                        className="group hover:border-primary/50 transition-all cursor-pointer overflow-hidden border-2"
+                        onClick={() => setSelectedHotspot(h)}
+                      >
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black">
+                              {h.number}
+                            </div>
+                            <Badge variant="outline" className="bg-white text-slate-400 capitalize">
+                              {h.images?.length || 0} Photos
+                            </Badge>
+                          </div>
+                          <CardTitle className="mt-4 text-xl">{h.title || "Untitled Sthana"}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-slate-500 line-clamp-2 min-h-[40px]">
+                            {h.description || "No description provided."}
+                          </p>
+                          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              {h.x === 0 && h.y === 0 ? (
+                                <span className="text-amber-500">Unmapped (No Hotspot)</span>
+                              ) : (
+                                <span>Mapped to Arch View</span>
+                              )}
+                            </div>
+                            <span className="text-primary font-bold text-sm flex items-center gap-1">
+                              Edit Details <ChevronRight className="w-4 h-4" />
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  {archHotspots.length === 0 && (
+                    <div className="col-span-full py-20 text-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-slate-300">
+                        <ImageIcon className="w-8 h-8" />
                       </div>
-                      <CardTitle className="mt-4 text-xl">{h.title || "Untitled Sthana"}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-slate-500 line-clamp-2 min-h-[40px]">
-                        {h.description || "No description provided."}
-                      </p>
-                      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          {h.x === 0 && h.y === 0 ? (
-                            <span className="text-amber-500">Unmapped (No Hotspot)</span>
-                          ) : (
-                            <span>Mapped to Arch View</span>
-                          )}
-                        </div>
-                        <span className="text-primary font-bold text-sm flex items-center gap-1">
-                          Edit Details <ChevronRight className="w-4 h-4" />
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {archHotspots.length === 0 && (
-                  <div className="col-span-full py-20 text-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-slate-300">
-                      <ImageIcon className="w-8 h-8" />
+                      <h3 className="text-lg font-bold text-slate-800">No Sthanas Defined</h3>
+                      <p className="text-sm text-slate-500 mt-1">Add hotspots in Step 2 or create a stand-alone sthana here.</p>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-800">No Sthanas Defined</h3>
-                    <p className="text-sm text-slate-500 mt-1">Add hotspots in Step 2 or create a stand-alone sthana here.</p>
-                  </div>
-                )}
+                  )}
+                  {archHotspots.length > 0 && archHotspots.filter(h => (h.title?.toLowerCase().includes(searchQuery.toLowerCase()) || h.description?.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                    <div className="col-span-full py-20 text-center">
+                      <p className="text-slate-500">No sthanas match your search.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="space-y-8">
@@ -1485,7 +1787,16 @@ export default function TempleArchitectureAdmin() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label>Sthan Pothi</Label>
+                          <Label>Sthan Pothi Title</Label>
+                          <Input
+                            value={selectedHotspot.sthanPothiTitle || ""}
+                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiTitle: e.target.value })}
+                            placeholder="e.g. Sthan Mahatmya"
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Sthan Pothi Description</Label>
                           <Textarea
                             value={selectedHotspot.sthanPothiDescription || ""}
                             onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiDescription: e.target.value })}
@@ -1697,6 +2008,6 @@ export default function TempleArchitectureAdmin() {
             </div>
           )}
       </div>
-    </div >
+    </div>
   );
 }

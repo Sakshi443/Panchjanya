@@ -37,17 +37,17 @@ interface Hotspot {
 }
 
 const abbreviations = [
-    "👣 कोणत्या अवतारांची क्रीडा",
-    "☀️ लीळाचरित्रातील काळ",
-    "🏠 रहिवासाची जागा",
-    "⏹️ स्थानाचा प्रकार",
-    "⬇️ कोठून आले (1. - किती वेळा आले)",
-    "⭐ मुक्काम किती दिवस (उ. - ली.च. काळ)",
-    "⬆️ कोठे गेले (1. - जातानाची वेळ)",
-    "➕ उपलब्ध स्थान संख्या",
-    "➖ निर्देशित स्थान संख्या",
-    "❌ अनुपलब्ध स्थान संख्या",
-    "🟰 एकूण स्थान संख्या"
+    { icon: "/icons/sthaan.png", text: "कोणत्या अवतारांची क्रीडा" },
+    { icon: "/icons/explore_safari.png", text: "लीळाचरित्रातील काळ" },
+    { icon: "/icons/Blue_temple_icon-removebg.png", text: "रहिवासाची जागा" },
+    { icon: "/icons/signpost.png", text: "स्थानाचा प्रकार" },
+    { icon: "/icons/left-arrow.png", text: "कोठून आले (1. - किती वेळा आले)" },
+    { icon: "/icons/route-arrow.png", text: "मुक्काम किती दिवस (उ. - ली.च. काळ)" },
+    { icon: "/icons/route-arrow.png", text: "कोठे गेले (1. - जातानाची वेळ)" },
+    { icon: "/icons/Blue_temple_icon-removebg.png", text: "उपलब्ध स्थान संख्या" },
+    { icon: "/icons/signpost.png", text: "निर्देशित स्थान संख्या" },
+    { icon: "/icons/sthaan.png", text: "अनुपलब्ध स्थान संख्या" },
+    { icon: "/icons/explore_safari.png", text: "एकूण स्थान संख्या" }
 ];
 
 export default function ArchitectureViewer() {
@@ -82,7 +82,7 @@ export default function ArchitectureViewer() {
         setSelectionSource(source);
 
         if (id && source && source !== 'image') {
-            const h = (imageType === 'architectural' ? hotspots : presentHotspots).find(hotspot => hotspot.id === id);
+            const h = hotspots.find(hotspot => hotspot.id === id);
             if (h && (h.imageIndex || 0) !== currentImageIndex) {
                 setCurrentImageIndex(h.imageIndex || 0);
                 handleResetOrientation();
@@ -389,7 +389,10 @@ export default function ArchitectureViewer() {
                             <div className="space-y-3 pt-4">
                                 {abbreviations.map((item, index) => (
                                     <div key={index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
-                                        <span>{item}</span>
+                                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                                            <img src={item.icon} className="w-5 h-5 object-contain" alt="icon" />
+                                        </div>
+                                        <span className="flex-1">{item.text}</span>
                                     </div>
                                 ))}
                             </div>
@@ -675,7 +678,7 @@ export default function ArchitectureViewer() {
                             sideOffset={8}
                             className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[75vh] md:max-h-[80vh] overflow-y-auto rounded-2xl p-1 bg-white shadow-2xl border-blue-50 z-50 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
-                            {(imageType === 'architectural' ? hotspots : presentHotspots).map((h) => {
+                            {hotspots.map((h) => {
                                 const isExpanded = expandedHotspots[h.id];
                                 // Selection in pothi only shows if it matches AND (pothi is open)
                                 // Highlight if it matches the selected hotspot
@@ -743,13 +746,13 @@ export default function ArchitectureViewer() {
                             <div className="space-y-4 pb-[450px]">
                                 {/* Description Card */}
                                 <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-base text-slate-600 leading-relaxed font-serif">
-                                    {temple.description_text || temple.description || "No description available for this architecture."}
+                                    {temple.architectureDescription || "No architecture description available."}
                                 </div>
 
                                 {/* Sthana List */}
                                 <div className="flex flex-col gap-2 md:gap-4">
                                     {(() => {
-                                        const displayHotspots = [...(imageType === 'architectural' ? hotspots : presentHotspots)].sort((a, b) => (a.number || 0) - (b.number || 0));
+                                        const displayHotspots = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
 
                                         return displayHotspots.map((hotspot) => {
                                             const isSelected = selectedHotspotId === hotspot.id;
@@ -825,6 +828,25 @@ export default function ArchitectureViewer() {
                         </div>
                     </div>
                 </div>
+
+                {/* Custom Blocks */}
+                {temple.customBlocks && temple.customBlocks.length > 0 && (
+                    <div className="space-y-4 mt-6">
+                        {temple.customBlocks.map((block) => (
+                            <div key={block.id} className="space-y-3 md:space-y-4 group pb-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1 h-6 bg-amber-600"></div>
+                                    <h3 className="font-heading text-xl font-bold text-blue-900">
+                                        {block.title}
+                                    </h3>
+                                </div>
+                                <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-100/50 text-base text-slate-600 leading-relaxed font-serif whitespace-pre-wrap">
+                                    {block.content}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Full-Screen Image Modal */}
                 <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
