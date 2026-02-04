@@ -21,7 +21,8 @@ import {
     Trash2,
     ChevronDown,
     Filter,
-    MoreVertical
+    MoreVertical,
+    Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -116,13 +117,23 @@ export default function SthanaDirectory() {
                             Heritage Management
                         </p>
                     </div>
-                    <Button
-                        onClick={() => navigate("/admin/temples/add")}
-                        className="bg-[#C9A961] hover:bg-[#b89b58] text-white font-bold rounded-xl h-12 px-6 shadow-sm shadow-amber-900/10 transition-all hover:scale-[1.02] active:scale-95"
-                    >
-                        <Plus className="w-5 h-5 mr-2 stroke-[3]" />
-                        Add New Sthana
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button
+                            onClick={() => navigate("/admin/abbreviations")}
+                            variant="outline"
+                            className="bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl h-12 px-6 border-2 border-slate-200 transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                            <Info className="w-5 h-5 mr-2" />
+                            Manage Abbreviations
+                        </Button>
+                        <Button
+                            onClick={() => navigate("/admin/temples/add")}
+                            className="bg-[#C9A961] hover:bg-[#b89b58] text-white font-bold rounded-xl h-12 px-6 shadow-sm shadow-amber-900/10 transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                            <Plus className="w-5 h-5 mr-2 stroke-[3]" />
+                            Add New Sthana
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Search & Filters Bar */}

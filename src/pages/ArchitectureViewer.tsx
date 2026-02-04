@@ -5,7 +5,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { X, ZoomIn, ZoomOut, RotateCcw, Info, ChevronLeft, BookOpen, ChevronDown, Eye, EyeOff, Maximize, Check, ChevronRight, ChevronUp, Expand } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button1 } from "@/components/ui/button-1";
-import { Temple } from "@/types";
+import { Temple, AbbreviationItem } from "@/types";
 
 // ... (rest of imports)
 
@@ -36,19 +36,7 @@ interface Hotspot {
     historicalContext?: string;
 }
 
-const abbreviations = [
-    { icon: "/icons/sthaan.png", text: "कोणत्या अवतारांची क्रीडा" },
-    { icon: "/icons/explore_safari.png", text: "लीळाचरित्रातील काळ" },
-    { icon: "/icons/Blue_temple_icon-removebg.png", text: "रहिवासाची जागा" },
-    { icon: "/icons/signpost.png", text: "स्थानाचा प्रकार" },
-    { icon: "/icons/left-arrow.png", text: "कोठून आले (1. - किती वेळा आले)" },
-    { icon: "/icons/route-arrow.png", text: "मुक्काम किती दिवस (उ. - ली.च. काळ)" },
-    { icon: "/icons/route-arrow.png", text: "कोठे गेले (1. - जातानाची वेळ)" },
-    { icon: "/icons/Blue_temple_icon-removebg.png", text: "उपलब्ध स्थान संख्या" },
-    { icon: "/icons/signpost.png", text: "निर्देशित स्थान संख्या" },
-    { icon: "/icons/sthaan.png", text: "अनुपलब्ध स्थान संख्या" },
-    { icon: "/icons/explore_safari.png", text: "एकूण स्थान संख्या" }
-];
+
 
 export default function ArchitectureViewer() {
     const { id } = useParams<{ id: string }>();
@@ -76,6 +64,7 @@ export default function ArchitectureViewer() {
     const [isPothiOpen, setIsPothiOpen] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [abbreviationItems, setAbbreviationItems] = useState<AbbreviationItem[]>([]);
 
     const handleSelectHotspot = (id: string | null, source: 'image' | 'list' | 'dropdown' | null) => {
         setSelectedHotspotId(id);
@@ -225,6 +214,22 @@ export default function ArchitectureViewer() {
 
         fetchTempleData();
     }, [id, navigate]);
+
+    // Fetch global abbreviations
+    useEffect(() => {
+        const fetchAbbreviations = async () => {
+            try {
+                const abbrevSnap = await getDoc(doc(db, "settings", "abbreviations"));
+                if (abbrevSnap.exists()) {
+                    setAbbreviationItems(abbrevSnap.data().items || []);
+                }
+            } catch (error) {
+                console.error("Error fetching abbreviations:", error);
+            }
+        };
+
+        fetchAbbreviations();
+    }, []);
 
     const displayImages = imageType === 'architectural'
         ? [architecturalImage, ...(temple?.architectureImages || [])].filter(Boolean)
@@ -376,28 +381,30 @@ export default function ArchitectureViewer() {
                         {temple.name}
                     </h1>
 
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 shadow-md border border-slate-200 shrink-0">
-                                <span className="font-serif italic font-bold text-lg leading-none drop-shadow-sm">i</span>
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-[90%] rounded-2xl z-[10000]">
-                            <DialogHeader>
-                                <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-3 pt-4">
-                                {abbreviations.map((item, index) => (
-                                    <div key={index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
-                                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                                            <img src={item.icon} className="w-5 h-5 object-contain" alt="icon" />
+                    {abbreviationItems && abbreviationItems.length > 0 && (
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 shadow-md border border-slate-200 shrink-0">
+                                    <Info className="w-5 h-5" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[90%] rounded-2xl z-[10000]">
+                                <DialogHeader>
+                                    <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-3 pt-4">
+                                    {abbreviationItems.map((item, index) => (
+                                        <div key={item.id || index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
+                                            {item.icon && (
+                                                <img src={item.icon} className="w-5 h-5 object-contain shrink-0 mt-0.5" alt="icon" />
+                                            )}
+                                            <span className="flex-1">{item.description}</span>
                                         </div>
-                                        <span className="flex-1">{item.text}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </DialogContent>
-                    </Dialog>
+                                    ))}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    )}
                 </div>
             </div>
 

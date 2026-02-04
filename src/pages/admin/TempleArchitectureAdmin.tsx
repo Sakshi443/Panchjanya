@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Hotspot, Leela, GlanceItem, CustomBlock } from "@/types";
+import { Hotspot, Leela, GlanceItem, AbbreviationItem, CustomBlock } from "@/types";
 import * as LucideIcons from "lucide-react";
 import { X, Save, Trash2, Upload, ArrowLeft, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus, ChevronDown, Image as ImageIcon, Info, MousePointer2, ExternalLink, FileText, Search, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,21 @@ const CUSTOM_ICONS = [
   { name: "Route", path: "/icons/route-arrow.png" },
   { name: "Signpost", path: "/icons/signpost.png" },
   { name: "Sthaan", path: "/icons/sthaan.png" },
+
+  // Glance Icons
+  { name: "Blue Temple", path: "/icons/glance/Blue_temple_icon.svg" },
+  { name: "Logo", path: "/icons/glance/Logo.svg" },
+  { name: "All", path: "/icons/glance/all.svg" },
+  { name: "Categorization", path: "/icons/glance/categorization.svg" },
+  { name: "Chakra", path: "/icons/glance/chakra.svg" },
+  { name: "Chinese Temple", path: "/icons/glance/chinese-temple.svg" },
+  { name: "Export", path: "/icons/glance/export.svg" },
+  { name: "Avatar", path: "/icons/glance/icon.svg" },
+  { name: "Import", path: "/icons/glance/import.svg" },
+  { name: "Not Available", path: "/icons/glance/not-available.svg" },
+  { name: "Available", path: "/icons/glance/available.svg" },
+  { name: "Quarantine", path: "/icons/glance/quarantine.svg" },
+  { name: "Warehouse", path: "/icons/glance/warehouse.svg" },
 ];
 
 export default function TempleArchitectureAdmin() {
@@ -70,6 +85,7 @@ export default function TempleArchitectureAdmin() {
   const [sthana_info_text, setSthanaInfoText] = useState("");
   const [descriptionSections, setDescriptionSections] = useState<{ id: string, title: string, content: string }[]>([]);
   const [glanceItems, setGlanceItems] = useState<GlanceItem[]>([]);
+  const [abbreviationItems, setAbbreviationItems] = useState<AbbreviationItem[]>([]);
   const [customBlocks, setCustomBlocks] = useState<CustomBlock[]>([]);
   const [architectureDescription, setArchitectureDescription] = useState("");
   const [contactDetails, setContactDetails] = useState("");
@@ -129,6 +145,7 @@ export default function TempleArchitectureAdmin() {
         setSthanaInfoText(data.sthana_info_text || data.sthana || "");
         setDescriptionSections(data.descriptionSections || []);
         setGlanceItems(data.glanceItems || []);
+        setAbbreviationItems(data.abbreviationItems || []);
         setCustomBlocks(data.customBlocks || []);
         setArchitectureDescription(data.architectureDescription || "");
         setContactDetails(data.contactDetails || "");
@@ -270,6 +287,7 @@ export default function TempleArchitectureAdmin() {
         sthana_info_text,
         descriptionSections,
         glanceItems,
+        abbreviationItems,
         customBlocks,
         architectureDescription,
         contactDetails,
@@ -349,6 +367,27 @@ export default function TempleArchitectureAdmin() {
     if (targetIndex < 0 || targetIndex >= newItems.length) return;
     [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
     setGlanceItems(newItems);
+  };
+
+  const addAbbreviationItem = () => {
+    const newItem: AbbreviationItem = { id: uuidv4(), icon: CUSTOM_ICONS[0].path, description: "" };
+    setAbbreviationItems([...abbreviationItems, newItem]);
+  };
+
+  const updateAbbreviationItem = (gId: string, field: 'icon' | 'description', value: string) => {
+    setAbbreviationItems(abbreviationItems.map(g => g.id === gId ? { ...g, [field]: value } : g));
+  };
+
+  const removeAbbreviationItem = (gId: string) => {
+    setAbbreviationItems(abbreviationItems.filter(g => g.id !== gId));
+  };
+
+  const moveAbbreviationItem = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...abbreviationItems];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) return;
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    setAbbreviationItems(newItems);
   };
 
   const deleteHotspot = async () => {
@@ -1009,6 +1048,136 @@ export default function TempleArchitectureAdmin() {
                           rows={6}
                           className="border-none bg-white rounded-xl focus:ring-2 focus:ring-blue-200 transition-all p-4 leading-relaxed"
                         />
+                      </div>
+                    </div>
+
+                    {/* Abbreviations Section */}
+                    <div className="p-6 bg-green-50/30 rounded-3xl border border-green-100 shadow-sm space-y-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-green-600 uppercase tracking-[0.2em]">Abbreviations List</span>
+                          <div className="h-px flex-1 bg-green-100/50" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-green-600 uppercase tracking-[0.2em]">Items</span>
+                            <div className="h-px w-20 bg-green-100/50" />
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={addAbbreviationItem}
+                            className="text-green-600 hover:text-green-700 hover:bg-green-100/50 font-bold text-xs"
+                          >
+                            <Plus className="w-3 h-3 mr-1" /> Add Item
+                          </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {abbreviationItems.map((item, idx) => (
+                            <div key={item.id} className="flex items-start gap-3 bg-white/50 p-3 rounded-2xl border border-green-100/50 group transition-all hover:bg-white">
+                              <div className="flex flex-col gap-1 mt-1">
+                                <button
+                                  onClick={() => moveAbbreviationItem(idx, 'up')}
+                                  disabled={idx === 0}
+                                  className="text-slate-300 hover:text-green-600 disabled:opacity-0 transition-opacity"
+                                >
+                                  <ArrowUp className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => moveAbbreviationItem(idx, 'down')}
+                                  disabled={idx === abbreviationItems.length - 1}
+                                  className="text-slate-300 hover:text-green-600 disabled:opacity-0 transition-opacity"
+                                >
+                                  <ArrowDown className="w-3 h-3" />
+                                </button>
+                              </div>
+
+                              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div className="md:col-span-1">
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" className="w-full justify-between h-10 rounded-xl border-green-100 bg-white">
+                                        <div className="flex items-center gap-2 truncate">
+                                          {item.icon ? (
+                                            <img src={item.icon} className="w-4 h-4 object-contain" alt="icon" />
+                                          ) : (
+                                            <Info className="w-4 h-4 text-green-600" />
+                                          )}
+                                          <span className="text-xs font-medium">
+                                            {item.icon.startsWith('http')
+                                              ? "Custom URL"
+                                              : (CUSTOM_ICONS.find(ic => ic.path === item.icon)?.name || "Select Icon")
+                                            }
+                                          </span>
+                                        </div>
+                                        <ChevronDown className="w-3 h-3 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80 p-3 space-y-3">
+                                      <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-slate-400">Select Custom Icon</Label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                          {CUSTOM_ICONS.map(icon => (
+                                            <button
+                                              key={icon.path}
+                                              onClick={() => updateAbbreviationItem(item.id, 'icon', icon.path)}
+                                              className={`p-3 rounded-lg hover:bg-green-50 flex flex-col items-center justify-center gap-2 transition-colors border ${item.icon === icon.path ? 'bg-green-100 border-green-300' : 'border-slate-200'}`}
+                                              title={icon.name}
+                                            >
+                                              <img src={icon.path} className="w-8 h-8 object-contain" alt={icon.name} />
+                                              <span className="text-[9px] font-medium text-slate-600 truncate w-full text-center">{icon.name}</span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <Separator />
+                                      <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-slate-400">Or Enter Custom URL</Label>
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="https://..."
+                                            value={item.icon.startsWith('http') ? item.icon : ''}
+                                            onChange={(e) => updateAbbreviationItem(item.id, 'icon', e.target.value)}
+                                            className="h-8 text-xs rounded-lg"
+                                          />
+                                          {item.icon.startsWith('http') && (
+                                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => updateAbbreviationItem(item.id, 'icon', CUSTOM_ICONS[0].path)}>
+                                              <X className="w-3 h-3" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <div className="md:col-span-3">
+                                  <Input
+                                    value={item.description}
+                                    onChange={(e) => updateAbbreviationItem(item.id, 'description', e.target.value)}
+                                    placeholder="Abbreviation description..."
+                                    className="h-10 rounded-xl border-green-100 bg-white text-sm"
+                                  />
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => removeAbbreviationItem(item.id)}
+                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                          {abbreviationItems.length === 0 && (
+                            <p className="text-[10px] text-center text-slate-400 italic py-2">
+                              No abbreviations added. Click "Add Item" to begin.
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2008,6 +2177,6 @@ export default function TempleArchitectureAdmin() {
             </div>
           )}
       </div>
-    </div>
+    </div >
   );
 }

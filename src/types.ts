@@ -35,6 +35,12 @@ export interface GlanceItem {
     description: string;
 }
 
+export interface AbbreviationItem {
+    id: string;
+    icon: string;
+    description: string;
+}
+
 export interface CustomBlock {
     id: string;
     title: string;

@@ -6,7 +6,7 @@ import * as LucideIcons from "lucide-react";
 import { X, MapPin, Compass, Share2, Navigation, Bookmark, ChevronLeft, ChevronRight, Info, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button1 } from "@/components/ui/button-1";
-import { Temple } from "@/types";
+import { Temple, AbbreviationItem } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -31,19 +31,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const abbreviations = [
-  "👣 कोणत्या अवतारांची क्रीडा",
-  "☀️ लीळाचरित्रातील काळ",
-  "🏠 रहिवासाची जागा",
-  "⏹️ स्थानाचा प्रकार",
-  "⬇️ कोठून आले (1. - किती वेळा आले)",
-  "⭐ मुक्काम किती दिवस (उ. - ली.च. काळ)",
-  "⬆️ कोठे गेले (1. - जातानाची वेळ)",
-  "➕ उपलब्ध स्थान संख्या",
-  "➖ निर्देशित स्थान संख्या",
-  "❌ अनुपलब्ध स्थान संख्या",
-  "🟰 एकूण स्थान संख्या"
-];
 
 export default function TempleArchitecture() {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +44,7 @@ export default function TempleArchitecture() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [abbreviationItems, setAbbreviationItems] = useState<AbbreviationItem[]>([]);
   const { t } = useLanguage();
 
   const displayImages = (temple?.images && temple.images.length > 0
@@ -91,6 +79,22 @@ export default function TempleArchitecture() {
 
     fetchTempleData();
   }, [id, navigate]);
+
+  // Fetch global abbreviations
+  useEffect(() => {
+    const fetchAbbreviations = async () => {
+      try {
+        const abbrevSnap = await getDoc(doc(db, "settings", "abbreviations"));
+        if (abbrevSnap.exists()) {
+          setAbbreviationItems(abbrevSnap.data().items || []);
+        }
+      } catch (error) {
+        console.error("Error fetching abbreviations:", error);
+      }
+    };
+
+    fetchAbbreviations();
+  }, []);
 
   // Check if temple is saved
   useEffect(() => {
@@ -422,40 +426,45 @@ export default function TempleArchitecture() {
             </div>
 
             {/* Info Button for Abbreviations - Moved to Header */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 shadow-md">
-                  <span className="font-serif italic font-bold text-lg leading-none drop-shadow-sm">i</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[90%] rounded-2xl z-[10000]">
-                <DialogHeader>
-                  <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3 pt-4">
-                  {abbreviations.map((item, index) => (
-                    <div key={index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
+            {abbreviationItems && abbreviationItems.length > 0 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/90 transition-all duration-300 hover:bg-slate-50 text-blue-900 border border-slate-200 shadow-md">
+                    <Info className="w-5 h-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[90%] rounded-2xl z-[10000]">
+                  <DialogHeader>
+                    <DialogTitle className="text-blue-900 font-serif">Abbreviations</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3 pt-4">
+                    {abbreviationItems.map((item, index) => (
+                      <div key={item.id || index} className="flex items-start gap-3 text-sm text-slate-700 pb-2 border-b border-gray-100 last:border-0">
+                        {item.icon && (
+                          <img src={item.icon} className="w-5 h-5 object-contain shrink-0 mt-0.5" alt="icon" />
+                        )}
+                        <span>{item.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           {temple.glanceItems && temple.glanceItems.length > 0 && (
-            <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 relative overflow-hidden">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2 pl-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:gap-x-8 md:gap-y-5 pl-2 md:pl-3">
                 {temple.glanceItems.map((item, idx) => (
-                  <div key={item.id || idx} className="flex items-start gap-2 p-1">
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <div key={item.id || idx} className="flex items-start gap-2.5 md:gap-3 p-1.5 md:p-2">
+                    <div className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center shrink-0">
                       {item.icon && (
-                        <img src={item.icon} className="w-5 h-5 object-contain" alt="icon" />
+                        <img src={item.icon} className="w-full h-full object-contain" alt="icon" />
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="font-serif text-slate-700 leading-relaxed text-sm">
+                      <p className="font-serif text-slate-700 leading-relaxed text-base md:text-lg">
                         {item.description}
                       </p>
                     </div>

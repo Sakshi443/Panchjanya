@@ -48,6 +48,7 @@ import AdminCsvUpload from "./pages/admin/AdminCsvUpload";
 import TempleArchitectureAdmin from "@/pages/admin/TempleArchitectureAdmin";
 import ManageYatra from "@/pages/admin/ManageYatra";
 import RajViharanAdmin from "@/pages/admin/RajViharanAdmin";
+import AbbreviationsManager from "@/pages/admin/AbbreviationsManager";
 
 const queryClient = new QueryClient();
 
@@ -123,6 +124,15 @@ const App = () => {
                     element={
                       <PrivateRoute adminRequired={true}>
                         <RajViharanAdmin />
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/admin/abbreviations"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <AbbreviationsManager />
                       </PrivateRoute>
                     }
                   />

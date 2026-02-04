@@ -48,6 +48,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- SETTINGS COLLECTION (Global app settings) ----
+    match /settings/{settingId} {
+      
+      // Everyone can read settings (like abbreviations)
+      allow read: if true;
+
+      // Only Admins can write settings
+      allow write: if isAdmin();
+    }
+
     // ---- DEFAULT RULE FOR EVERYTHING ELSE ----
     match /{document=**} {
       allow read: if false;
