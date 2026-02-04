@@ -1820,19 +1820,10 @@ export default function TempleArchitectureAdmin() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label>Hotspot Name</Label>
+                          <Label>Sthan Name</Label>
                           <div className="p-3 bg-slate-100 rounded-xl border border-slate-200 text-slate-700 font-bold">
-                            {selectedHotspot.title || "Untitled Hotspot"}
+                            {selectedHotspot.title || "Untitled Sthan"}
                           </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Sthan Pothi Title</Label>
-                          <Input
-                            value={selectedHotspot.sthanPothiTitle || ""}
-                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiTitle: e.target.value })}
-                            placeholder="e.g. Sthan Mahatmya"
-                            className="bg-white"
-                          />
                         </div>
                         <div className="space-y-2">
                           <Label>Sthan Pothi Description</Label>
