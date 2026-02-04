@@ -71,7 +71,9 @@ export default function ArchitectureViewer() {
         setSelectionSource(source);
 
         if (id && source && source !== 'image') {
-            const h = hotspots.find(hotspot => hotspot.id === id);
+            // Search in the appropriate hotspot array based on current image type
+            const currentHotspots = imageType === 'architectural' ? hotspots : presentHotspots;
+            const h = currentHotspots.find(hotspot => hotspot.id === id);
             if (h && (h.imageIndex || 0) !== currentImageIndex) {
                 setCurrentImageIndex(h.imageIndex || 0);
                 handleResetOrientation();
@@ -685,7 +687,7 @@ export default function ArchitectureViewer() {
                             sideOffset={8}
                             className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[75vh] md:max-h-[80vh] overflow-y-auto rounded-2xl p-1 bg-white shadow-2xl border-blue-50 z-50 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
-                            {hotspots.map((h) => {
+                            {(imageType === 'architectural' ? hotspots : presentHotspots).map((h) => {
                                 const isExpanded = expandedHotspots[h.id];
                                 // Selection in pothi only shows if it matches AND (pothi is open)
                                 // Highlight if it matches the selected hotspot
@@ -728,7 +730,7 @@ export default function ArchitectureViewer() {
                                     </div>
                                 );
                             })}
-                            {hotspots.length === 0 && (
+                            {(imageType === 'architectural' ? hotspots : presentHotspots).length === 0 && (
                                 <div className="p-8 text-center">
                                     <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
                                         <BookOpen className="w-6 h-6 text-slate-300" />
@@ -759,7 +761,7 @@ export default function ArchitectureViewer() {
                                 {/* Sthana List */}
                                 <div className="flex flex-col gap-2 md:gap-4">
                                     {(() => {
-                                        const displayHotspots = [...hotspots].sort((a, b) => (a.number || 0) - (b.number || 0));
+                                        const displayHotspots = [...(imageType === 'architectural' ? hotspots : presentHotspots)].sort((a, b) => (a.number || 0) - (b.number || 0));
 
                                         return displayHotspots.map((hotspot) => {
                                             const isSelected = selectedHotspotId === hotspot.id;
