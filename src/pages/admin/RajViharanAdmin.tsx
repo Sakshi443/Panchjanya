@@ -27,7 +27,12 @@ import {
     Compass,
     Clock,
     Users,
-    Activity
+    Activity,
+    GripVertical,
+    Search,
+    Edit3,
+    Trash,
+    ChevronDown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -97,7 +102,7 @@ export default function RajViharanAdmin() {
     const { toast } = useToast();
 
     // Form state
-    const [formData, setFormData] = useState<Partial<YatraPlace>>({
+    const [formData, setFormData] = useState<Partial<YatraPlace & { pinColor: string }>>({
         name: "",
         description: "",
         latitude: 0,
@@ -109,7 +114,8 @@ export default function RajViharanAdmin() {
         time: "",
         attendees: "",
         isLive: false,
-        image: ""
+        image: "",
+        pinColor: "#D4AF37" // Default regal gold
     });
 
     useEffect(() => {
@@ -242,22 +248,35 @@ export default function RajViharanAdmin() {
     return (
         <AdminLayout>
             <div className="space-y-6 pb-20">
-                {/* Responsive Context-Aware Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900 leading-tight">
-                            {isEditing ? (selectedPlace ? "Edit Yatra Place" : "New Yatra Place") : "Raj Viharan Management"}
+                {/* Content Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0F172A] flex items-center gap-3">
+                            <span className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                                <MapPin className="w-8 h-8" />
+                            </span>
+                            {isEditing ? (selectedPlace ? "Edit Viharan Place" : "New Viharan Place") : "Raj Viharan Management"}
                         </h1>
-                        <p className="text-sm md:text-base text-slate-500 mt-1 leading-relaxed max-w-2xl">
+                        <p className="text-slate-500 font-medium pl-14">
                             {isEditing
-                                ? "Configure the historical and spiritual details of this location on Swami's journey."
-                                : "Manage places, routes, and live status for Swami's Yatra"
-                            }
+                                ? "Configure the details and spiritual journey checkpoints."
+                                : "Design and manage the sacred pilgrimage routes and sequences."}
                         </p>
                     </div>
+                    {!isEditing && (
+                        <div className="flex gap-3">
+                            <div className="relative group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Input className="pl-9 w-64 rounded-full border-slate-200 focus:ring-blue-500 shadow-sm" placeholder="Search routes..." />
+                            </div>
+                            <Button onClick={handleAddNew} className="bg-[#D4AF37] hover:bg-[#B8962D] text-white rounded-full font-bold px-6 shadow-md hover:shadow-lg transition-all duration-300">
+                                <Plus className="w-5 h-5 mr-2" /> CREATE NEW ROUTE
+                            </Button>
+                        </div>
+                    )}
                     {isEditing && (
-                        <Button variant="outline" onClick={handleCancel} className="w-full md:w-auto mt-2 md:mt-0 font-bold border-slate-200 hover:bg-slate-50 transition-colors shadow-sm">
-                            <X className="w-4 h-4 mr-2 text-red-500" /> Exit Editor
+                        <Button variant="outline" onClick={handleCancel} className="md:w-auto font-bold border-slate-200 hover:bg-slate-50 transition-all rounded-full px-6">
+                            <X className="w-4 h-4 mr-2" /> EXIT EDITOR
                         </Button>
                     )}
                 </div>
@@ -400,6 +419,30 @@ export default function RajViharanAdmin() {
                                         </div>
                                     </div>
 
+                                    <div className="space-y-4 p-4 rounded-2xl border border-blue-100 bg-blue-50/10 shadow-sm">
+                                        <Label className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: formData.pinColor || '#D4AF37' }} />
+                                            Map Pin Color
+                                        </Label>
+                                        <div className="flex flex-wrap gap-3">
+                                            {['#D4AF37', '#0038A8', '#E11D48', '#16A34A', '#7C3AED', '#EA580C'].map(color => (
+                                                <button
+                                                    key={color}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, pinColor: color })}
+                                                    className={`w-8 h-8 rounded-full border-2 transition-all ${formData.pinColor === color ? 'border-blue-600 scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                                                    style={{ backgroundColor: color }}
+                                                />
+                                            ))}
+                                            <Input
+                                                type="color"
+                                                value={formData.pinColor || '#D4AF37'}
+                                                onChange={e => setFormData({ ...formData, pinColor: e.target.value })}
+                                                className="w-12 h-8 p-0 border-none bg-transparent cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2">
                                             <MapPin className="w-4 h-4 text-blue-600" /> Location Map (Click to set coordinates)
@@ -493,112 +536,160 @@ export default function RajViharanAdmin() {
                         </div>
                     </div>
                 ) : (
-                    /* Places List View */
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
+                    <div className="space-y-8 animate-in fade-in duration-700">
                         {loading ? (
-                            Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="h-80 bg-slate-100 animate-pulse rounded-3xl" />
-                            ))
+                            <div className="flex items-center justify-center p-20">
+                                <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+                            </div>
                         ) : (
-                            <>
-                                {/* Add New Place Card */}
-                                <Card
-                                    onClick={handleAddNew}
-                                    className="group flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-dashed border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all cursor-pointer h-[360px] shadow-sm hover:shadow-xl">
-                                    <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm group-hover:bg-blue-100">
-                                        <Plus className="w-10 h-10" />
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                {/* Route List & Timeline */}
+                                <div className="lg:col-span-8 space-y-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                            Active Pilgrimage Routes
+                                            <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full uppercase tracking-widest font-bold">{places.length} Total</span>
+                                        </h2>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-slate-900 mt-6">Add New Place</h3>
-                                    <p className="text-sm text-slate-500 text-center mt-3 px-6 leading-relaxed">Start by adding the next location of Swami's spiritual journey to the database.</p>
-                                </Card>
 
-                                {places.map((place, index) => (
-                                    <Card key={place.id} className="group overflow-hidden rounded-3xl border-slate-200 hover:shadow-2xl transition-all duration-500 shadow-md h-[360px] flex flex-col">
-                                        <div className="h-44 bg-slate-100 relative overflow-hidden shrink-0">
-                                            {place.image ? (
-                                                <img src={place.image} alt={place.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                    <MapPin className="w-16 h-16 opacity-10" />
-                                                </div>
-                                            )}
-                                            <div className="absolute top-4 left-4 flex gap-2">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border border-white/20 backdrop-blur-md ${place.status === 'current' ? 'bg-amber-500 text-white shadow-lg' : 'bg-black/50 text-white'
-                                                    }`}>
-                                                    {place.status}
-                                                </span>
+                                    {/* Major Route Card (e.g., Mahanubhav Darshan Path) */}
+                                    <Card className="rounded-3xl shadow-lg border-2 border-[#D4AF37]/30 overflow-hidden bg-white">
+                                        <div className="p-6 border-b border-slate-100 bg-[#0038A8]/5 flex items-center justify-between">
+                                            <div>
+                                                <h3 className="text-xl font-bold text-[#0038A8]">Swami's Complete Journey</h3>
+                                                <p className="text-sm text-slate-500 font-medium">Managing Sequence for {places.length} Places</p>
                                             </div>
-                                            {place.isLive && (
-                                                <div className="absolute top-4 right-4 flex h-3 w-3">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 border border-white"></span>
+                                            <Button variant="ghost" size="icon" className="rounded-full text-slate-400">
+                                                <ChevronDown className="w-6 h-6" />
+                                            </Button>
+                                        </div>
+
+                                        <div className="p-8 relative">
+                                            {/* Timeline Line */}
+                                            <div className="absolute left-[43px] top-10 bottom-10 w-0.5 bg-slate-100 z-0" />
+
+                                            <div className="space-y-6 relative z-10">
+                                                {places.map((place, index) => (
+                                                    <div key={place.id} className="flex items-start gap-6 group">
+                                                        {/* Step Dot & Pin Color */}
+                                                        <div
+                                                            className="w-8 h-8 rounded-full border-4 border-white shadow-md ring-1 flex-shrink-0 z-10 mt-2 transition-transform group-hover:scale-110"
+                                                            style={{
+                                                                backgroundColor: (place as any).pinColor || '#D4AF37',
+                                                                boxShadow: `0 0 0 1px ${(place as any).pinColor || '#D4AF37'}`
+                                                            }}
+                                                        />
+
+                                                        <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between gap-4 transition-all hover:bg-white hover:shadow-md hover:border-blue-200">
+                                                            <div className="flex items-center gap-4">
+                                                                <GripVertical className="w-5 h-5 text-slate-300 cursor-move" />
+                                                                <div className="w-20 h-16 rounded-xl bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
+                                                                    {place.image ? (
+                                                                        <img src={place.image} alt={place.name} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300">
+                                                                            <MapPin className="w-6 h-6 opacity-30" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <p className="text-base font-bold text-slate-900">{place.name}</p>
+                                                                        {place.isLive && (
+                                                                            <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                                                                        )}
+                                                                    </div>
+                                                                    <p className="text-xs text-slate-400 font-medium flex items-center gap-1 uppercase tracking-tighter">
+                                                                        <Clock className="w-3 h-3" /> {place.time || "No time set"} • {place.status}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="flex flex-col gap-1">
+                                                                    <Button
+                                                                        variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                                                        onClick={() => movePlace(index, 'up')}
+                                                                        disabled={index === 0}
+                                                                    >
+                                                                        <ArrowUp className="w-4 h-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                                                        onClick={() => movePlace(index, 'down')}
+                                                                        disabled={index === places.length - 1}
+                                                                    >
+                                                                        <ArrowDown className="w-4 h-4" />
+                                                                    </Button>
+                                                                </div>
+                                                                <div className="h-10 w-px bg-slate-100 mx-2" />
+                                                                <Button variant="ghost" size="icon" onClick={() => handleEdit(place)} className="w-9 h-9 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                                                                    <Edit3 className="w-5 h-5" />
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(place.id)} className="w-9 h-9 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                                                                    <Trash className="w-5 h-5" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                {/* Add Placeholder at end */}
+                                                <div className="flex items-start gap-6 pt-4 group cursor-pointer" onClick={handleAddNew}>
+                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-dashed border-slate-300 flex-shrink-0 flex items-center justify-center group-hover:border-blue-400 group-hover:bg-blue-50 transition-colors">
+                                                        <Plus className="w-4 h-4 text-slate-300 group-hover:text-blue-500" />
+                                                    </div>
+                                                    <div className="flex-1 bg-white border-2 border-dashed border-slate-200 p-4 rounded-2xl flex items-center gap-3 text-slate-400 font-medium group-hover:border-blue-200 group-hover:text-blue-500 transition-colors">
+                                                        <Search className="w-5 h-5" />
+                                                        <span>Add new pilgrimage point to the sequence...</span>
+                                                    </div>
                                                 </div>
-                                            )}
-                                            <div className="absolute bottom-0 inset-x-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                                            <div className="absolute bottom-4 left-4 text-white pr-4">
-                                                <p className="text-[10px] font-black uppercase opacity-70 tracking-tighter">{place.time}</p>
-                                                <h3 className="font-heading font-extrabold text-xl leading-tight group-hover:text-blue-300 transition-colors">{place.name}</h3>
                                             </div>
                                         </div>
-                                        <CardContent className="p-5 bg-white relative flex-1 flex flex-col justify-between">
-                                            <div className="absolute -top-7 right-5 flex flex-col gap-2.5">
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="w-10 h-10 rounded-2xl shadow-xl bg-white hover:bg-blue-50 text-slate-700 border border-slate-100 hover:text-blue-600 transition-all hover:-translate-y-1"
-                                                    onClick={() => handleEdit(place)}
-                                                >
-                                                    <Edit className="w-5 h-5" />
-                                                </Button>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="w-10 h-10 rounded-2xl shadow-xl bg-white hover:text-red-500 border border-slate-100 hover:bg-red-50 transition-all hover:-translate-y-1"
-                                                    onClick={() => handleDelete(place.id)}
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </Button>
-                                            </div>
 
-                                            <div className="space-y-4">
-                                                <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed font-medium">
-                                                    {place.description || "No historical description provided for this specific location."}
-                                                </p>
-
-                                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-slate-400 hover:bg-slate-50 hover:text-blue-600 rounded-lg"
-                                                            onClick={() => movePlace(index, 'up')}
-                                                            disabled={index === 0}
-                                                        >
-                                                            <ArrowUp className="w-4 h-4" />
-                                                        </Button>
-                                                        <div className="flex flex-col items-center min-w-[24px]">
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Seq</span>
-                                                            <span className="text-sm font-black text-slate-900">{index + 1}</span>
-                                                        </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-slate-400 hover:bg-slate-50 hover:text-blue-600 rounded-lg"
-                                                            onClick={() => movePlace(index, 'down')}
-                                                            disabled={index === places.length - 1}
-                                                        >
-                                                            <ArrowDown className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-2 truncate max-w-[140px] border-l border-slate-100 pl-4">
-                                                        {ROUTES.find(r => r.id === place.route)?.name || "Unknown Route"}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
+                                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-4">
+                                            <Button className="flex-1 bg-[#0038A8] hover:bg-[#002B82] text-white py-6 rounded-2xl text-base font-bold shadow-lg shadow-blue-900/20 shadow-lg">
+                                                SAVE SEQUENCE CHANGES
+                                            </Button>
+                                            <Button variant="outline" className="px-8 py-6 rounded-2xl border-slate-200 font-bold text-slate-500 bg-white">
+                                                CANCEL
+                                            </Button>
+                                        </div>
                                     </Card>
-                                ))}
-                            </>
+                                </div>
+
+                                {/* Quick Stats / Secondary Lists */}
+                                <div className="lg:col-span-4 space-y-6">
+                                    <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500" />
+                                        <div className="relative z-10 flex items-center gap-4 mb-4">
+                                            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl">
+                                                <Activity className="w-6 h-6" />
+                                            </div>
+                                            <h4 className="font-bold text-slate-900">Live Status</h4>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {places.filter(p => p.isLive).length > 0 ? (
+                                                places.filter(p => p.isLive).map(p => (
+                                                    <div key={p.id} className="flex items-center justify-between p-3 bg-red-50 border border-red-100 rounded-xl">
+                                                        <span className="text-sm font-bold text-red-700">{p.name}</span>
+                                                        <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p className="text-xs text-slate-400 italic">No locations are currently live.</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <Card className="rounded-[2.5rem] border-slate-200 shadow-sm overflow-hidden h-[300px] flex flex-col items-center justify-center p-8 bg-slate-50/50">
+                                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md mb-4">
+                                            <Compass className="w-8 h-8 text-blue-300" />
+                                        </div>
+                                        <h4 className="font-bold text-slate-400 text-center px-4">Secondary Routes Management coming soon</h4>
+                                    </Card>
+                                </div>
+                            </div>
                         )}
                     </div>
                 )}

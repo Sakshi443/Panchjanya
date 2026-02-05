@@ -8,7 +8,8 @@ import {
     Library,
     ChevronRight,
     HelpCircle,
-    User
+    User,
+    Map
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -43,9 +44,9 @@ const Dashboard = () => {
 
                     {/* Literature - Top Left */}
                     <Link to="/literature" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50/50 rounded-xl text-[#d4af37] border border-[#d4af37]/30 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
                                     <BookOpen className="w-6 h-6" />
                                 </div>
                             </div>
@@ -60,11 +61,11 @@ const Dashboard = () => {
                         </Card>
                     </Link>
 
-                    {/* The Digital Library - Top Right */}
+                    {/* Digital Library - Top Right */}
                     <Link to="/e-library" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50/50 rounded-xl text-[#d4af37] border border-[#d4af37]/30 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
                                     <Library className="w-6 h-6" />
                                 </div>
                             </div>
@@ -81,9 +82,9 @@ const Dashboard = () => {
 
                     {/* What's New - Bottom Left */}
                     <Link to="/whats-new" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50/50 rounded-xl text-[#d4af37] border border-[#d4af37]/30 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
                                     <Sparkles className="w-6 h-6" />
                                 </div>
                             </div>
@@ -100,9 +101,9 @@ const Dashboard = () => {
 
                     {/* Jigyasa - Bottom Right */}
                     <Link to="/jigyasa" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-none bg-white">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-amber-50/50 rounded-xl text-[#d4af37] border border-[#d4af37]/30 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
                                     <BrainCircuit className="w-6 h-6" />
                                 </div>
                             </div>
@@ -118,19 +119,18 @@ const Dashboard = () => {
                     </Link>
                 </div>
 
-                {/* Sthaan Vandan Banner */}
                 <Link to="/dashboard/sthana-vandan" className="block group">
-                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#D97706]/60 shadow-lg">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="relative z-10 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-amber-50/80 rounded-full backdrop-blur-sm border border-[#d4af37]/40 shadow-sm">
-                                    <img src="/logo.jpg" className="w-10 h-10 object-contain rounded-full" alt="Sthaan Vandan Icon" />
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm border border-white/20 shadow-sm">
+                                    <img src="/icons/glance/sthaan.svg" className="w-10 h-10 object-contain" alt="Sthaan Vandan Icon" />
                                 </div>
                                 <div>
-                                    <h3 className="font-heading font-bold text-xl">Sthaan Vandan</h3>
-                                    <p className="text-blue-100 text-sm mt-1 max-w-[200px] lg:max-w-none">
+                                    <h3 className="font-display font-bold text-xl">Sthaan Vandan</h3>
+                                    <p className="text-blue-100 text-sm mt-1">
                                         Sacred Salutation to holy sites.
                                     </p>
                                 </div>
@@ -138,9 +138,7 @@ const Dashboard = () => {
                             <ChevronRight className="w-6 h-6 text-white/70 group-hover:translate-x-1 transition-transform" />
                         </div>
 
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-transparent opacity-50" />
-
-                        {/* Decorative Temple Icon Overlay copied from original view */}
+                        {/* Decorative Icon Overlay */}
                         <div className="absolute right-12 bottom-0 opacity-10 pointer-events-none">
                             <svg viewBox="0 0 24 24" fill="currentColor" className="w-24 h-24 text-white">
                                 <path d="M4 22h16a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1z" />
@@ -151,9 +149,38 @@ const Dashboard = () => {
                     </div>
                 </Link>
 
-                {/* Quick Support */}
+                {/* Raj Viharan Banner */}
+                <Link to="/raj-viharan" className="block group">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#D97706]/60 shadow-lg">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
+
+                        <div className="relative z-10 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm border border-white/20 shadow-sm">
+                                    <Map className="w-10 h-10 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-display font-bold text-xl">Raj Viharan</h3>
+                                    <p className="text-blue-100 text-sm mt-1">
+                                        Live Yatra status & historical traces.
+                                    </p>
+                                </div>
+                            </div>
+                            <ChevronRight className="w-6 h-6 text-white/70 group-hover:translate-x-1 transition-transform" />
+                        </div>
+
+                        {/* Decorative Icon Overlay */}
+                        <div className="absolute right-12 bottom-0 opacity-10 pointer-events-none">
+                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-24 h-24 text-white">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                        </div>
+                    </div>
+                </Link>
+
                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 border-l-4 border-amber-600 pl-3">
+                    <div className="flex items-center gap-2 border-l-4 border-[#D97706] pl-3">
                         <h2 className="font-heading font-bold text-xl text-blue-900">Quick Support</h2>
                     </div>
 
@@ -161,7 +188,7 @@ const Dashboard = () => {
                         <Link to="/help-center">
                             <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-amber-50/50 text-[#d4af37] border border-[#d4af37]/20 rounded-full">
+                                    <div className="p-2 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 rounded-full">
                                         <HelpCircle className="w-5 h-5" />
                                     </div>
                                     <span className="font-medium text-foreground">About Panchajanya</span>
@@ -173,7 +200,7 @@ const Dashboard = () => {
                         <Link to="/profile">
                             <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-amber-50/50 text-[#d4af37] border border-[#d4af37]/20 rounded-full">
+                                    <div className="p-2 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 rounded-full">
                                         <User className="w-5 h-5" />
                                     </div>
                                     <span className="font-medium text-foreground">My Account</span>
