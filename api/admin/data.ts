@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminDb } from "../../src/lib/firebase-admin";
+import { adminDb } from '../../src/lib/firebase-admin.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { collection, id, subcollection, subId } = req.query;
