@@ -258,10 +258,15 @@ const Explore = () => {
     // 1. Fetch all temples ONCE to populate filter options (Districts/Talukas)
     useEffect(() => {
         const unsubscribe = onSnapshot(collection(db, "temples"), (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            })) as Temple[];
+            const data = snapshot.docs.map((doc) => {
+                const t = doc.data() as any;
+                return {
+                    ...t,
+                    id: doc.id,
+                    latitude: t.latitude ?? t.location?.lat,
+                    longitude: t.longitude ?? t.location?.lng,
+                };
+            }) as Temple[];
             setAllTemplesForOptions(data);
         });
         return () => unsubscribe();
@@ -288,10 +293,15 @@ const Explore = () => {
         }
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            })) as Temple[];
+            const data = snapshot.docs.map((doc) => {
+                const t = doc.data() as any;
+                return {
+                    ...t,
+                    id: doc.id,
+                    latitude: t.latitude ?? t.location?.lat,
+                    longitude: t.longitude ?? t.location?.lng,
+                };
+            }) as Temple[];
 
             console.log(`✅ Loaded ${data.length} temples from database`);
             setTemples(data);
