@@ -1740,14 +1740,25 @@ export default function TempleArchitectureAdmin() {
                     })}
 
                     {filteredListHotspots.length === 0 && (
-                      <div className="col-span-full py-16 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                          <Plus className="w-8 h-8 text-slate-300" />
+                      <div
+                        onClick={() => {
+                          if (viewType === 'architectural') {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            toast({
+                              title: "Ready to Add",
+                              description: "Click anywhere on the image above to place your new hotspot."
+                            });
+                          }
+                        }}
+                        className={`col-span-full py-16 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 ${viewType === 'architectural' ? 'cursor-pointer hover:bg-slate-100 hover:border-blue-300 transition-all group' : ''}`}
+                      >
+                        <div className={`w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm ${viewType === 'architectural' ? 'group-hover:scale-110 group-hover:bg-blue-50 transition-transform duration-300' : ''}`}>
+                          <Plus className={`w-8 h-8 ${viewType === 'architectural' ? 'text-blue-500' : 'text-slate-300'}`} />
                         </div>
-                        <p className="text-slate-500 font-medium">No hotspots found</p>
-                        <p className="text-slate-400 text-sm mt-1">
+                        <h3 className="text-slate-900 font-bold text-lg mb-1">No hotspots found</h3>
+                        <p className="text-slate-500 text-sm max-w-sm mx-auto">
                           {viewType === 'architectural'
-                            ? "Click anywhere on the image above to add a new hotspot."
+                            ? "Click here or on the image above to add your first hotspot."
                             : "Add hotspots in the Architectural View first, then map them here."}
                         </p>
                       </div>
