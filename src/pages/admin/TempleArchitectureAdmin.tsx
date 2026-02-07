@@ -210,17 +210,15 @@ export default function TempleArchitectureAdmin() {
   }, [id, toast]);
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
+    // If we clicked on an existing hotspot, ignore (it has its own handler, but just in case of bubbling)
+    if ((e.target as HTMLElement).closest('.group.absolute')) return;
 
-    // Allow clicking on the image OR the container div (for easier hitting)
-    // But ensure we calculate position relative to the IMAGE if possible, or the container if not.
-    if (target.tagName !== "IMG" && !target.closest(".relative.cursor-crosshair")) return;
-
-    const rect = target.getBoundingClientRect();
+    // Use currentTarget (the container) to ensure coordinates are relative to the positioning context
+    const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    console.log("Image Clicked:", { x, y, viewType });
+    console.log("Image Clicked (Fixed):", { x, y, viewType });
 
 
     if (viewType === 'present' && archHotspots.length > 0) {
