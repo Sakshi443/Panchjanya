@@ -1743,10 +1743,32 @@ export default function TempleArchitectureAdmin() {
                       <div
                         onClick={() => {
                           if (viewType === 'architectural') {
+                            // Initialize hotspot at a default center position
+                            const newHotspot: Hotspot = {
+                              id: uuidv4(),
+                              x: 50,
+                              y: 50,
+                              imageIndex: adminImageIndex,
+                              title: "",
+                              description: "",
+                              significance: "",
+                              number: archHotspots.length + 1,
+                              images: [],
+                              oldImages: [],
+                              leelas: [],
+                              sthanPothiDescription: "",
+                              sthanPothiTitle: "",
+                              generalDescriptionTitle: "",
+                              isPresent: false
+                            };
+
+                            setSelectedHotspot(newHotspot);
+                            setCurrentStep('sthana-details');
+
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                             toast({
-                              title: "Ready to Add",
-                              description: "Click anywhere on the image above to place your new hotspot."
+                              title: "New Hotspot Created",
+                              description: "A new hotspot has been created. You can position it precisely on the image above.",
                             });
                           }
                         }}
@@ -1755,10 +1777,10 @@ export default function TempleArchitectureAdmin() {
                         <div className={`w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm ${viewType === 'architectural' ? 'group-hover:scale-110 group-hover:bg-blue-50 transition-transform duration-300' : ''}`}>
                           <Plus className={`w-8 h-8 ${viewType === 'architectural' ? 'text-blue-500' : 'text-slate-300'}`} />
                         </div>
-                        <h3 className="text-slate-900 font-bold text-lg mb-1">No hotspots found</h3>
+                        <h3 className="text-slate-900 font-bold text-lg mb-1">Create First Hotspot</h3>
                         <p className="text-slate-500 text-sm max-w-sm mx-auto">
                           {viewType === 'architectural'
-                            ? "Click here or on the image above to add your first hotspot."
+                            ? "Click here to immediately create a new hotspot."
                             : "Add hotspots in the Architectural View first, then map them here."}
                         </p>
                       </div>
