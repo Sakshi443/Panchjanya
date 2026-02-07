@@ -10,7 +10,11 @@ interface Props {
 }
 
 const PrivateRoute = ({ children, adminRequired = false }: Props) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a proper loading spinner
+  }
 
   // Not logged in
   if (!user) {

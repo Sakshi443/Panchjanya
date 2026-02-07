@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 function LayoutContent() {
 
   return (
-    <div className="flex h-[100dvh] bg-[#F9F6F0] lg:bg-[#F9F6F0] flex-col overflow-hidden">
+    <div className="flex h-[100dvh] bg-background lg:bg-background flex-col overflow-hidden">
       {/* Main content */}
       <main
         className={cn(

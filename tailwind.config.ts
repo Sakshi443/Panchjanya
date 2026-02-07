@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -20,7 +21,7 @@ export default {
         "work-sans": ["Work Sans", "sans-serif"],
       },
       colors: {
-        "landing-primary": "#0d3c82",
+        "landing-primary": "hsl(var(--landing-primary))",
         "landing-bg-light": "#fcf9f3",
         "landing-bg-dark": "#1b222d",
         "accent-gold": "#D4AF37",
@@ -112,5 +113,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

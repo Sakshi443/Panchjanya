@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Tables } from '@/integrations/supabase/types';
+import { db } from "@/firebase";
+import { collection, getDocs, doc, updateDoc, orderBy, query } from "firebase/firestore";
 
-type Temple = Tables<'temples'>;
-type Submission = Tables<'temple_submissions'>;
+// Use the Project's shared Temple and Submission types
+import { Temple, TempleSubmission } from "@/types";
 
 export default function Admin() {
   const [temples, setTemples] = useState<Temple[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [submissions, setSubmissions] = useState<TempleSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const { signOut } = useAuth();
   const { toast } = useToast();
@@ -25,16 +25,16 @@ export default function Admin() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [templesResult, submissionsResult] = await Promise.all([
-        supabase.from('temples').select('*').order('created_at', { ascending: false }),
-        supabase.from('temple_submissions').select('*').order('created_at', { ascending: false })
+      const [templesSnap, submissionsSnap] = await Promise.all([
+        getDocs(query(collection(db, "temples"), orderBy("createdAt", "desc"))),
+        getDocs(query(collection(db, "temple_submissions"), orderBy("createdAt", "desc")))
       ]);
 
-      if (templesResult.error) throw templesResult.error;
-      if (submissionsResult.error) throw submissionsResult.error;
+      const templesData = templesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Temple[];
+      const submissionsData = submissionsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as TempleSubmission[];
 
-      setTemples(templesResult.data || []);
-      setSubmissions(submissionsResult.data || []);
+      setTemples(templesData);
+      setSubmissions(submissionsData);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -48,12 +48,10 @@ export default function Admin() {
 
   const approveSubmission = async (submissionId: string) => {
     try {
-      const { error } = await supabase
-        .from('temple_submissions')
-        .update({ status: 'approved', reviewed_at: new Date().toISOString() })
-        .eq('id', submissionId);
-
-      if (error) throw error;
+      await updateDoc(doc(db, "temple_submissions", submissionId), {
+        status: 'approved',
+        reviewed_at: new Date().toISOString()
+      });
 
       toast({
         title: 'Success',
@@ -71,12 +69,10 @@ export default function Admin() {
 
   const rejectSubmission = async (submissionId: string) => {
     try {
-      const { error } = await supabase
-        .from('temple_submissions')
-        .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
-        .eq('id', submissionId);
-
-      if (error) throw error;
+      await updateDoc(doc(db, "temple_submissions", submissionId), {
+        status: 'rejected',
+        reviewed_at: new Date().toISOString()
+      });
 
       toast({
         title: 'Success',
@@ -94,12 +90,9 @@ export default function Admin() {
 
   const togglePublish = async (templeId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('temples')
-        .update({ is_published: !currentStatus })
-        .eq('id', templeId);
-
-      if (error) throw error;
+      await updateDoc(doc(db, "temples", templeId), {
+        is_published: !currentStatus
+      });
 
       toast({
         title: 'Success',
@@ -141,7 +134,7 @@ export default function Admin() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle>{temple.name}</CardTitle>
-                    <CardDescription>{temple.location}</CardDescription>
+                    <CardDescription>{typeof temple.location === 'string' ? temple.location : (temple.location as any)?.address || temple.city}</CardDescription>
                   </div>
                   <div className="flex gap-2">
                     <Badge variant={temple.is_published ? 'default' : 'secondary'}>

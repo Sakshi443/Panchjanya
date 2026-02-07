@@ -186,8 +186,8 @@ export const TempleDetails = ({ isOpen, onClose, temple }: TempleDetailsProps) =
                 className={cn(
                   "rounded-full border-border/50 h-9 w-9 sm:h-10 sm:w-10 transition-all active:scale-95",
                   isSaved
-                    ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
-                    : "hover:bg-amber-50 hover:text-amber-600 hover:border-amber-500"
+                    ? "bg-primary hover:bg-primary/90 text-white border-primary"
+                    : "hover:bg-primary/10 hover:text-primary hover:border-primary"
                 )}
               >
                 <Bookmark className={cn("w-5 h-5 sm:w-5 sm:h-5", isSaved && "fill-current")} />

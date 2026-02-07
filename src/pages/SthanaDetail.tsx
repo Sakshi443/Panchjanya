@@ -84,26 +84,25 @@ export default function SthanaDetail() {
     const prevSthana = currentIndex > 0 ? allHotspots[currentIndex - 1] : null;
     const nextSthana = currentIndex < allHotspots.length - 1 ? allHotspots[currentIndex + 1] : null;
 
-    if (loading) return <div className="min-h-screen bg-[#F9F6F0] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900" /></div>;
-
-    if (!hotspot) return <div className="min-h-screen flex items-center justify-center">Sthana not found</div>;
+    if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" /></div>;
+    if (!hotspot) return <div className="min-h-screen flex items-center justify-center text-foreground">Sthana not found</div>;
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] flex flex-col animate-in fade-in duration-300">
+        <div className="min-h-screen bg-background flex flex-col animate-in fade-in duration-300">
             {/* Header */}
             <div
-                className="sticky top-0 z-[1000] px-2 bg-white shadow-sm border-b border-[#c7c6c6] py-4 md:py-5"
+                className="sticky top-0 z-[1000] px-2 bg-card shadow-sm border-b border-border py-4 md:py-5"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Mobile: All in one row */}
                 <div className="md:hidden flex items-center gap-3 w-full">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view?view=${viewParam}`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-9 w-9 rounded-full">
-                        <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
+                    <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view?view=${viewParam}`, { replace: true })} className="-ml-2 hover:bg-accent/10 shrink-0 bg-accent/5 h-9 w-9 rounded-full">
+                        <ChevronLeft className="w-7 h-7 text-landing-primary dark:text-foreground" />
                     </Button>
-                    <div className="flex w-7 h-7 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold items-center justify-center text-sm shrink-0">
+                    <div className="flex w-7 h-7 rounded-full bg-accent/10 text-accent-gold border border-accent/20 font-bold items-center justify-center text-sm shrink-0">
                         {hotspot.number}
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] font-serif leading-tight truncate flex-1">
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-landing-primary dark:text-foreground font-serif leading-tight truncate flex-1">
                         {hotspot.title}
                     </h1>
                 </div>
@@ -112,15 +111,15 @@ export default function SthanaDetail() {
                 {/* Desktop: Existing layout */}
                 <div className="hidden md:flex items-center justify-center relative">
                     <div className="absolute left-6 flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view?view=${viewParam}`, { replace: true })} className="-ml-2 hover:bg-black/5 shrink-0 bg-white/80 h-10 w-10 rounded-full">
-                            <ChevronLeft className="w-7 h-7 text-[#0f3c6e]" />
+                        <Button variant="ghost" size="icon" onClick={() => navigate(`/temple/${id}/architecture-view?view=${viewParam}`, { replace: true })} className="-ml-2 hover:bg-accent/10 shrink-0 bg-accent/5 h-10 w-10 rounded-full">
+                            <ChevronLeft className="w-7 h-7 text-landing-primary dark:text-foreground" />
                         </Button>
-                        <div className="w-10 h-10 rounded-full bg-[#F9F6F0] text-amber-600 border border-amber-600 font-bold flex items-center justify-center text-lg">
+                        <div className="w-10 h-10 rounded-full bg-accent/10 text-accent-gold border border-accent/20 font-bold flex items-center justify-center text-lg">
                             {hotspot.number}
                         </div>
                     </div>
 
-                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-[#0f3c6e] text-center px-16 leading-tight max-w-2xl truncate font-serif">
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-landing-primary dark:text-primary text-center px-16 leading-tight max-w-2xl truncate font-serif">
                         {hotspot.title}
                     </h1>
                 </div>
@@ -135,14 +134,14 @@ export default function SthanaDetail() {
                             onClick={() => prevSthana && navigate(`/temple/${id}/architecture/sthana/${prevSthana.id}?view=${viewParam}`, { replace: true })}
                             disabled={!prevSthana}
                             className={`w-28 h-10 border rounded-full duration-150 transition-all flex items-center justify-center font-bold text-sm ${!prevSthana
-                                ? 'border-gray-200 text-gray-300 cursor-not-allowed opacity-50'
-                                : 'border-[#0f3c6e] text-[#0f3c6e] bg-transparent hover:bg-[#0f3c6e]/5 active:bg-[#0f3c6e]/10'
+                                ? 'border-border text-muted-foreground cursor-not-allowed opacity-50'
+                                : 'border-landing-primary dark:border-primary text-landing-primary dark:text-primary bg-transparent hover:bg-accent/5 active:bg-accent/10'
                                 }`}
                         >
                             Previous
                         </button>
 
-                        <div className="text-[#0f3c6e] font-bold text-sm whitespace-nowrap px-4">
+                        <div className="text-landing-primary dark:text-primary font-bold text-sm whitespace-nowrap px-4">
                             Page {currentIndex + 1} of {allHotspots.length}
                         </div>
 
@@ -150,8 +149,8 @@ export default function SthanaDetail() {
                             onClick={() => nextSthana && navigate(`/temple/${id}/architecture/sthana/${nextSthana.id}?view=${viewParam}`, { replace: true })}
                             disabled={!nextSthana}
                             className={`w-28 h-10 border rounded-full duration-150 transition-all flex items-center justify-center font-bold text-sm ${!nextSthana
-                                ? 'border-gray-200 text-gray-300 cursor-not-allowed opacity-50'
-                                : 'border-[#0f3c6e] text-[#0f3c6e] bg-transparent hover:bg-[#0f3c6e]/5 active:bg-[#0f3c6e]/10'
+                                ? 'border-border text-muted-foreground cursor-not-allowed opacity-50'
+                                : 'border-landing-primary dark:border-primary text-landing-primary dark:text-primary bg-transparent hover:bg-accent/5 active:bg-accent/10'
                                 }`}
                         >
                             Next
@@ -160,7 +159,7 @@ export default function SthanaDetail() {
 
                     {/* Image Viewer */}
                     <div className="px-2 md:px-0">
-                        <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden border-4 border-white bg-gray-300 group">
+                        <div className="relative aspect-[4/3] w-full max-w-7xl mx-auto rounded-2xl overflow-hidden border-4 border-card bg-muted group">
                             <img
                                 src={displayImages[currentImageIndex]}
                                 alt={hotspot.title}
@@ -180,7 +179,7 @@ export default function SthanaDetail() {
                                         {displayImages.map((_, idx) => (
                                             <div
                                                 key={idx}
-                                                className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-amber-500 w-4' : 'bg-white/50'}`}
+                                                className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-accent-gold w-4' : 'bg-white/50'}`}
                                             />
                                         ))}
                                     </div>
@@ -189,7 +188,7 @@ export default function SthanaDetail() {
 
                             {/* Label for Old Images Mode */}
                             {viewMode === 'old' && (
-                                <div className="absolute top-4 right-4 bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                                <div className="absolute top-4 right-4 bg-accent-gold text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
                                     Old Image
                                 </div>
                             )}
@@ -200,21 +199,21 @@ export default function SthanaDetail() {
 
                     {/* Bottom Slider: Details vs Leela */}
                     <div className="flex justify-center px-2 md:px-0 py-2">
-                        <div className="flex w-full max-w-sm rounded-full border border-slate-300 bg-white shadow-sm overflow-hidden text-sm md:text-base">
+                        <div className="flex w-full max-w-sm rounded-full border border-border bg-card shadow-sm overflow-hidden text-sm md:text-base">
                             <button
                                 onClick={() => setContentMode('details')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'details'
-                                    ? 'bg-blue-900 text-white'
-                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-border last:border-r-0 ${contentMode === 'details'
+                                    ? 'bg-landing-primary text-white'
+                                    : 'bg-card text-muted-foreground hover:bg-muted'
                                     }`}
                             >
                                 Details
                             </button>
                             <button
                                 onClick={() => setContentMode('leela')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-slate-200 last:border-r-0 ${contentMode === 'leela'
-                                    ? 'bg-blue-900 text-white'
-                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold transition-all border-r border-border last:border-r-0 ${contentMode === 'leela'
+                                    ? 'bg-landing-primary text-white'
+                                    : 'bg-card text-muted-foreground hover:bg-muted'
                                     }`}
                             >
                                 Leela
@@ -230,12 +229,12 @@ export default function SthanaDetail() {
                                 {/* Significance */}
                                 <div className="pl-2">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-1 h-6 bg-amber-500 rounded-full"></div>
-                                        <h3 className="text-amber-800 font-bold tracking-widest text-xl">{hotspot.generalDescriptionTitle || "Description"}</h3>
+                                        <div className="w-1 h-6 bg-accent-gold rounded-full"></div>
+                                        <h3 className="text-landing-primary dark:text-primary font-bold tracking-widest text-xl">{hotspot.generalDescriptionTitle || "Description"}</h3>
                                     </div>
-                                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative z-10 space-y-4">
+                                    <div className="bg-card border border-border rounded-xl p-4 shadow-sm relative z-10 space-y-4">
                                         <div>
-                                            <p className="font-serif text-lg text-slate-800 leading-relaxed">
+                                            <p className="font-serif text-lg text-foreground leading-relaxed">
                                                 {hotspot.description || hotspot.significance || "No info available"}
                                             </p>
                                         </div>
@@ -277,8 +276,8 @@ export default function SthanaDetail() {
                                             <div
                                                 key={leelaId}
                                                 className={`overflow-hidden transition-all duration-300 rounded-2xl border ${isExpanded
-                                                    ? 'border-amber-100 bg-amber-50/40 shadow-md mb-4'
-                                                    : 'border-[0.5px] border-slate-200 bg-white hover:bg-amber-50/40 hover:border-amber-200 mb-2'
+                                                    ? 'border-accent/20 bg-accent/5 shadow-md mb-4'
+                                                    : 'border-[0.5px] border-border bg-card hover:bg-accent/5 hover:border-accent/20 mb-2'
                                                     }`}
                                             >
                                                 <button
@@ -286,14 +285,14 @@ export default function SthanaDetail() {
                                                     className={`w-full flex items-center justify-between p-4 text-left gap-4 transition-colors bg-transparent`}
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <span className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
+                                                        <span className="w-8 h-8 rounded-full bg-accent/10 text-accent-gold flex items-center justify-center font-bold text-xs shrink-0">
                                                             {index + 1}
                                                         </span>
-                                                        <span className={`font-serif text-lg leading-snug transition-colors duration-200 text-[#0f3c6e] font-bold`}>
+                                                        <span className={`font-serif text-lg leading-snug transition-colors duration-200 text-landing-primary dark:text-foreground font-bold`}>
                                                             {((typeof leela === 'object' && leela.title) ? leela.title : `Leela ${index + 1}`)}
                                                         </span>
                                                     </div>
-                                                    <div className={`shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-amber-600' : 'text-slate-400'}`}>
+                                                    <div className={`shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-accent-gold' : 'text-muted-foreground'}`}>
                                                         <ChevronDown className="w-5 h-5" />
                                                     </div>
                                                 </button>
@@ -302,8 +301,8 @@ export default function SthanaDetail() {
                                                     className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[1000px] opacity-100 pb-5 px-5' : 'max-h-0 opacity-0'
                                                         }`}
                                                 >
-                                                    <div className="pt-2 border-t border-amber-100">
-                                                        <p className="font-serif text-lg text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                                    <div className="pt-2 border-t border-accent/10">
+                                                        <p className="font-serif text-lg text-foreground leading-relaxed whitespace-pre-wrap">
                                                             {content}
                                                         </p>
                                                     </div>
@@ -360,7 +359,7 @@ export default function SthanaDetail() {
                                     {displayImages.map((_, idx) => (
                                         <div
                                             key={idx}
-                                            className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-amber-500 w-5' : 'bg-white/40'}`}
+                                            className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-accent-gold w-5' : 'bg-white/40'}`}
                                         />
                                     ))}
                                 </div>

@@ -146,8 +146,8 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                     offset={[0, -12]}
                     className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
                 >
-                    <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-amber-600">
-                        <p className="font-heading text-blue-900 font-bold text-sm whitespace-nowrap">{temple.name}</p>
+                    <div className="px-3 py-2 bg-popover/95 backdrop-blur-sm border-l-4 border-primary">
+                        <p className="font-heading text-popover-foreground font-bold text-sm whitespace-nowrap">{temple.name}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
                             {temple.city || temple.district || "Maharashtra"}
                         </p>
@@ -172,7 +172,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
 
                     {/* Row 1: Title + Close Icon */}
                     <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-heading font-bold text-xl md:text-2xl text-blue-900 leading-tight">
+                        <h3 className="font-heading font-bold text-xl md:text-2xl text-landing-primary dark:text-primary leading-tight">
                             {temple.name}
                         </h3>
                         <button
@@ -180,7 +180,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                                 e.stopPropagation();
                                 map.closePopup();
                             }}
-                            className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 shrink-0"
+                            className="text-muted-foreground hover:text-foreground transition-colors p-0.5 shrink-0"
                         >
                             <X size={20} />
                         </button>
@@ -188,7 +188,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
 
                     {/* Row 2: Subtitle */}
                     <div className="flex items-start gap-1.5 text-sm md:text-base text-muted-foreground leading-snug">
-                        <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-600 shrink-0 mt-1" />
+                        <MapPin className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0 mt-1" />
                         <span>
                             {temple.city && temple.city !== temple.district ? `${temple.city}, ` : ""}
                             {temple.district || "Maharashtra"}
@@ -198,7 +198,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                     {/* Row 3: Action Buttons (Details + Direction + Saved) */}
                     <div className="flex items-center gap-2 pt-1">
                         <Button
-                            className="flex-1 bg-blue-900 hover:bg-blue-800 text-white h-8 md:h-9 rounded-lg shadow-sm text-xs md:text-xs font-bold px-0"
+                            className="flex-1 bg-landing-primary hover:bg-landing-primary/90 text-white h-8 md:h-9 rounded-lg shadow-sm text-xs md:text-xs font-bold px-0"
                             onClick={() => navigate(`/temple/${temple.id}/architecture`)}
                         >
                             Details
@@ -206,7 +206,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                         <Button
                             variant="outline"
                             size="icon"
-                            className="h-8 w-8 md:h-9 md:w-9 rounded-lg border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 flex-shrink-0"
+                            className="h-8 w-8 md:h-9 md:w-9 rounded-lg border-accent/20 bg-accent/10 text-accent-gold hover:bg-accent/20 flex-shrink-0"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (temple.latitude && temple.longitude) {
@@ -214,7 +214,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                                 }
                             }}
                         >
-                            <div className="w-4 h-4 md:w-5 md:h-5 bg-amber-600" style={{ WebkitMaskImage: "url(/direction_icon.png)", maskImage: "url(/direction_icon.png)", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat" }} />
+                            <div className="w-4 h-4 md:w-5 md:h-5 bg-accent-gold" style={{ WebkitMaskImage: "url(/direction_icon.png)", maskImage: "url(/direction_icon.png)", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat" }} />
                         </Button>
                         <Button
                             variant="outline"
@@ -222,8 +222,8 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                             onClick={toggleSave}
                             disabled={isSaving || !user}
                             className={cn(
-                                "h-8 w-8 md:h-9 md:w-9 rounded-lg border-slate-200 bg-white flex-shrink-0 transition-all shadow-sm",
-                                isSaved && "bg-amber-50 border-amber-200 text-amber-600"
+                                "h-8 w-8 md:h-9 md:w-9 rounded-lg border-border bg-card flex-shrink-0 transition-all shadow-sm",
+                                isSaved && "bg-accent/10 border-accent/20 text-accent-gold"
                             )}
                         >
                             <Bookmark className={cn("w-4 h-4 md:w-5 md:h-5", isSaved && "fill-current")} />
@@ -269,7 +269,7 @@ const Explore = () => {
 
     // 2. Main Temple Listener - Querying Firestore based on Applied Filters
     useEffect(() => {
-        let templesRef = collection(db, "temples");
+        const templesRef = collection(db, "temples");
         let q = query(templesRef);
 
         const conditions = [];
@@ -378,19 +378,19 @@ const Explore = () => {
     };
 
     return (
-        <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background lg:bg-white animate-in fade-in duration-300">
+        <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-background animate-in fade-in duration-300">
             {/* Standard Header */}
             {/* Header Container */}
             <div className="absolute top-0 left-0 right-0 z-[400] flex flex-col pointer-events-none gap-1">
 
                 {/* Top Row: Unified Glass Header */}
                 <div className="px-4 pt-3 pb-1 flex items-center justify-center pointer-events-auto z-[410]">
-                    <div className="relative w-full max-w-4xl flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-sm py-1.5 px-4">
+                    <div className="relative w-full max-w-4xl flex items-center justify-center bg-background/10 backdrop-blur-md rounded-full border border-border/20 shadow-sm py-1.5 px-4">
                         {/* Logo - Absolute Left */}
                         <img src="/logo.jpg" alt="Logo" className="absolute left-2 w-12 h-12 object-contain" />
 
                         {/* Title - Center */}
-                        <h1 className="w-full px-10 text-center text-xl md:text-2xl font-heading font-bold text-[#0f3c6e] font-serif whitespace-nowrap">
+                        <h1 className="w-full px-10 text-center text-xl md:text-2xl font-heading font-bold text-landing-primary dark:text-primary font-serif whitespace-nowrap">
                             Panchajanya Heritage Map
                         </h1>
                     </div>
@@ -398,22 +398,22 @@ const Explore = () => {
 
                 {/* Second Row: Search Bar - Responsive & Centered */}
                 <div className="pointer-events-auto w-full max-w-xs mx-auto px-4">
-                    <div className="relative rounded-full bg-white/95 backdrop-blur-md border border-white/40 flex items-center shadow-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3" />
+                    <div className="relative rounded-full bg-background/95 backdrop-blur-md border border-border/40 flex items-center shadow-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-3 h-3" />
                         <Input
                             placeholder="Explore Holy Legacy"
-                            className="pl-9 pr-9 h-9 rounded-full border-none bg-transparent focus-visible:ring-0 text-xs placeholder:text-gray-400"
+                            className="pl-9 pr-9 h-9 rounded-full border-none bg-transparent focus-visible:ring-0 text-xs placeholder:text-muted-foreground"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[#0f3c6e] w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-landing-primary dark:text-primary w-8 h-8 flex items-center justify-center hover:bg-accent/10 rounded-full transition-colors"
                         >
                             <div className="relative">
                                 <Filter className="w-4 h-4" />
                                 {activeFiltersCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] font-bold rounded-full w-3 h-3 flex items-center justify-center">
+                                    <span className="absolute -top-1 -right-1 bg-accent-gold text-white text-[10px] font-bold rounded-full w-3 h-3 flex items-center justify-center">
                                         {activeFiltersCount}
                                     </span>
                                 )}
@@ -426,12 +426,12 @@ const Explore = () => {
             {/* Filter Panel */}
             {showFilters && (
                 <div className="absolute top-36 left-4 right-4 z-[400] pointer-events-auto">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-100/50 p-6 shadow-xl">
+                    <div className="bg-map-bg/95 backdrop-blur-sm rounded-2xl border border-border p-6 shadow-xl">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-heading font-bold text-lg text-blue-900">Filters</h3>
+                            <h3 className="font-heading font-bold text-lg text-landing-primary dark:text-primary">Filters</h3>
                             <button
                                 onClick={() => setShowFilters(false)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -444,7 +444,7 @@ const Explore = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* District Filter */}
                                     <div>
-                                        <label className="block text-[11px] font-bold text-blue-900/60 mb-1.5 uppercase tracking-wider">District</label>
+                                        <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">District</label>
                                         <DataTableFilter
                                             label="All Districts"
                                             options={districts}
@@ -453,19 +453,19 @@ const Explore = () => {
                                                 setPendingDistrict(values[0] || "");
                                                 setPendingTaluka(""); // Reset taluka when district changes for cascading effect
                                             }}
-                                            className="w-full bg-white border-gray-200"
+                                            className="w-full bg-background border-border"
                                         />
                                     </div>
 
                                     {/* Taluka Filter */}
                                     <div>
-                                        <label className="block text-[11px] font-bold text-blue-900/60 mb-1.5 uppercase tracking-wider">Taluka</label>
+                                        <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">Taluka</label>
                                         <DataTableFilter
                                             label="All Talukas"
                                             options={talukas}
                                             selectedValues={pendingTaluka ? [pendingTaluka] : []}
                                             onChange={(values) => setPendingTaluka(values[0] || "")}
-                                            className="w-full bg-white border-gray-200"
+                                            className="w-full bg-background border-border"
                                         />
                                     </div>
                                 </div>
@@ -475,7 +475,7 @@ const Explore = () => {
                             <div className="space-y-4 pt-2">
                                 {/* <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest">2. Sthana Wise</h4> */}
                                 <div>
-                                    <label className="block text-[11px] font-bold text-blue-900/60 mb-1.5 uppercase tracking-wider">Sthana Category</label>
+                                    <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">Sthana Category</label>
                                     <DataTableFilter
                                         label="All Sthana Types"
                                         options={sthanaOptions}
@@ -491,19 +491,19 @@ const Explore = () => {
                                 <Button
                                     onClick={clearFilters}
                                     variant="outline"
-                                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-12 rounded-xl"
+                                    className="flex-1 border-border text-foreground hover:bg-accent/10 h-12 rounded-xl"
                                 >
                                     Clear All
                                 </Button>
                                 <Button
                                     onClick={handleApplyFilters}
-                                    className="flex-1 bg-blue-900 hover:bg-blue-800 text-white h-12 rounded-xl shadow-md"
+                                    className="flex-1 bg-landing-primary hover:bg-landing-primary/90 text-white h-12 rounded-xl shadow-md"
                                 >
                                     Apply Filters
                                 </Button>
                             </div>
                             {/* Results Count */}
-                            <div className="text-center text-[11px] font-bold text-amber-600 uppercase tracking-widest pt-4 border-t mt-4">
+                            <div className="text-center text-[11px] font-bold text-accent-gold uppercase tracking-widest pt-4 border-t mt-4">
                                 Showing {filteredTemples.length} of {temples.length} temples
                             </div>
                         </div>

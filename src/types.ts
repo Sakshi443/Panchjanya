@@ -86,6 +86,7 @@ export interface Temple {
     presentHotspots?: Hotspot[];
     createdAt?: any;
     updatedAt?: any;
+    is_published?: boolean;
 }
 
 export interface YatraPlace {
@@ -104,4 +105,14 @@ export interface YatraPlace {
     subRoute?: string;
     locationLink?: string;
     pinColor?: string;
+}
+
+export interface TempleSubmission {
+    id: string;
+    submission_type: string;
+    status: string;
+    data: any;
+    notes?: string;
+    created_at: any;
+    reviewed_at?: any;
 }

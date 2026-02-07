@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Explore Sthanas", href: "/explore", icon: Map },
   { name: "Raj Viharan", href: "/raj-viharan", icon: Compass },
   { name: "About Panchajanya", href: "/about", icon: BookOpen },

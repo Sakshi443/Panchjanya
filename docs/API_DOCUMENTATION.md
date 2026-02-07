@@ -10,7 +10,6 @@ This document provides detailed information about the data structures, Firebase 
 - [Data Models](#data-models)
 - [Authentication](#authentication)
 - [Google Maps Integration](#google-maps-integration)
-- [Supabase Integration](#supabase-integration)
 - [Error Handling](#error-handling)
 
 ---
@@ -435,43 +434,6 @@ const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
 const getDirections = (temple: Temple) => {
   const url = `https://www.google.com/maps/dir/?api=1&destination=${temple.latitude},${temple.longitude}`;
   window.open(url, "_blank");
-};
-```
-
----
-
-## Supabase Integration
-
-### Setup
-
-```typescript
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
-```
-
-### Using React Query with Supabase
-
-```typescript
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-
-const useTemples = () => {
-  return useQuery({
-    queryKey: ["temples"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("temples")
-        .select("*")
-        .order("name", { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
-  });
 };
 ```
 

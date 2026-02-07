@@ -49,6 +49,8 @@ All colors MUST be HSL.
 
     --map-bg: 34 30% 90%;
     --temple-accent: 32 90% 50%;
+
+    --landing-primary: 216 82% 28%;
   }
 
   .dark {
@@ -91,6 +93,8 @@ All colors MUST be HSL.
 
     --map-bg: 20 20% 10%;
     --temple-accent: 32 90% 60%;
+    
+    --landing-primary: 216 82% 60%;
   }
 }
 
