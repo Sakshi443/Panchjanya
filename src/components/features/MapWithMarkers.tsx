@@ -1,6 +1,6 @@
-import { MapContainer, TileLayer, Marker, useMap, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, Tooltip, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import type { Temple } from "@/types";
 
 // Spiritual Marker Generator
@@ -87,17 +87,29 @@ function MapBoundsFitter({ temples, selectedTempleId }: { temples: Temple[], sel
 
   return null;
 }
+// Helper to detect overlapping coordinates and apply jitter feature
+
+function MapZoomListener({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
+  const map = useMapEvents({
+    zoomend: () => {
+      onZoomChange(map.getZoom());
+    },
+  });
+  return null;
+}
 
 export default function MapWithMarkers({ temples, onTempleClick, selectedTempleId }: MapWithMarkersProps) {
   const defaultCenter: [number, number] = [20.5937, 78.9629]; // India Center
+  const [currentZoom, setCurrentZoom] = useState(5);
 
   // Process temples to add offset to overlapping coordinates
   const markersToRender = useMemo(() => {
     const locMap = new Map<string, number>();
-    // First pass: count markers at each location
+
+    // Group roughly by location to find overlaps
     temples.forEach(t => {
       if (t.latitude && t.longitude) {
-        const key = `${t.latitude.toFixed(4)},${t.longitude.toFixed(4)}`; // Check rough proximity
+        const key = `${t.latitude.toFixed(4)},${t.longitude.toFixed(4)}`;
         locMap.set(key, (locMap.get(key) || 0) + 1);
       }
     });
@@ -113,14 +125,19 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
       let finalLat = t.latitude;
       let finalLng = t.longitude;
 
-      // Apply jitter if sharing location
       if (totalAtLoc > 1) {
         const index = currentCounts.get(key) || 0;
         currentCounts.set(key, index + 1);
 
-        // Circular jitter
+        // Dynamic Jitter: Increases as you zoom out (lower zoom), Decreases as you zoom in (higher zoom)
+        // Base radius at zoom 12 is ~0.002 degrees (~200m).
+        // Formula keeps visual spread roughly constant in pixels.
+        const baseRadius = 0.002;
+        const zoomFactor = Math.pow(2, 12 - currentZoom);
+        const radius = baseRadius * zoomFactor;
+
+        // Spread in a circle
         const angle = (index / totalAtLoc) * 2 * Math.PI;
-        const radius = 0.0003; // Approx 30 meters
 
         finalLat = t.latitude + radius * Math.cos(angle);
         finalLng = t.longitude + radius * Math.sin(angle);
@@ -128,7 +145,7 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
 
       return { ...t, renderLat: finalLat, renderLng: finalLng };
     }).filter(Boolean) as (Temple & { renderLat: number, renderLng: number })[];
-  }, [temples]);
+  }, [temples, currentZoom]);
 
   return (
     <div className="w-full h-full z-0 relative">
@@ -145,6 +162,7 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
         />
 
         <MapBoundsFitter temples={temples} selectedTempleId={selectedTempleId} />
+        <MapZoomListener onZoomChange={setCurrentZoom} />
 
         {markersToRender.map((temple) => (
           <Marker
