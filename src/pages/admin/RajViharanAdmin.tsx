@@ -42,12 +42,13 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Fix for default marker icons in Leaflet with React
-/* delete L.Icon.Default.prototype._getIconUrl;
+// @ts-ignore - access private property
+delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
     iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-}); */
+});
 
 const ROUTES = [
     {
@@ -65,7 +66,7 @@ const ROUTES = [
     { id: "krishna", name: "Shri Krishna Prabhu Viharan" }
 ];
 
-/* function LocationPicker({ lat, lng, onSelect }: { lat?: number, lng?: number, onSelect: (lat: number, lng: number) => void }) {
+function LocationPicker({ lat, lng, onSelect }: { lat?: number, lng?: number, onSelect: (lat: number, lng: number) => void }) {
     function MapEvents() {
         useMapEvents({
             click(e) {
@@ -91,7 +92,7 @@ const ROUTES = [
             {lat && lng && <Marker position={[lat, lng]} />}
         </MapContainer>
     );
-} */
+}
 
 export default function RajViharanAdmin() {
     const [places, setPlaces] = useState<YatraPlace[]>([]);
@@ -413,6 +414,11 @@ export default function RajViharanAdmin() {
                                         <Label className="flex items-center gap-2">
                                             <Map className="w-4 h-4 text-blue-600" /> Internal Map Coordinates (Required)
                                         </Label>
+                                        <LocationPicker
+                                            lat={formData.latitude}
+                                            lng={formData.longitude}
+                                            onSelect={(lat, lng) => setFormData({ ...formData, latitude: lat, longitude: lng })}
+                                        />
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
                                                 <Label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Latitude</Label>

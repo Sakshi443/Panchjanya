@@ -37,12 +37,18 @@ const SthanaVandan = () => {
         const unsub = onSnapshot(
             collection(db, "temples"),
             (snapshot) => {
-                const list: Temple[] = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    images: [],
-                    sections: [],
-                    ...doc.data(),
-                })) as Temple[];
+                const list: Temple[] = snapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        images: [],
+                        sections: [],
+                        ...data,
+                        id: doc.id, // Priority to Firestore ID
+                        // Normalize coordinates if nested in location map
+                        latitude: data.latitude ?? data.location?.lat,
+                        longitude: data.longitude ?? data.location?.lng,
+                    } as unknown as Temple;
+                });
 
                 console.log("📍 Temples loaded:", list.length);
                 setTemples(list);
