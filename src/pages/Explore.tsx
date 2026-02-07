@@ -260,12 +260,23 @@ const Explore = () => {
         const unsubscribe = onSnapshot(collection(db, "temples"), (snapshot) => {
             const data = snapshot.docs.map((doc) => {
                 const t = doc.data() as any;
-                // Robust coordinate extraction for filters - check strict non-empty values
+                // Robust coordinate extraction for filters - check extensive list of possibilities
+                let lat, lng;
+
+                // 1. Try top-level numeric or string fields
                 const rawLat = [t.latitude, t.lat, t.location?.latitude, t.location?.lat].find(v => v !== undefined && v !== null && v !== "");
                 const rawLng = [t.longitude, t.lng, t.location?.longitude, t.location?.lng].find(v => v !== undefined && v !== null && v !== "");
 
-                const lat = rawLat !== undefined ? Number(rawLat) : undefined;
-                const lng = rawLng !== undefined ? Number(rawLng) : undefined;
+                if (rawLat !== undefined) lat = Number(rawLat);
+                if (rawLng !== undefined) lng = Number(rawLng);
+
+                // 2. Fallback: Check if 'location' is a map with 'lat'/'lng' (common in user example)
+                if (lat === undefined && typeof t.location === 'object' && t.location !== null) {
+                    if (t.location.lat !== undefined) lat = Number(t.location.lat);
+                    if (t.location.lng !== undefined) lng = Number(t.location.lng);
+                }
+
+                // 3. Last Resort: Handle the specific weird case if needed (e.g. location as string, though unlikely for coords)
 
                 return {
                     ...t,
@@ -274,6 +285,15 @@ const Explore = () => {
                     longitude: lng,
                 };
             }) as Temple[];
+
+            // Debug logs
+            data.forEach(t => {
+                if (!t.latitude || !t.longitude) {
+                    const rawData = t as any;
+                    // Only warn if it's truly missing, sometimes we just have partial data
+                }
+            });
+
             setAllTemplesForOptions(data);
         });
         return () => unsubscribe();
@@ -302,12 +322,23 @@ const Explore = () => {
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map((doc) => {
                 const t = doc.data() as any;
-                // Robust coordinate extraction - check strict non-empty values
+                // Robust coordinate extraction for filters - check extensive list of possibilities
+                let lat, lng;
+
+                // 1. Try top-level numeric or string fields
                 const rawLat = [t.latitude, t.lat, t.location?.latitude, t.location?.lat].find(v => v !== undefined && v !== null && v !== "");
                 const rawLng = [t.longitude, t.lng, t.location?.longitude, t.location?.lng].find(v => v !== undefined && v !== null && v !== "");
 
-                const lat = rawLat !== undefined ? Number(rawLat) : undefined;
-                const lng = rawLng !== undefined ? Number(rawLng) : undefined;
+                if (rawLat !== undefined) lat = Number(rawLat);
+                if (rawLng !== undefined) lng = Number(rawLng);
+
+                // 2. Fallback: Check if 'location' is a map with 'lat'/'lng' (common in user example)
+                if (lat === undefined && typeof t.location === 'object' && t.location !== null) {
+                    if (t.location.lat !== undefined) lat = Number(t.location.lat);
+                    if (t.location.lng !== undefined) lng = Number(t.location.lng);
+                }
+
+                // 3. Last Resort: Handle the specific weird case if needed (e.g. location as string, though unlikely for coords)
 
                 return {
                     ...t,
@@ -321,7 +352,8 @@ const Explore = () => {
             // Debug logs to verify coordinates
             data.forEach(t => {
                 if (!t.latitude || !t.longitude) {
-                    console.warn(`⚠️ Temple "${t.name}" (ID: ${t.id}) is missing valid coordinates! Lat: ${t.latitude}, Lng: ${t.longitude}`);
+                    const rawData = t as any;
+                    console.warn(`⚠️ Temple "${t.name}" (ID: ${t.id}) is missing valid coordinates! Raw Lat: ${rawData.latitude}, LocationObj: ${JSON.stringify(rawData.location)}`);
                 } else {
                     console.log(`📍 Temple "${t.name}" at [${t.latitude}, ${t.longitude}]`);
                 }
