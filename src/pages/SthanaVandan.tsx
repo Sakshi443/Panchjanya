@@ -39,14 +39,22 @@ const SthanaVandan = () => {
             (snapshot) => {
                 const list: Temple[] = snapshot.docs.map((doc) => {
                     const data = doc.data();
+
+                    // Robust coordinate extraction - check strict non-empty values
+                    const rawLat = [data.latitude, data.lat, data.location?.latitude, data.location?.lat].find(v => v !== undefined && v !== null && v !== "");
+                    const rawLng = [data.longitude, data.lng, data.location?.longitude, data.location?.lng].find(v => v !== undefined && v !== null && v !== "");
+
+                    const lat = rawLat !== undefined ? Number(rawLat) : undefined;
+                    const lng = rawLng !== undefined ? Number(rawLng) : undefined;
+
                     return {
                         images: [],
                         sections: [],
                         ...data,
                         id: doc.id, // Priority to Firestore ID
                         // Normalize coordinates if nested in location map
-                        latitude: data.latitude ?? data.location?.lat,
-                        longitude: data.longitude ?? data.location?.lng,
+                        latitude: lat,
+                        longitude: lng,
                     } as unknown as Temple;
                 });
 

@@ -260,11 +260,18 @@ const Explore = () => {
         const unsubscribe = onSnapshot(collection(db, "temples"), (snapshot) => {
             const data = snapshot.docs.map((doc) => {
                 const t = doc.data() as any;
+                // Robust coordinate extraction for filters - check strict non-empty values
+                const rawLat = [t.latitude, t.lat, t.location?.latitude, t.location?.lat].find(v => v !== undefined && v !== null && v !== "");
+                const rawLng = [t.longitude, t.lng, t.location?.longitude, t.location?.lng].find(v => v !== undefined && v !== null && v !== "");
+
+                const lat = rawLat !== undefined ? Number(rawLat) : undefined;
+                const lng = rawLng !== undefined ? Number(rawLng) : undefined;
+
                 return {
                     ...t,
                     id: doc.id,
-                    latitude: t.latitude ?? t.location?.lat,
-                    longitude: t.longitude ?? t.location?.lng,
+                    latitude: lat,
+                    longitude: lng,
                 };
             }) as Temple[];
             setAllTemplesForOptions(data);
@@ -295,15 +302,30 @@ const Explore = () => {
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map((doc) => {
                 const t = doc.data() as any;
+                // Robust coordinate extraction - check strict non-empty values
+                const rawLat = [t.latitude, t.lat, t.location?.latitude, t.location?.lat].find(v => v !== undefined && v !== null && v !== "");
+                const rawLng = [t.longitude, t.lng, t.location?.longitude, t.location?.lng].find(v => v !== undefined && v !== null && v !== "");
+
+                const lat = rawLat !== undefined ? Number(rawLat) : undefined;
+                const lng = rawLng !== undefined ? Number(rawLng) : undefined;
+
                 return {
                     ...t,
                     id: doc.id,
-                    latitude: t.latitude ?? t.location?.lat,
-                    longitude: t.longitude ?? t.location?.lng,
+                    latitude: lat,
+                    longitude: lng,
                 };
             }) as Temple[];
 
             console.log(`✅ Loaded ${data.length} temples from database`);
+            // Debug logs to verify coordinates
+            data.forEach(t => {
+                if (!t.latitude || !t.longitude) {
+                    console.warn(`⚠️ Temple "${t.name}" (ID: ${t.id}) is missing valid coordinates! Lat: ${t.latitude}, Lng: ${t.longitude}`);
+                } else {
+                    console.log(`📍 Temple "${t.name}" at [${t.latitude}, ${t.longitude}]`);
+                }
+            });
             setTemples(data);
 
             if (data.length > 0 && !selectedTemple) {

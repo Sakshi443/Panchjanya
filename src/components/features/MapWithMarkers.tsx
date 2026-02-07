@@ -70,10 +70,16 @@ function MapBoundsFitter({ temples, selectedTempleId }: { temples: Temple[], sel
     if (temples.length > 0) {
       const currentIds = temples.map(t => t.id).sort().join(',');
       if (currentIds !== lastTempleIds.current) {
-        const bounds = L.latLngBounds(temples.map(t => [t.latitude, t.longitude]));
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, { padding: [100, 100], maxZoom: 12 });
-          lastTempleIds.current = currentIds;
+        const validCoords = temples
+          .filter(t => t.latitude && t.longitude)
+          .map(t => [t.latitude, t.longitude] as [number, number]);
+
+        if (validCoords.length > 0) {
+          const bounds = L.latLngBounds(validCoords);
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [100, 100], maxZoom: 12 });
+            lastTempleIds.current = currentIds;
+          }
         }
       }
     }
