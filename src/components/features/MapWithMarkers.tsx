@@ -1,8 +1,7 @@
 import { MapContainer, TileLayer, Marker, useMap, Tooltip } from "react-leaflet";
 import L from "leaflet";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import type { Temple } from "@/types";
-import MarkerClusterGroup from 'react-leaflet-cluster';
 
 // Spiritual Marker Generator
 const createCustomMarker = (isActive: boolean) => {
@@ -92,6 +91,45 @@ function MapBoundsFitter({ temples, selectedTempleId }: { temples: Temple[], sel
 export default function MapWithMarkers({ temples, onTempleClick, selectedTempleId }: MapWithMarkersProps) {
   const defaultCenter: [number, number] = [20.5937, 78.9629]; // India Center
 
+  // Process temples to add offset to overlapping coordinates
+  const markersToRender = useMemo(() => {
+    const locMap = new Map<string, number>();
+    // First pass: count markers at each location
+    temples.forEach(t => {
+      if (t.latitude && t.longitude) {
+        const key = `${t.latitude.toFixed(4)},${t.longitude.toFixed(4)}`; // Check rough proximity
+        locMap.set(key, (locMap.get(key) || 0) + 1);
+      }
+    });
+
+    const currentCounts = new Map<string, number>();
+
+    return temples.map(t => {
+      if (!t.latitude || !t.longitude) return null;
+
+      const key = `${t.latitude.toFixed(4)},${t.longitude.toFixed(4)}`;
+      const totalAtLoc = locMap.get(key) || 1;
+
+      let finalLat = t.latitude;
+      let finalLng = t.longitude;
+
+      // Apply jitter if sharing location
+      if (totalAtLoc > 1) {
+        const index = currentCounts.get(key) || 0;
+        currentCounts.set(key, index + 1);
+
+        // Circular jitter
+        const angle = (index / totalAtLoc) * 2 * Math.PI;
+        const radius = 0.0003; // Approx 30 meters
+
+        finalLat = t.latitude + radius * Math.cos(angle);
+        finalLng = t.longitude + radius * Math.sin(angle);
+      }
+
+      return { ...t, renderLat: finalLat, renderLng: finalLng };
+    }).filter(Boolean) as (Temple & { renderLat: number, renderLng: number })[];
+  }, [temples]);
+
   return (
     <div className="w-full h-full z-0 relative">
       <MapContainer
@@ -108,38 +146,29 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
 
         <MapBoundsFitter temples={temples} selectedTempleId={selectedTempleId} />
 
-        <MarkerClusterGroup
-          chunkedLoading
-          spiderfyOnMaxZoom={true}
-          showCoverageOnHover={false}
-          maxClusterRadius={40}
-        >
-          {temples.map((temple) =>
-            temple.latitude && temple.longitude ? (
-              <Marker
-                key={temple.id}
-                position={[temple.latitude, temple.longitude]}
-                icon={createCustomMarker(selectedTempleId === temple.id)}
-                eventHandlers={{
-                  click: () => onTempleClick(temple.id),
-                }}
-              >
-                <Tooltip
-                  direction="top"
-                  offset={[0, -32]}
-                  className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
-                >
-                  <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">
-                    <p className="font-heading text-primary font-bold text-sm">{temple.name}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                      {temple.district} District
-                    </p>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ) : null
-          )}
-        </MarkerClusterGroup>
+        {markersToRender.map((temple) => (
+          <Marker
+            key={temple.id}
+            position={[temple.renderLat, temple.renderLng]}
+            icon={createCustomMarker(selectedTempleId === temple.id)}
+            eventHandlers={{
+              click: () => onTempleClick(temple.id),
+            }}
+          >
+            <Tooltip
+              direction="top"
+              offset={[0, -32]}
+              className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
+            >
+              <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">
+                <p className="font-heading text-primary font-bold text-sm">{temple.name}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                  {temple.district} District
+                </p>
+              </div>
+            </Tooltip>
+          </Marker>
+        ))}
       </MapContainer>
     </div>
   );
