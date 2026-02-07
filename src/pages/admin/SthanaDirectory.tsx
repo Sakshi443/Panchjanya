@@ -55,7 +55,7 @@ export default function SthanaDirectory() {
                 console.warn("Directory API not active locally. Using Client SDK.");
                 const { collection, getDocs } = await import("firebase/firestore");
                 const snapshot = await getDocs(collection(db, "temples"));
-                data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
             }
 
             // Format and Sort
@@ -116,8 +116,8 @@ export default function SthanaDirectory() {
     // 4. Filter Logic
     const filteredTemples = temples.filter((t) => {
         const matchesSearch =
-            t.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.id?.toLowerCase().includes(searchTerm.toLowerCase());
+            (t.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (t.id || "").toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesDistrict = selectedDistrict === "District" || t.district === selectedDistrict;
         const matchesTaluka = selectedTaluka === "Taluka" || t.taluka === selectedTaluka;

@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(200).json({ id: snap.id, ...snap.data() });
             } else {
                 // Collection reference
-                const data = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+                const data = snap.docs.map((doc: any) => ({ ...doc.data(), id: doc.id }));
                 return res.status(200).json(data);
             }
         }
