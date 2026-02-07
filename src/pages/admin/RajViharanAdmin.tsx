@@ -148,7 +148,18 @@ export default function RajViharanAdmin() {
 
     const handleEdit = (place: YatraPlace) => {
         setSelectedPlace(place);
-        setFormData(place);
+        setFormData({
+            ...place,
+            // Ensure fields are never undefined for controlled inputs
+            name: place.name || "",
+            description: place.description || "",
+            locationLink: place.locationLink || "",
+            subRoute: place.subRoute || "",
+            image: place.image || "",
+            pinColor: (place as any).pinColor || "#D4AF37",
+            status: place.status || "upcoming",
+            route: place.route || "swami-complete"
+        });
         setIsEditing(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
