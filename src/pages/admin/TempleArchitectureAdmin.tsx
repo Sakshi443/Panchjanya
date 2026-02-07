@@ -250,7 +250,7 @@ export default function TempleArchitectureAdmin() {
   };
 
   const displayImages = viewType === 'architectural'
-    ? [archImageUrl, ...archImages].filter(Boolean)
+    ? ([archImageUrl, ...archImages].filter(Boolean).length > 0 ? [archImageUrl, ...archImages].filter(Boolean) : templeImages)
     : [presentImageUrl, ...presentImages].filter(Boolean);
 
   const currentHotspots = viewType === 'architectural' ? archHotspots : presentHotspots;
