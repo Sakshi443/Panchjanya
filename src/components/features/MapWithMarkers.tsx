@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, useMap, Tooltip } from "react-leaflet"
 import L from "leaflet";
 import { useEffect, useRef } from "react";
 import type { Temple } from "@/types";
+import MarkerClusterGroup from 'react-leaflet-cluster';
 
 // Spiritual Marker Generator
 const createCustomMarker = (isActive: boolean) => {
@@ -97,7 +98,7 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
         center={defaultCenter}
         zoom={5}
         style={{ width: "100%", height: "100%" }}
-        zoomControl={false} // Hidden for a cleaner look
+        zoomControl={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -107,31 +108,38 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
 
         <MapBoundsFitter temples={temples} selectedTempleId={selectedTempleId} />
 
-        {temples.map((temple) =>
-          temple.latitude && temple.longitude ? (
-            <Marker
-              key={temple.id}
-              position={[temple.latitude, temple.longitude]}
-              icon={createCustomMarker(selectedTempleId === temple.id)}
-              eventHandlers={{
-                click: () => onTempleClick(temple.id),
-              }}
-            >
-              <Tooltip
-                direction="top"
-                offset={[0, -32]}
-                className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
+        <MarkerClusterGroup
+          chunkedLoading
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+          maxClusterRadius={40}
+        >
+          {temples.map((temple) =>
+            temple.latitude && temple.longitude ? (
+              <Marker
+                key={temple.id}
+                position={[temple.latitude, temple.longitude]}
+                icon={createCustomMarker(selectedTempleId === temple.id)}
+                eventHandlers={{
+                  click: () => onTempleClick(temple.id),
+                }}
               >
-                <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">
-                  <p className="font-heading text-primary font-bold text-sm">{temple.name}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                    {temple.district} District
-                  </p>
-                </div>
-              </Tooltip>
-            </Marker>
-          ) : null
-        )}
+                <Tooltip
+                  direction="top"
+                  offset={[0, -32]}
+                  className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
+                >
+                  <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">
+                    <p className="font-heading text-primary font-bold text-sm">{temple.name}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                      {temple.district} District
+                    </p>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ) : null
+          )}
+        </MarkerClusterGroup>
       </MapContainer>
     </div>
   );
