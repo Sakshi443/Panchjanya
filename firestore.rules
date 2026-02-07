@@ -3,58 +3,44 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---- USERS COLLECTION (Optional if you track users) ----
+    // ---- USERS COLLECTION ----
     match /users/{userId} {
-      // Users can read their own profile
-      allow read: if request.auth != null && request.auth.uid == userId;
+      // Users can read their own profile, admins can read all
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
 
       // Only the authenticated user can write to their own document
       allow write: if request.auth != null && request.auth.uid == userId;
+    }
 
-      // ---- SAVED TEMPLES SUBCOLLECTION ----
-      match /savedTemples/{templeId} {
-        // Users can read and write their own saved temples
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-      }
+    // Allow admins to list users (for dashboard counts)
+    match /users {
+      allow list: if isAdmin();
     }
 
     // ---- TEMPLES COLLECTION ----
     match /temples/{templeId} {
-      
       // Everyone can read temple info publicly
       allow read: if true;
 
       // Only Admins can write (add/update/delete)
       allow write: if isAdmin();
-    }
 
-    // ---- HOTSPOTS COLLECTION (If nested under temples) ----
-    match /temples/{templeId}/hotspots/{hotspotId} {
-      
-      // Everyone can read
-      allow read: if true;
-
-      // Only Admins can modify hotspots
-      allow write: if isAdmin();
+      // ---- SUBCOLLECTIONS (hotspots, present_hotspots, etc.) ----
+      match /{allSubcollections=**} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
     }
 
     // ---- YATRA PLACES COLLECTION ----
     match /yatraPlaces/{placeId} {
-      
-      // Everyone can read yatra places publicly
       allow read: if true;
-
-      // Only Admins can write (add/update/delete)
       allow write: if isAdmin();
     }
 
-    // ---- SETTINGS COLLECTION (Global app settings) ----
+    // ---- SETTINGS COLLECTION ----
     match /settings/{settingId} {
-      
-      // Everyone can read settings (like abbreviations)
       allow read: if true;
-
-      // Only Admins can write settings
       allow write: if isAdmin();
     }
 

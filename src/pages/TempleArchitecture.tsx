@@ -453,9 +453,9 @@ export default function TempleArchitecture() {
           </div>
 
           {temple.glanceItems && temple.glanceItems.length > 0 && (
-            <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 relative overflow-hidden">
+            <div className="bg-white p-1 md:p-6 rounded-2xl border border-slate-100 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-900/10"></div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:gap-x-8 md:gap-y-5 pl-2 md:pl-3">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-2 md:gap-x-8 md:gap-y-5 pl-2 md:pl-3">
                 {temple.glanceItems.map((item, idx) => (
                   <div key={item.id || idx} className="flex items-start gap-2.5 md:gap-3 p-1.5 md:p-2">
                     <div className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center shrink-0">

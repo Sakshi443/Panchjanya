@@ -83,13 +83,13 @@ function MapBoundsFitter({ temples, selectedTempleId }: { temples: Temple[], sel
 }
 
 export default function MapWithMarkers({ temples, onTempleClick, selectedTempleId }: MapWithMarkersProps) {
-  const defaultCenter: [number, number] = [19.7515, 75.7139];
+  const defaultCenter: [number, number] = [20.5937, 78.9629]; // India Center
 
   return (
     <div className="w-full h-full z-0 relative">
       <MapContainer
         center={defaultCenter}
-        zoom={7}
+        zoom={5}
         style={{ width: "100%", height: "100%" }}
         zoomControl={false} // Hidden for a cleaner look
       >

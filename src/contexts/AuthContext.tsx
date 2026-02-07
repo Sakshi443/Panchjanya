@@ -22,20 +22,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
       if (currentUser) {
-        // Check if user is admin based on email
-        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "admin@example.com";
-        const isUserAdmin = currentUser.email === adminEmail;
+        try {
+          // Get the ID token and check for custom claims
+          const idTokenResult = await currentUser.getIdTokenResult();
+          const isUserAdmin = !!idTokenResult.claims.admin;
 
-        console.log(`👤 Auth State Change: ${currentUser.email} (Admin: ${isUserAdmin})`);
-        if (!import.meta.env.VITE_ADMIN_EMAIL) {
-          console.warn("⚠️ VITE_ADMIN_EMAIL not set in .env, using default: admin@example.com");
+          console.log(`👤 Auth State Change: ${currentUser.email} (Admin: ${isUserAdmin})`);
+
+          // Fallback check if VITE_ADMIN_EMAIL is set and custom claim is missing
+          const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+          if (!isUserAdmin && adminEmail && currentUser.email === adminEmail) {
+            console.warn("⚠️ Custom claim 'admin' missing, but email matches VITE_ADMIN_EMAIL. Setting isAdmin to true as fallback.");
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(isUserAdmin);
+          }
+        } catch (error) {
+          console.error("Error checking admin claims:", error);
+          setIsAdmin(false);
         }
-
-        setIsAdmin(isUserAdmin);
       } else {
         setIsAdmin(false);
       }

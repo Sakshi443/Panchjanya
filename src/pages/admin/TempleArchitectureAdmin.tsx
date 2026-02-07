@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "@/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, getDocs, setDoc, deleteDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { Hotspot, Leela, GlanceItem, AbbreviationItem, CustomBlock } from "@/types";
 import * as LucideIcons from "lucide-react";
@@ -26,6 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
@@ -110,52 +111,97 @@ export default function TempleArchitectureAdmin() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const snap = await getDoc(doc(db, "temples", id));
 
-        if (!snap.exists()) {
-          toast({
-            title: "Error",
-            description: "Temple not found",
-            variant: "destructive",
-          });
-          return;
+        // 1. Try fetching via Admin API first
+        const res = await fetch(`/api/admin/temples?id=${id}`);
+        const contentType = res.headers.get("content-type");
+
+        if (res.ok && contentType?.includes("application/json")) {
+          const data = await res.json();
+          setTempleName(data.name || "Unknown Temple");
+          setArchImageUrl(data.architectureImage || "");
+          setPresentImageUrl(data.presentImage || data.images?.[0] || "");
+          setArchImages(data.architectureImages || []);
+          setPresentImages(data.presentImages || []);
+          setTempleImages(data.images || []);
+          setArchHotspots(data.hotspots || []);
+          setPresentHotspots(data.present_hotspots || []);
+
+          setTodaysName(data.todaysName || "");
+          setAddress(data.address || "");
+          setTaluka(data.taluka || "");
+          setDistrict(data.district || "");
+          setDirectionsText(data.directions_text || data.wayToReach || "");
+          setLocationLink(data.locationLink || "");
+          setLatitude(data.latitude || "");
+          setLongitude(data.longitude || "");
+          setDescriptionTitle(data.description_title || "Sthan At Glance");
+          setDescriptionText(data.description_text || data.description || "");
+          setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
+          setSthanaInfoText(data.sthana_info_text || data.sthana || "");
+          setDescriptionSections(data.descriptionSections || []);
+          setGlanceItems(data.glanceItems || []);
+          setAbbreviationItems(data.abbreviationItems || []);
+          setCustomBlocks(data.customBlocks || []);
+          setArchitectureDescription(data.architectureDescription || "");
+          setContactDetails(data.contactDetails || "");
+          setContactName(data.contactName || "");
+          setContactNumber(data.contactNumber || "");
+        } else {
+          // Fallback to client-side Firestore
+          console.warn("Temple API not active locally. Using Client SDK.");
+          const snap = await getDoc(doc(db, "temples", id));
+
+          if (!snap.exists()) {
+            toast({
+              title: "Error",
+              description: "Temple not found",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          const data = snap.data();
+          setTempleName(data.name || "Unknown Temple");
+          setArchImageUrl(data.architectureImage || "");
+          setPresentImageUrl(data.presentImage || data.images?.[0] || "");
+          setArchImages(data.architectureImages || []);
+          setPresentImages(data.presentImages || []);
+          setTempleImages(data.images || []);
+          setArchHotspots(data.hotspots || []);
+
+          // Fetch present hotspots from subcollection
+          const presentHotspotsRef = collection(db, "temples", id, "present_hotspots");
+          const presentHotspotsSnap = await getDocs(presentHotspotsRef);
+          const presentHotspotsData = presentHotspotsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Hotspot));
+          setPresentHotspots(presentHotspotsData);
+
+          setTodaysName(data.todaysName || "");
+          setAddress(data.address || "");
+          setTaluka(data.taluka || "");
+          setDistrict(data.district || "");
+          setDirectionsText(data.directions_text || data.wayToReach || "");
+          setLocationLink(data.locationLink || "");
+          setLatitude(data.latitude || "");
+          setLongitude(data.longitude || "");
+          setDescriptionTitle(data.description_title || "Sthan At Glance");
+          setDescriptionText(data.description_text || data.description || "");
+          setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
+          setSthanaInfoText(data.sthana_info_text || data.sthana || "");
+          setDescriptionSections(data.descriptionSections || []);
+          setGlanceItems(data.glanceItems || []);
+          setAbbreviationItems(data.abbreviationItems || []);
+          setCustomBlocks(data.customBlocks || []);
+          setArchitectureDescription(data.architectureDescription || "");
+          setContactDetails(data.contactDetails || "");
+          setContactName(data.contactName || "");
+          setContactNumber(data.contactNumber || "");
         }
-
-        const data = snap.data();
-        setTempleName(data.name || "Unknown Temple");
-        setArchImageUrl(data.architectureImage || "");
-        setPresentImageUrl(data.presentImage || data.images?.[0] || "");
-        setArchImages(data.architectureImages || []);
-        setPresentImages(data.presentImages || []);
-        setTempleImages(data.images || []);
-        setArchHotspots(data.hotspots || []);
-        setPresentHotspots(data.presentHotspots || []);
-
-        setTodaysName(data.todaysName || "");
-        setAddress(data.address || "");
-        setTaluka(data.taluka || "");
-        setDistrict(data.district || "");
-        setDirectionsText(data.directions_text || data.wayToReach || "");
-        setLocationLink(data.locationLink || "");
-        setLatitude(data.latitude || "");
-        setLongitude(data.longitude || "");
-        setDescriptionTitle(data.description_title || "Sthan At Glance");
-        setDescriptionText(data.description_text || data.description || "");
-        setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
-        setSthanaInfoText(data.sthana_info_text || data.sthana || "");
-        setDescriptionSections(data.descriptionSections || []);
-        setGlanceItems(data.glanceItems || []);
-        setAbbreviationItems(data.abbreviationItems || []);
-        setCustomBlocks(data.customBlocks || []);
-        setArchitectureDescription(data.architectureDescription || "");
-        setContactDetails(data.contactDetails || "");
-        setContactName(data.contactName || "");
-        setContactNumber(data.contactNumber || "");
       } catch (error) {
         console.error("Error fetching temple:", error);
         toast({
           title: "Error",
-          description: "Failed to load temple data",
+          description: "Failed to load temple data. Please check permissions.",
           variant: "destructive",
         });
       } finally {
@@ -174,12 +220,13 @@ export default function TempleArchitectureAdmin() {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    if (viewType === 'present') {
-      // For present view, we don't create new hotspots, we map existing ones from arch view
+
+    if (viewType === 'present' && archHotspots.length > 0) {
       setPendingClickPosition({ x, y });
       return;
     }
 
+    // Default: Create a new hotspot (for arch view or if present view is empty/user wants new)
     const newHotspot: Hotspot = {
       id: uuidv4(),
       x,
@@ -188,13 +235,14 @@ export default function TempleArchitectureAdmin() {
       title: "",
       description: "",
       significance: "",
-      number: (archHotspots.length) + 1,
+      number: (viewType === 'architectural' ? archHotspots.length : presentHotspots.length) + 1,
       images: [],
       oldImages: [],
       leelas: [],
       sthanPothiDescription: "",
       sthanPothiTitle: "",
       generalDescriptionTitle: "",
+      isPresent: viewType === 'present'
     };
 
     setSelectedHotspot(newHotspot);
@@ -217,42 +265,52 @@ export default function TempleArchitectureAdmin() {
   const saveHotspot = async () => {
     if (!selectedHotspot || !id) return;
 
-    // 1. Update the current array
-    const currentHotspotsToUpdate = viewType === 'architectural' ? archHotspots : presentHotspots;
-    const updatedCurrent = currentHotspotsToUpdate.some((h) => h.id === selectedHotspot.id)
-      ? currentHotspotsToUpdate.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
-      : [...currentHotspotsToUpdate, selectedHotspot];
-
-    // 2. Sync with the other array
-    const otherHotspotsToSync = viewType === 'architectural' ? presentHotspots : archHotspots;
-    const updatedOther = otherHotspotsToSync.map((h) => {
-      if (h.id === selectedHotspot.id) {
-        // Sync common fields but keep other coordinates/imageIndex
-        return {
-          ...selectedHotspot,
-          x: h.x,
-          y: h.y,
-          imageIndex: h.imageIndex
-        };
-      }
-      return h;
-    });
-
-    const newArch = viewType === 'architectural' ? updatedCurrent : updatedOther;
-    const newPresent = viewType === 'architectural' ? updatedOther : updatedCurrent;
-
-    setArchHotspots(newArch);
-    setPresentHotspots(newPresent);
+    // Helper to remove undefined values
+    const sanitizeData = (data: any): any => {
+      return JSON.parse(JSON.stringify(data, (key, value) => {
+        return value === undefined ? null : value;
+      }));
+    };
 
     try {
-      await updateDoc(doc(db, "temples", id), {
-        hotspots: newArch,
-        presentHotspots: newPresent,
-      });
+      if (viewType === 'architectural') {
+        // Architectural View: Update main doc array
+        const updatedArch = archHotspots.some((h) => h.id === selectedHotspot.id)
+          ? archHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
+          : [...archHotspots, selectedHotspot];
+
+        setArchHotspots(updatedArch);
+
+        // Try API first
+        const res = await fetch(`/api/admin/temples?id=${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hotspots: sanitizeData(updatedArch) })
+        });
+
+        if (!res.ok) {
+          console.warn("API write failed, using fallback.");
+          await updateDoc(doc(db, "temples", id), {
+            hotspots: sanitizeData(updatedArch)
+          });
+        }
+      } else {
+        // Present View: Update subcollection state
+        const updatedPresent = presentHotspots.some((h) => h.id === selectedHotspot.id)
+          ? presentHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
+          : [...presentHotspots, selectedHotspot];
+
+        setPresentHotspots(updatedPresent);
+
+        // Save to subcollection (API support for subcollections could be added, but for now fallback is fine if rules allow or use full doc update)
+        // Since we want to bypass rules, let's just use client SDK as fallback for now.
+        // Ideally we'd have a specific subcollection endpoint, but we can also just set it via client SDK.
+        await setDoc(doc(db, "temples", id, "present_hotspots", selectedHotspot.id), sanitizeData(selectedHotspot));
+      }
 
       toast({
         title: "Success",
-        description: "Hotspot saved and synced successfully",
+        description: "Hotspot saved successfully",
       });
 
       setCurrentStep('architecture-view');
@@ -269,33 +327,46 @@ export default function TempleArchitectureAdmin() {
 
   const saveTempleDetails = async () => {
     if (!id) return;
+    const updateData = {
+      name: templeName,
+      todaysName,
+      address,
+      taluka,
+      district,
+      directions_text,
+      locationLink,
+      latitude,
+      longitude,
+      images: templeImages,
+      description_title,
+      description_text,
+      sthana_info_title,
+      sthana_info_text,
+      descriptionSections,
+      glanceItems,
+      abbreviationItems,
+      customBlocks,
+      architectureDescription,
+      contactDetails,
+      contactName,
+      contactNumber,
+    };
+
     try {
-      await updateDoc(doc(db, "temples", id), {
-        name: templeName,
-        todaysName,
-        address,
-        taluka,
-        district,
-        directions_text,
-        locationLink,
-        latitude,
-        longitude,
-        images: templeImages,
-        description_title,
-        description_text,
-        sthana_info_title,
-        sthana_info_text,
-        descriptionSections,
-        glanceItems,
-        abbreviationItems,
-        customBlocks,
-        architectureDescription,
-        contactDetails,
-        contactName,
-        contactNumber,
+      const res = await fetch(`/api/admin/temples?id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
       });
+
+      if (!res.ok) {
+        console.warn("API save failed, using fallback.");
+        await updateDoc(doc(db, "temples", id), updateData);
+      }
+
       toast({ title: "Success", description: "Temple details updated." });
     } catch (e) {
+      console.error("Save error:", e);
       toast({ title: "Error", description: "Failed to save temple details.", variant: "destructive" });
     }
   };
@@ -395,21 +466,23 @@ export default function TempleArchitectureAdmin() {
 
     if (!confirm(`Are you sure you want to delete ${selectedHotspot.title || `Hotspot #${selectedHotspot.number}`}? This will remove it from all views.`)) return;
 
-    const newArch = archHotspots.filter((h) => h.id !== selectedHotspot.id);
-    const newPresent = presentHotspots.filter((h) => h.id !== selectedHotspot.id);
-
-    setArchHotspots(newArch);
-    setPresentHotspots(newPresent);
-
     try {
-      await updateDoc(doc(db, "temples", id), {
-        hotspots: newArch,
-        presentHotspots: newPresent,
-      });
+      if (selectedHotspot.isPresent) {
+        // Delete from subcollection
+        await deleteDoc(doc(db, "temples", id, "present_hotspots", selectedHotspot.id));
+        setPresentHotspots(presentHotspots.filter((h) => h.id !== selectedHotspot.id));
+      } else {
+        // Delete from architectural hotspots array in main doc
+        const newArch = archHotspots.filter((h) => h.id !== selectedHotspot.id);
+        setArchHotspots(newArch);
+        await updateDoc(doc(db, "temples", id), {
+          hotspots: newArch,
+        });
+      }
 
       toast({
         title: "Deleted",
-        description: "Hotspot removed successfully from all views.",
+        description: "Hotspot removed successfully",
       });
 
       setCurrentStep('architecture-view');
@@ -428,11 +501,15 @@ export default function TempleArchitectureAdmin() {
     if (!id) return;
     if (!confirm("Are you sure you want to remove this hotspot from this specific photo? (It will still exist in the master list)")) return;
     try {
-      const updatedPresent = presentHotspots.filter(h => !(h.id === hotspotId && (h.imageIndex || 0) === adminImageIndex));
-      setPresentHotspots(updatedPresent);
-      await updateDoc(doc(db, "temples", id), { presentHotspots: updatedPresent });
-      toast({ title: "Unmapped", description: "Hotspot removed from this photo." });
+      const hotspotToDelete = presentHotspots.find(h => h.id === hotspotId && (h.imageIndex || 0) === adminImageIndex);
+      if (hotspotToDelete) {
+        await deleteDoc(doc(db, "temples", id, "present_hotspots", hotspotId));
+        const updatedPresent = presentHotspots.filter(h => h.id !== hotspotId);
+        setPresentHotspots(updatedPresent);
+        toast({ title: "Unmapped", description: "Hotspot removed from this photo." });
+      }
     } catch (e) {
+      console.error("Error unmapping hotspot:", e);
       toast({ title: "Error", description: "Failed to unmap hotspot." });
     }
   };
@@ -518,17 +595,49 @@ export default function TempleArchitectureAdmin() {
           return h;
         });
 
+      // Update main images
       await updateDoc(doc(db, "temples", id), {
         [fieldToUpdate]: updatedImages,
-        [hotspotField]: updatedHotspots,
       });
 
+      // Handle Hotspots updates
       if (viewType === 'architectural') {
-        setArchImages(updatedImages);
+        const updatedHotspots = currentHotspotsList
+          .filter(h => (h.imageIndex || 0) !== actualIndex)
+          .map(h => {
+            if ((h.imageIndex || 0) > actualIndex) {
+              return { ...h, imageIndex: (h.imageIndex || 0) - 1 };
+            }
+            return h;
+          });
+
+        await updateDoc(doc(db, "temples", id), {
+          hotspots: updatedHotspots
+        });
         setArchHotspots(updatedHotspots);
+        setArchImages(updatedImages);
       } else {
+        // For present view, we'd need to update each doc in the subcollection if its imageIndex changes
+        // This is complex for a subcollection. For now, let's at least filter the state.
+        // Ideally, we loop through and update/delete in the subcollection.
+        const hotspotsToDelete = presentHotspots.filter(h => (h.imageIndex || 0) === actualIndex);
+        const hotspotsToUpdate = presentHotspots.filter(h => (h.imageIndex || 0) > actualIndex);
+
+        for (const h of hotspotsToDelete) {
+          await deleteDoc(doc(db, "temples", id, "present_hotspots", h.id));
+        }
+        for (const h of hotspotsToUpdate) {
+          await updateDoc(doc(db, "temples", id, "present_hotspots", h.id), {
+            imageIndex: h.imageIndex - 1
+          });
+        }
+
+        const updatedPresent = presentHotspots
+          .filter(h => (h.imageIndex || 0) !== actualIndex)
+          .map(h => (h.imageIndex || 0) > actualIndex ? { ...h, imageIndex: h.imageIndex - 1 } : h);
+
+        setPresentHotspots(updatedPresent);
         setPresentImages(updatedImages);
-        setPresentHotspots(updatedHotspots);
       }
 
       // Reset index to ensure we're not on a deleted or shifted index we don't understand
@@ -1372,10 +1481,17 @@ export default function TempleArchitectureAdmin() {
                   </div>
                   <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
                     {displayImages.map((url, idx) => (
-                      <button
+                      <div
                         key={idx}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setAdminImageIndex(idx)}
-                        className={`relative shrink-0 rounded-xl overflow-hidden border-4 transition-all w-48 aspect-video snap-center group ${adminImageIndex === idx
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setAdminImageIndex(idx);
+                          }
+                        }}
+                        className={`relative shrink-0 rounded-xl overflow-hidden border-4 transition-all w-48 aspect-video snap-center group cursor-pointer ${adminImageIndex === idx
                           ? 'border-primary shadow-xl scale-105 z-10'
                           : 'border-white hover:border-slate-200'
                           }`}
@@ -1397,7 +1513,7 @@ export default function TempleArchitectureAdmin() {
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
-                      </button>
+                      </div>
                     ))}
 
                     {/* Add Image Card */}
@@ -1813,6 +1929,24 @@ export default function TempleArchitectureAdmin() {
                   {/* Left Column: Basic Info & Content */}
                   <div className="space-y-6">
 
+                    <Card className="border-slate-200">
+                      <CardHeader className="pb-3 border-b border-slate-100 mb-4 flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg font-bold">Visibility Settings</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                          <div className="space-y-0.5">
+                            <Label className="text-blue-900 font-bold">Show in Present View</Label>
+                            <p className="text-xs text-blue-600/70">Enable this to make this hotspot visible in the Present View section of the public site.</p>
+                          </div>
+                          <Switch
+                            checked={selectedHotspot.isPresent || false}
+                            onCheckedChange={(checked) => setSelectedHotspot({ ...selectedHotspot, isPresent: checked })}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     {/* Sthan Pothi Card */}
                     <Card className="border-slate-200">
                       <CardHeader className="pb-3 border-b border-slate-100 mb-4">
@@ -1992,7 +2126,12 @@ export default function TempleArchitectureAdmin() {
                         };
                         setPresentHotspots([...presentHotspots, newPresentHotspot]);
                         setPendingClickPosition(null);
-                        toast({ title: "Mapped", description: `Hotspot #${ah.number} mapped to photo.` });
+
+                        // User Request: Select the hotspot immediately after mapping
+                        setSelectedHotspot(newPresentHotspot);
+                        setCurrentStep('sthana-details');
+
+                        toast({ title: "Mapped", description: `Hotspot #${ah.number} mapped and selected.` });
                       }}
                       className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors text-left"
                     >
@@ -2010,8 +2149,35 @@ export default function TempleArchitectureAdmin() {
                 )}
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setPendingClickPosition(null)} className="rounded-xl">Cancel</Button>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button
+                onClick={() => {
+                  setPendingClickPosition(null);
+                  const newHotspot: Hotspot = {
+                    id: uuidv4(),
+                    x: pendingClickPosition!.x,
+                    y: pendingClickPosition!.y,
+                    imageIndex: adminImageIndex,
+                    title: "",
+                    description: "",
+                    significance: "",
+                    number: presentHotspots.length + 1,
+                    images: [],
+                    oldImages: [],
+                    leelas: [],
+                    sthanPothiDescription: "",
+                    sthanPothiTitle: "",
+                    generalDescriptionTitle: "",
+                    isPresent: true
+                  };
+                  setSelectedHotspot(newHotspot);
+                  setCurrentStep('sthana-details');
+                }}
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Create New Hotspot
+              </Button>
+              <Button variant="outline" onClick={() => setPendingClickPosition(null)} className="rounded-xl w-full sm:w-auto">Cancel</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -44,14 +44,14 @@ const Dashboard = () => {
 
                     {/* Literature - Top Left */}
                     <Link to="/literature" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <BookOpen className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     Literature
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -63,14 +63,14 @@ const Dashboard = () => {
 
                     {/* Digital Library - Top Right */}
                     <Link to="/e-library" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <Library className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     Digital Library
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -82,14 +82,14 @@ const Dashboard = () => {
 
                     {/* What's New - Bottom Left */}
                     <Link to="/whats-new" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <Sparkles className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     What's New
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -101,14 +101,14 @@ const Dashboard = () => {
 
                     {/* Jigyasa - Bottom Right */}
                     <Link to="/jigyasa" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#D97706]/20 bg-white shadow-[0_4px_20px_-2px_rgba(217,119,6,0.1)]">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-[#D97706]/10 rounded-lg text-[#D97706] border border-[#D97706]/20 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <BrainCircuit className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-blue-700">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     Jigyasa
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -120,13 +120,13 @@ const Dashboard = () => {
                 </div>
 
                 <Link to="/dashboard/sthana-vandan" className="block group">
-                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#D97706]/60 shadow-lg">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#B48A17]/60 shadow-lg">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="relative z-10 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm border border-white/20 shadow-sm">
-                                    <img src="/icons/glance/sthaan.svg" className="w-10 h-10 object-contain" alt="Sthaan Vandan Icon" />
+                                    <img src="/icons/glance/sthaan.svg" className="w-12 h-12 object-contain" alt="Sthaan Vandan Icon" />
                                 </div>
                                 <div>
                                     <h3 className="font-display font-bold text-xl">Sthaan Vandan</h3>
@@ -151,7 +151,7 @@ const Dashboard = () => {
 
                 {/* Raj Viharan Banner */}
                 <Link to="/raj-viharan" className="block group">
-                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#D97706]/60 shadow-lg">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#B48A17]/60 shadow-lg">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="relative z-10 flex items-center justify-between">
@@ -188,10 +188,10 @@ const Dashboard = () => {
                         <Link to="/help-center">
                             <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 rounded-full">
+                                    <div className="p-2 bg-[#FFF4D1] text-[#B48A17] border border-[#B48A17]/40 rounded-full">
                                         <HelpCircle className="w-5 h-5" />
                                     </div>
-                                    <span className="font-medium text-foreground">About Panchajanya</span>
+                                    <span className="font-heading font-bold text-amber-900 text-lg">About Panchajanya</span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                             </Button>
@@ -200,10 +200,10 @@ const Dashboard = () => {
                         <Link to="/profile">
                             <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 rounded-full">
+                                    <div className="p-2 bg-[#FFF4D1] text-[#B48A17] border border-[#B48A17]/40 rounded-full">
                                         <User className="w-5 h-5" />
                                     </div>
-                                    <span className="font-medium text-foreground">My Account</span>
+                                    <span className="font-heading font-bold text-amber-900 text-lg">My Account</span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                             </Button>

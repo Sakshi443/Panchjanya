@@ -21,6 +21,7 @@ export interface Hotspot {
     images: string[]; // Present day images
     oldImages?: string[]; // Historical images
     leelas?: Leela[]; // Stories associated with this location
+    isPresent?: boolean; // New: Whether this hotspot should appear in Present View
 }
 
 export interface DescriptionSection {
@@ -101,4 +102,6 @@ export interface YatraPlace {
     attendees?: string;
     route?: string;
     subRoute?: string;
+    locationLink?: string;
+    pinColor?: string;
 }

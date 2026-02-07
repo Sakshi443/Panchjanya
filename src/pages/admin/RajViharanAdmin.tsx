@@ -25,30 +25,30 @@ import {
     Save,
     X,
     Compass,
-    Clock,
-    Users,
-    Activity,
     GripVertical,
     Search,
     Edit3,
     Trash,
-    ChevronDown
+    ChevronDown,
+    Link,
+    Map
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { YatraPlace } from "@/types";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Fix for default marker icons in Leaflet with React
 // @ts-ignore
-delete L.Icon.Default.prototype._getIconUrl;
+/* delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
     iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
+}); */
 
 const ROUTES = [
     {
@@ -66,7 +66,7 @@ const ROUTES = [
     { id: "krishna", name: "Shri Krishna Prabhu Viharan" }
 ];
 
-function LocationPicker({ lat, lng, onSelect }: { lat?: number, lng?: number, onSelect: (lat: number, lng: number) => void }) {
+/* function LocationPicker({ lat, lng, onSelect }: { lat?: number, lng?: number, onSelect: (lat: number, lng: number) => void }) {
     function MapEvents() {
         useMapEvents({
             click(e) {
@@ -92,13 +92,14 @@ function LocationPicker({ lat, lng, onSelect }: { lat?: number, lng?: number, on
             {lat && lng && <Marker position={[lat, lng]} />}
         </MapContainer>
     );
-}
+} */
 
 export default function RajViharanAdmin() {
     const [places, setPlaces] = useState<YatraPlace[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPlace, setSelectedPlace] = useState<YatraPlace | null>(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [isSequenceExpanded, setIsSequenceExpanded] = useState(true);
     const { toast } = useToast();
 
     // Form state
@@ -111,10 +112,8 @@ export default function RajViharanAdmin() {
         status: "upcoming",
         route: "swami-complete",
         subRoute: "",
-        time: "",
-        attendees: "",
-        isLive: false,
         image: "",
+        locationLink: "",
         pinColor: "#D4AF37" // Default regal gold
     });
 
@@ -158,10 +157,9 @@ export default function RajViharanAdmin() {
             status: "upcoming",
             route: "swami-complete",
             subRoute: "",
-            time: "",
-            attendees: "",
-            isLive: false,
-            image: ""
+            image: "",
+            locationLink: "",
+            pinColor: "#D4AF37"
         });
         setIsEditing(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -245,6 +243,45 @@ export default function RajViharanAdmin() {
         }
     };
 
+    const handleDragEnd = async (result: DropResult) => {
+        if (!result.destination) return;
+
+        const sourceIndex = result.source.index;
+        const destinationIndex = result.destination.index;
+
+        if (sourceIndex === destinationIndex) return;
+
+        const reorderedPlaces = Array.from(places);
+        const [movedPlace] = reorderedPlaces.splice(sourceIndex, 1);
+        reorderedPlaces.splice(destinationIndex, 0, movedPlace);
+
+        // Optimistically update local state
+        setPlaces(reorderedPlaces);
+
+        try {
+            // Update sequences in Firestore
+            // We'll update the sequence of each place to its new index + 1
+            const updates = reorderedPlaces.map((place, index) => {
+                const newSequence = index + 1;
+                if (place.sequence !== newSequence) {
+                    return updateDoc(doc(db, "yatraPlaces", place.id), { sequence: newSequence });
+                }
+                return null;
+            }).filter(Boolean);
+
+            await Promise.all(updates);
+            toast({ title: "Reordered", description: "New sequence persisted successfully" });
+        } catch (error) {
+            console.error("Error persisting reorder:", error);
+            toast({
+                title: "Error",
+                description: "Failed to persist new sequence",
+                variant: "destructive"
+            });
+            // Optionally: Reload data from Firestore to revert optimistic state
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="space-y-6 pb-20">
@@ -319,6 +356,48 @@ export default function RajViharanAdmin() {
                                         />
                                     </div>
 
+                                    <div className="space-y-2">
+                                        <Label htmlFor="locationLink" className="flex items-center gap-2">
+                                            <Link className="w-4 h-4 text-blue-600" /> Google Maps Link
+                                        </Label>
+                                        <Input
+                                            id="locationLink"
+                                            value={formData.locationLink}
+                                            onChange={e => setFormData({ ...formData, locationLink: e.target.value })}
+                                            placeholder="Paste Google Maps URL here..."
+                                            className="h-11 shadow-sm"
+                                        />
+                                        <p className="text-[10px] text-slate-400">Publicly accessible link to the location.</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <Label className="flex items-center gap-2">
+                                            <Map className="w-4 h-4 text-blue-600" /> Internal Map Coordinates (Required)
+                                        </Label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Latitude</Label>
+                                                <Input
+                                                    type="number" step="any"
+                                                    className="h-11 shadow-sm"
+                                                    value={formData.latitude}
+                                                    onChange={e => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Longitude</Label>
+                                                <Input
+                                                    type="number" step="any"
+                                                    className="h-11 shadow-sm"
+                                                    value={formData.longitude}
+                                                    onChange={e => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Route</Label>
@@ -357,120 +436,51 @@ export default function RajViharanAdmin() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Status</Label>
-                                            <Select
-                                                value={formData.status}
-                                                onValueChange={v => setFormData({ ...formData, status: v as any })}
-                                            >
-                                                <SelectTrigger className="h-11 shadow-sm">
-                                                    <SelectValue placeholder="Select Status" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="visited">Visited</SelectItem>
-                                                    <SelectItem value="stayed">Stayed</SelectItem>
-                                                    <SelectItem value="revisited">Re-visited</SelectItem>
-                                                    <SelectItem value="current">Current Location</SelectItem>
-                                                    <SelectItem value="upcoming">Upcoming</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="time">Time/Day Label</Label>
-                                            <div className="relative">
-                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                <Input
-                                                    id="time"
-                                                    className="pl-9 h-11 shadow-sm"
-                                                    value={formData.time}
-                                                    onChange={e => setFormData({ ...formData, time: e.target.value })}
-                                                    placeholder="e.g., Day 1, 10:00 AM"
-                                                />
-                                            </div>
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label>Status</Label>
+                                        <Select
+                                            value={formData.status}
+                                            onValueChange={v => setFormData({ ...formData, status: v as any })}
+                                        >
+                                            <SelectTrigger className="h-11 shadow-sm">
+                                                <SelectValue placeholder="Select Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="visited">Visited</SelectItem>
+                                                <SelectItem value="stayed">Stayed</SelectItem>
+                                                <SelectItem value="revisited">Re-visited</SelectItem>
+                                                <SelectItem value="current">Current Location</SelectItem>
+                                                <SelectItem value="upcoming">Upcoming</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
-                                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 p-4 rounded-2xl border border-amber-100 bg-amber-50/10 shadow-sm">
-                                        <div className="flex items-center gap-3">
-                                            <Activity className="w-5 h-5 text-amber-600" />
-                                            <Label htmlFor="isLive" className="font-bold text-amber-900 cursor-pointer text-sm">Live Now</Label>
-                                            <input
-                                                type="checkbox"
-                                                id="isLive"
-                                                checked={formData.isLive}
-                                                onChange={e => setFormData({ ...formData, isLive: e.target.checked })}
-                                                className="w-5 h-5 accent-amber-600 cursor-pointer"
-                                            />
+                                    <div className="space-y-4 pt-4 mt-2 border-t border-slate-100">
+                                        <div className="flex items-center justify-between">
+                                            <Label className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: formData.pinColor || '#D4AF37' }} />
+                                                Map Pin Color
+                                            </Label>
+                                            <span className="text-[10px] text-slate-400 font-mono tracking-tighter uppercase">
+                                                {formData.pinColor}
+                                            </span>
                                         </div>
-                                        <div className="w-full md:flex-1 space-y-2">
-                                            <div className="relative">
-                                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                <Input
-                                                    id="attendees"
-                                                    className="pl-9 h-10 text-sm shadow-sm"
-                                                    disabled={!formData.isLive}
-                                                    value={formData.attendees}
-                                                    onChange={e => setFormData({ ...formData, attendees: e.target.value })}
-                                                    placeholder="Attendees count..."
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 p-4 rounded-2xl border border-blue-100 bg-blue-50/10 shadow-sm">
-                                        <Label className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: formData.pinColor || '#D4AF37' }} />
-                                            Map Pin Color
-                                        </Label>
-                                        <div className="flex flex-wrap gap-3">
+                                        <div className="flex flex-wrap items-center gap-3">
                                             {['#D4AF37', '#0038A8', '#E11D48', '#16A34A', '#7C3AED', '#EA580C'].map(color => (
                                                 <button
                                                     key={color}
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, pinColor: color })}
-                                                    className={`w-8 h-8 rounded-full border-2 transition-all ${formData.pinColor === color ? 'border-blue-600 scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                                                    className={`w-9 h-9 rounded-full border-2 transition-all ${formData.pinColor === color ? 'border-blue-600 scale-110 shadow-lg z-10' : 'border-transparent hover:scale-105'}`}
                                                     style={{ backgroundColor: color }}
                                                 />
                                             ))}
-                                            <Input
-                                                type="color"
-                                                value={formData.pinColor || '#D4AF37'}
-                                                onChange={e => setFormData({ ...formData, pinColor: e.target.value })}
-                                                className="w-12 h-8 p-0 border-none bg-transparent cursor-pointer"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-blue-600" /> Location Map (Click to set coordinates)
-                                        </Label>
-                                        <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                                            <LocationPicker
-                                                lat={formData.latitude}
-                                                lng={formData.longitude}
-                                                onSelect={(lat, lng) => setFormData({ ...formData, latitude: lat, longitude: lng })}
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 mt-4">
-                                            <div className="space-y-1.5">
-                                                <Label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Latitude</Label>
+                                            <div className="relative w-9 h-9 rounded-full border-2 border-slate-200 overflow-hidden hover:border-blue-400 transition-colors">
                                                 <Input
-                                                    type="number" step="any"
-                                                    className="h-9 text-xs shadow-sm"
-                                                    value={formData.latitude}
-                                                    onChange={e => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <Label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Longitude</Label>
-                                                <Input
-                                                    type="number" step="any"
-                                                    className="h-9 text-xs shadow-sm"
-                                                    value={formData.longitude}
-                                                    onChange={e => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
+                                                    type="color"
+                                                    value={formData.pinColor || '#D4AF37'}
+                                                    onChange={e => setFormData({ ...formData, pinColor: e.target.value })}
+                                                    className="absolute inset-[-10px] w-[200%] h-[200%] p-0 border-none bg-transparent cursor-pointer"
                                                 />
                                             </div>
                                         </div>
@@ -522,17 +532,6 @@ export default function RajViharanAdmin() {
                                     )}
                                 </CardContent>
                             </Card>
-
-                            <Card className="border-blue-100 bg-blue-50/20 shadow-sm">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                                        <Compass className="w-4 h-4" /> Tip
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="text-xs text-blue-700 leading-relaxed">
-                                    Setting a place as <strong>Current Location</strong> with the <strong>Live Now</strong> toggle enabled will show the pulsing live marker on the Raj Viharan map for all users.
-                                </CardContent>
-                            </Card>
                         </div>
                     </div>
                 ) : (
@@ -542,9 +541,9 @@ export default function RajViharanAdmin() {
                                 <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <div className="max-w-5xl mx-auto space-y-6">
                                 {/* Route List & Timeline */}
-                                <div className="lg:col-span-8 space-y-6">
+                                <div className="space-y-6">
                                     <div className="flex items-center justify-between mb-4">
                                         <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                                             Active Pilgrimage Routes
@@ -554,139 +553,134 @@ export default function RajViharanAdmin() {
 
                                     {/* Major Route Card (e.g., Mahanubhav Darshan Path) */}
                                     <Card className="rounded-3xl shadow-lg border-2 border-[#D4AF37]/30 overflow-hidden bg-white">
-                                        <div className="p-6 border-b border-slate-100 bg-[#0038A8]/5 flex items-center justify-between">
+                                        <div
+                                            className="p-3 border-b border-slate-100 bg-[#0038A8]/5 flex items-center justify-between cursor-pointer hover:bg-[#0038A8]/10 transition-colors"
+                                            onClick={() => setIsSequenceExpanded(!isSequenceExpanded)}
+                                        >
                                             <div>
-                                                <h3 className="text-xl font-bold text-[#0038A8]">Swami's Complete Journey</h3>
-                                                <p className="text-sm text-slate-500 font-medium">Managing Sequence for {places.length} Places</p>
+                                                <h3 className="text-base font-bold text-[#0038A8]">Swami's Complete Journey</h3>
+                                                <p className="text-[10px] text-slate-500 font-medium">Managing Sequence for {places.length} Places</p>
                                             </div>
-                                            <Button variant="ghost" size="icon" className="rounded-full text-slate-400">
-                                                <ChevronDown className="w-6 h-6" />
+                                            <Button variant="ghost" size="icon" className={`rounded-full text-slate-400 transition-transform duration-300 ${isSequenceExpanded ? 'rotate-180' : ''}`}>
+                                                <ChevronDown className="w-4 h-4" />
                                             </Button>
                                         </div>
 
-                                        <div className="p-8 relative">
-                                            {/* Timeline Line */}
-                                            <div className="absolute left-[43px] top-10 bottom-10 w-0.5 bg-slate-100 z-0" />
+                                        {isSequenceExpanded && (
+                                            <div className="p-3 md:p-4 relative">
+                                                {/* Timeline Line */}
+                                                <div className="absolute left-[35px] md:left-[39px] top-10 bottom-10 w-0.5 bg-slate-100 z-0" />
 
-                                            <div className="space-y-6 relative z-10">
-                                                {places.map((place, index) => (
-                                                    <div key={place.id} className="flex items-start gap-6 group">
-                                                        {/* Step Dot & Pin Color */}
-                                                        <div
-                                                            className="w-8 h-8 rounded-full border-4 border-white shadow-md ring-1 flex-shrink-0 z-10 mt-2 transition-transform group-hover:scale-110"
-                                                            style={{
-                                                                backgroundColor: (place as any).pinColor || '#D4AF37',
-                                                                boxShadow: `0 0 0 1px ${(place as any).pinColor || '#D4AF37'}`
-                                                            }}
-                                                        />
+                                                <DragDropContext onDragEnd={handleDragEnd}>
+                                                    <Droppable droppableId="yatra-places">
+                                                        {(provided) => (
+                                                            <div
+                                                                {...provided.droppableProps}
+                                                                ref={provided.innerRef}
+                                                                className="space-y-3 relative z-10"
+                                                            >
+                                                                {places.map((place, index) => (
+                                                                    <Draggable key={place.id} draggableId={place.id} index={index}>
+                                                                        {(provided, snapshot) => (
+                                                                            <div
+                                                                                ref={provided.innerRef}
+                                                                                {...provided.draggableProps}
+                                                                                className={`flex items-start gap-3 md:gap-4 group ${snapshot.isDragging ? 'opacity-70 scale-[1.02] rotate-1 transition-transform' : ''}`}
+                                                                            >
+                                                                                {/* Step Dot & Pin Color */}
+                                                                                <div
+                                                                                    className="w-8 h-8 rounded-full border-4 border-white shadow-md ring-1 flex-shrink-0 z-10 mt-2 transition-transform group-hover:scale-110 flex items-center justify-center text-[10px] font-bold text-white relative"
+                                                                                    style={{
+                                                                                        backgroundColor: (place as any).pinColor || '#D4AF37',
+                                                                                        boxShadow: `0 0 0 1px ${(place as any).pinColor || '#D4AF37'}`
+                                                                                    }}
+                                                                                >
+                                                                                    <span className="absolute -top-1 -right-1 bg-slate-800 text-white w-4 h-4 rounded-full flex items-center justify-center border border-white shadow-sm">
+                                                                                        {index + 1}
+                                                                                    </span>
+                                                                                </div>
 
-                                                        <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between gap-4 transition-all hover:bg-white hover:shadow-md hover:border-blue-200">
-                                                            <div className="flex items-center gap-4">
-                                                                <GripVertical className="w-5 h-5 text-slate-300 cursor-move" />
-                                                                <div className="w-20 h-16 rounded-xl bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
-                                                                    {place.image ? (
-                                                                        <img src={place.image} alt={place.name} className="w-full h-full object-cover" />
-                                                                    ) : (
-                                                                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300">
-                                                                            <MapPin className="w-6 h-6 opacity-30" />
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <div>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <p className="text-base font-bold text-slate-900">{place.name}</p>
-                                                                        {place.isLive && (
-                                                                            <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                                                                                <div className="flex-1 bg-slate-50 p-2 md:p-3 rounded-2xl border border-slate-100 flex items-center justify-between gap-2 md:gap-3 transition-all hover:bg-white hover:shadow-md hover:border-blue-200">
+                                                                                    <div className="flex items-center gap-3">
+                                                                                        <div {...provided.dragHandleProps} className="p-1 hover:bg-slate-100 rounded-lg cursor-grab active:cursor-grabbing transition-colors">
+                                                                                            <GripVertical className="w-4 h-4 text-slate-300 group-hover:text-blue-400" />
+                                                                                        </div>
+                                                                                        <div className="w-16 h-12 rounded-xl bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
+                                                                                            {place.image ? (
+                                                                                                <img src={place.image} alt={place.name} className="w-full h-full object-cover" />
+                                                                                            ) : (
+                                                                                                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300">
+                                                                                                    <MapPin className="w-5 h-5 opacity-30" />
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <p className="text-sm font-bold text-slate-900">{place.name}</p>
+                                                                                            </div>
+                                                                                            <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1 uppercase tracking-tighter">
+                                                                                                {place.status}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    <div className="flex items-center gap-1.5 md:gap-2">
+                                                                                        <div className="flex flex-col gap-0.5">
+                                                                                            <Button
+                                                                                                variant="ghost" size="icon" className="h-6 w-6 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                                                                                onClick={() => movePlace(index, 'up')}
+                                                                                                disabled={index === 0}
+                                                                                            >
+                                                                                                <ArrowUp className="w-3 h-3" />
+                                                                                            </Button>
+                                                                                            <Button
+                                                                                                variant="ghost" size="icon" className="h-6 w-6 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                                                                                onClick={() => movePlace(index, 'down')}
+                                                                                                disabled={index === places.length - 1}
+                                                                                            >
+                                                                                                <ArrowDown className="w-3 h-3" />
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                        <div className="h-8 w-px bg-slate-100 mx-1" />
+                                                                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(place)} className="w-8 h-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                                                                                            <Edit3 className="w-4 h-4" />
+                                                                                        </Button>
+                                                                                        <Button variant="ghost" size="icon" onClick={() => handleDelete(place.id)} className="w-8 h-8 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                                                                                            <Trash className="w-4 h-4" />
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
                                                                         )}
+                                                                    </Draggable>
+                                                                ))}
+                                                                {provided.placeholder}
+
+                                                                {/* Add Placeholder at end */}
+                                                                <div className="flex items-start gap-4 md:gap-6 pt-1 group cursor-pointer" onClick={handleAddNew}>
+                                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-dashed border-slate-300 flex-shrink-0 flex items-center justify-center group-hover:border-blue-400 group-hover:bg-blue-50 transition-colors">
+                                                                        <Plus className="w-4 h-4 text-slate-300 group-hover:text-blue-500" />
                                                                     </div>
-                                                                    <p className="text-xs text-slate-400 font-medium flex items-center gap-1 uppercase tracking-tighter">
-                                                                        <Clock className="w-3 h-3" /> {place.time || "No time set"} • {place.status}
-                                                                    </p>
+                                                                    <div className="flex-1 bg-white border-2 border-dashed border-slate-200 p-2 md:p-3 rounded-2xl flex items-center gap-3 text-slate-400 font-medium group-hover:border-blue-200 group-hover:text-blue-500 transition-colors" style={{ marginLeft: '12px' }}>
+                                                                        <Search className="w-4 h-4 flex-shrink-0" />
+                                                                        <span className="text-[13px]">Add new pilgrimage point to the sequence...</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="flex flex-col gap-1">
-                                                                    <Button
-                                                                        variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"
-                                                                        onClick={() => movePlace(index, 'up')}
-                                                                        disabled={index === 0}
-                                                                    >
-                                                                        <ArrowUp className="w-4 h-4" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"
-                                                                        onClick={() => movePlace(index, 'down')}
-                                                                        disabled={index === places.length - 1}
-                                                                    >
-                                                                        <ArrowDown className="w-4 h-4" />
-                                                                    </Button>
-                                                                </div>
-                                                                <div className="h-10 w-px bg-slate-100 mx-2" />
-                                                                <Button variant="ghost" size="icon" onClick={() => handleEdit(place)} className="w-9 h-9 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                                                                    <Edit3 className="w-5 h-5" />
-                                                                </Button>
-                                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(place.id)} className="w-9 h-9 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
-                                                                    <Trash className="w-5 h-5" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-
-                                                {/* Add Placeholder at end */}
-                                                <div className="flex items-start gap-6 pt-4 group cursor-pointer" onClick={handleAddNew}>
-                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-dashed border-slate-300 flex-shrink-0 flex items-center justify-center group-hover:border-blue-400 group-hover:bg-blue-50 transition-colors">
-                                                        <Plus className="w-4 h-4 text-slate-300 group-hover:text-blue-500" />
-                                                    </div>
-                                                    <div className="flex-1 bg-white border-2 border-dashed border-slate-200 p-4 rounded-2xl flex items-center gap-3 text-slate-400 font-medium group-hover:border-blue-200 group-hover:text-blue-500 transition-colors">
-                                                        <Search className="w-5 h-5" />
-                                                        <span>Add new pilgrimage point to the sequence...</span>
-                                                    </div>
-                                                </div>
+                                                        )}
+                                                    </Droppable>
+                                                </DragDropContext>
                                             </div>
-                                        </div>
+                                        )}
 
-                                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-4">
-                                            <Button className="flex-1 bg-[#0038A8] hover:bg-[#002B82] text-white py-6 rounded-2xl text-base font-bold shadow-lg shadow-blue-900/20 shadow-lg">
+                                        <div className="p-3 md:p-4 bg-slate-50 border-t border-slate-100 flex gap-2 md:gap-3">
+                                            <Button className="flex-1 bg-[#0038A8] hover:bg-[#002B82] text-white py-3 md:py-4 rounded-xl text-xs md:text-sm font-bold shadow-lg shadow-blue-900/10 transition-all hover:-translate-y-0.5">
                                                 SAVE SEQUENCE CHANGES
                                             </Button>
-                                            <Button variant="outline" className="px-8 py-6 rounded-2xl border-slate-200 font-bold text-slate-500 bg-white">
+                                            <Button variant="outline" className="px-3 md:px-6 py-3 md:py-4 rounded-xl border-slate-200 font-bold text-slate-500 bg-white hover:bg-slate-50 text-xs md:text-sm">
                                                 CANCEL
                                             </Button>
                                         </div>
-                                    </Card>
-                                </div>
-
-                                {/* Quick Stats / Secondary Lists */}
-                                <div className="lg:col-span-4 space-y-6">
-                                    <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500" />
-                                        <div className="relative z-10 flex items-center gap-4 mb-4">
-                                            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl">
-                                                <Activity className="w-6 h-6" />
-                                            </div>
-                                            <h4 className="font-bold text-slate-900">Live Status</h4>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {places.filter(p => p.isLive).length > 0 ? (
-                                                places.filter(p => p.isLive).map(p => (
-                                                    <div key={p.id} className="flex items-center justify-between p-3 bg-red-50 border border-red-100 rounded-xl">
-                                                        <span className="text-sm font-bold text-red-700">{p.name}</span>
-                                                        <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-xs text-slate-400 italic">No locations are currently live.</p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <Card className="rounded-[2.5rem] border-slate-200 shadow-sm overflow-hidden h-[300px] flex flex-col items-center justify-center p-8 bg-slate-50/50">
-                                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md mb-4">
-                                            <Compass className="w-8 h-8 text-blue-300" />
-                                        </div>
-                                        <h4 className="font-bold text-slate-400 text-center px-4">Secondary Routes Management coming soon</h4>
                                     </Card>
                                 </div>
                             </div>

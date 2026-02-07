@@ -107,7 +107,7 @@ const AdminCsvUpload = () => {
         For `sub_temples_json`, provide JSON array like:
         <br />
         <code>
-          ["name":"Sub1","description":"Desc","sthanaNo":1,"image":"url","location":""lat":0,"lng":0"]
+          {'[{"name":"Sub1","description":"Desc","sthanaNo":1,"image":"url","location":{"lat":0,"lng":0}}]'}
         </code>
       </div>
     </div>

@@ -45,37 +45,58 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      // 1. Fetch Temples
-      const templeSnap = await getDocs(collection(db, "temples"));
-      const templeData = templeSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
-      setTemples(templeData);
-
-      // 2. Fetch Users Count
+      // 1. Fetch Stats (User count and Recent Activity)
       try {
-        // Note: Standard Firestore client SDK doesn't support 'count()' aggregation directly without cloud functions 
-        // or reading all documents (which is costly). 
-        // For now, we'll try basic getDocs if collection size is small, or just mock it if it fails/is too big.
-        // Ideally, use a counter document or cloud function.
-        const userSnap = await getDocs(collection(db, "users"));
-        setUserCount(userSnap.size);
-      } catch (e) {
-        console.warn("Could not fetch users count (permissions or non-existent).", e);
-        setUserCount(124); // Fallback mock
+        const statsRes = await fetch("/api/admin/stats");
+        const statsContentType = statsRes.headers.get("content-type");
+
+        if (statsRes.ok && statsContentType?.includes("application/json")) {
+          const statsData = await statsRes.json();
+          setUserCount(statsData.userCount || 0);
+          setRecentActivity(statsData.recentActivity || []);
+        } else {
+          // Fallback to client-side Firestore for local development
+          console.warn("Stats API not active locally. Using Client SDK.");
+          const { collection, getDocs, query, orderBy, limit } = await import("firebase/firestore");
+          const { db } = await import("@/firebase");
+
+          const userSnap = await getDocs(collection(db, "users"));
+          setUserCount(userSnap.size);
+
+          const templeSnap = await getDocs(query(collection(db, "temples"), orderBy("createdAt", "desc"), limit(5)));
+          const activity = templeSnap.docs.map(doc => {
+            const data = doc.data();
+            return {
+              type: "New Sthana",
+              message: `Added '${data.name}' to ${data.district || "Directory"}`,
+              time: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+              color: "bg-emerald-500"
+            };
+          });
+          setRecentActivity(activity);
+        }
+      } catch (err) {
+        console.warn("Stats API failed, using fallback:", err);
       }
 
-      // 3. Generate Recent Activity from Temples
-      const sortedRecent = [...templeData].sort((a: any, b: any) => {
-        const tA = a.createdAt?.seconds || 0;
-        const tB = b.createdAt?.seconds || 0;
-        return tB - tA;
-      }).slice(0, 5);
+      // 2. Fetch Temples
+      try {
+        const templesRes = await fetch("/api/admin/temples");
+        const templesContentType = templesRes.headers.get("content-type");
 
-      setRecentActivity(sortedRecent.map(t => ({
-        type: "New Sthana",
-        message: `Added '${t.name}' to ${t.district || "Directory"}`,
-        time: t.createdAt ? new Date(t.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
-        color: "bg-emerald-500"
-      })));
+        if (templesRes.ok && templesContentType?.includes("application/json")) {
+          const templeData = await templesRes.json();
+          setTemples(templeData);
+        } else {
+          // Fallback for temples
+          const { collection, getDocs } = await import("firebase/firestore");
+          const snapshot = await getDocs(collection(db, "temples"));
+          const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setTemples(data);
+        }
+      } catch (err) {
+        console.warn("Temples API failed, using fallback:", err);
+      }
 
     } catch (error: any) {
       console.error("Error fetching dashboard data:", error);
@@ -88,10 +109,6 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
     fetchData();
@@ -226,6 +243,36 @@ export default function AdminDashboard() {
                 className="w-full h-12 bg-[#1E3A8A] hover:bg-blue-800 text-white font-bold rounded-xl flex items-center justify-center gap-2"
               >
                 Manage Media <PlayCircle className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Raj Viharan */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-6 hover:shadow-xl hover:shadow-[#1E3A8A]/5 transition-all">
+              <div className="flex items-start justify-between">
+                <div className="w-14 h-14 bg-[#1E3A8A]/10 rounded-2xl flex items-center justify-center text-[#1E3A8A]">
+                  <MapPin className="w-8 h-8" />
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500 font-bold uppercase">Dynamic Maps</p>
+                  <p className="text-lg font-bold text-slate-900">Interactive Flows</p>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">Raj Viharan</h3>
+                <p className="text-sm text-slate-500 mt-1">Manage interactive Raj Viharan sequences, timelines, hotspots, and media mapping for immersive navigation.</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <p className="text-[10px] text-slate-400 font-bold uppercase mb-2">Recent Activity</p>
+                <div className="flex items-center gap-2 text-xs text-slate-700">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <span>New timeline sequence mapped for Central region.</span>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate("/admin/raj-viharan")}
+                className="w-full h-12 bg-[#1E3A8A] hover:bg-blue-800 text-white font-bold rounded-xl flex items-center justify-center gap-2"
+              >
+                Manage Raj Viharan <MapPin className="w-4 h-4" />
               </Button>
             </div>
           </div>

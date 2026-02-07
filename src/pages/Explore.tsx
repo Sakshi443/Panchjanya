@@ -514,8 +514,8 @@ const Explore = () => {
             {/* Full Screen Map */}
             <div className="absolute inset-0 z-0">
                 <MapContainer
-                    center={[19.7515, 75.7139]} // Maharashtra Center
-                    zoom={7}
+                    center={[20.5937, 78.9629]} // India Center
+                    zoom={5}
                     style={{ height: "100%", width: "100%" }}
                     zoomControl={false}
                     attributionControl={false}

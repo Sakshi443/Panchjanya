@@ -40,32 +40,45 @@ export default function SthanaDirectory() {
     const navigate = useNavigate();
     const { toast } = useToast();
 
-    // 1. Realtime Data Fetching
-    useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, "temples"),
-            (snapshot) => {
-                const data = snapshot.docs.map((d) => ({
-                    id: d.id,
-                    ...d.data(),
-                    // Ensure createdAt is handled safely
-                    createdAtDate: d.data().createdAt ? new Date(d.data().createdAt.seconds * 1000) : new Date()
-                }));
-                // Sort by newest first
-                setTemples(data.sort((a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime()));
-                setLoading(false);
-            },
-            (error) => {
-                console.error("Error fetching temples:", error);
-                toast({
-                    title: "Error",
-                    description: "Failed to sync directory data.",
-                    variant: "destructive",
-                });
-                setLoading(false);
-            }
-        );
+    // 1. Data Fetching
+    const fetchTemples = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("/api/admin/temples");
+            const contentType = response.headers.get("content-type");
 
-        return () => unsubscribe();
+            let data;
+            if (response.ok && contentType?.includes("application/json")) {
+                data = await response.json();
+            } else {
+                // Fallback for local development
+                console.warn("Directory API not active locally. Using Client SDK.");
+                const { collection, getDocs } = await import("firebase/firestore");
+                const snapshot = await getDocs(collection(db, "temples"));
+                data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+
+            // Format and Sort
+            const formatted = data.map((t: any) => ({
+                ...t,
+                createdAtDate: t.createdAt ? (t.createdAt._seconds ? new Date(t.createdAt._seconds * 1000) : new Date(t.createdAt.seconds * 1000)) : new Date()
+            })).sort((a: any, b: any) => b.createdAtDate.getTime() - a.createdAtDate.getTime());
+
+            setTemples(formatted);
+        } catch (error) {
+            console.error("Error fetching temples:", error);
+            toast({
+                title: "Error",
+                description: "Failed to sync directory data.",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchTemples();
     }, []);
 
     // 2. Delete Handler
@@ -73,8 +86,21 @@ export default function SthanaDirectory() {
         if (!confirm(`Are you sure you want to delete '${name}'? This action cannot be undone.`)) return;
 
         try {
-            await deleteDoc(doc(db, "temples", id));
-            toast({ title: "Deleted", description: "Sthana record removed successfully." });
+            const response = await fetch(`/api/admin/temples?id=${id}`, {
+                method: 'DELETE'
+            });
+            const contentType = response.headers.get("content-type");
+
+            if (response.ok && contentType?.includes("application/json")) {
+                toast({ title: "Deleted", description: "Sthana record removed successfully." });
+                fetchTemples();
+            } else {
+                // Fallback for local development
+                const { doc, deleteDoc } = await import("firebase/firestore");
+                await deleteDoc(doc(db, "temples", id));
+                toast({ title: "Deleted", description: "Sthana removed (via Client SDK fallback)." });
+                fetchTemples();
+            }
         } catch (error) {
             toast({ title: "Error", description: "Failed to delete item.", variant: "destructive" });
         }

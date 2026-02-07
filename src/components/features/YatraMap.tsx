@@ -10,40 +10,48 @@ export interface YatraLocation {
     longitude: number;
     sequence: number;
     status: "completed" | "current" | "upcoming";
+    pinColor?: string;
+    locationLink?: string;
 }
 
-const createNumberedMarker = (sequence: number, status: string) => {
-    // Colors based on status
-    const bgColor = status === "current" ? "#F59E0B" : // Amber-500
-        status === "completed" ? "#4F46E5" : // Indigo-600
-            "#10B981"; // Emerald-500 (Upcoming) inside white
+const createNumberedMarker = (sequence: number, status: string, isHighlighted: boolean = false, customColor?: string) => {
+    // Base color selection
+    const baseColor = customColor || (
+        status === "current" ? "#F59E0B" : // Amber-500
+            status === "completed" ? "#4F46E5" : // Indigo-600
+                "#10B981" // Emerald-500 (Upcoming)
+    );
 
-    const borderColor = status === "upcoming" ? "#10B981" : "white";
-    const textColor = status === "upcoming" ? "#10B981" : "white";
-    const mainBg = status === "upcoming" ? "white" : bgColor;
+    // Visual configuration
+    const isUpcoming = status === "upcoming";
+    const mainBg = isHighlighted ? "#EF4444" : (isUpcoming ? "white" : baseColor);
+    const borderColor = isHighlighted ? "white" : (isUpcoming ? baseColor : "white");
+    const textColor = isHighlighted ? "white" : (isUpcoming ? baseColor : "white");
+    const pulseClass = isHighlighted ? "animate-pulse" : "";
 
     return L.divIcon({
-        className: "custom-number-marker",
+        className: `custom-number-marker ${isHighlighted ? 'active-marker' : ''}`,
         html: `
-            <div style="
-                width: 32px;
-                height: 32px;
+            <div class="${pulseClass}" style="
+                width: ${isHighlighted ? '42px' : '32px'};
+                height: ${isHighlighted ? '42px' : '32px'};
                 background-color: ${mainBg};
-                border: 2px solid ${borderColor};
+                border: 3px solid ${borderColor};
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 color: ${textColor};
                 font-weight: bold;
-                font-size: 14px;
-                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                font-size: ${isHighlighted ? '18px' : '14px'};
+                box-shadow: 0 0 15px rgba(0,0,0,0.3);
+                transition: all 0.3s ease;
             ">
                 ${sequence}
             </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [isHighlighted ? 42 : 32, isHighlighted ? 42 : 32],
+        iconAnchor: [isHighlighted ? 21 : 16, isHighlighted ? 21 : 16],
     });
 };
 
@@ -64,6 +72,24 @@ function MapBounds({ locations }: { locations: YatraLocation[] }) {
 
 interface YatraMapProps {
     locations: YatraLocation[];
+    highlightedId?: string;
+}
+
+function MapCenter({ locations, highlightedId }: { locations: YatraLocation[], highlightedId?: string }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (highlightedId) {
+            const loc = locations.find(l => l.id === highlightedId);
+            if (loc) {
+                map.flyTo([loc.latitude, loc.longitude], Math.max(map.getZoom(), 12), {
+                    duration: 1.5
+                });
+            }
+        }
+    }, [highlightedId, locations, map]);
+
+    return null;
 }
 
 function RouteArrows({ locations }: { locations: YatraLocation[] }) {
@@ -137,8 +163,8 @@ function RouteArrows({ locations }: { locations: YatraLocation[] }) {
                         html: `
                             <div style="
                                 transform: rotate(${angle}deg);
-                                width: 20px;
-                                height: 20px;
+                                width: 12px;
+                                height: 12px;
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
@@ -146,9 +172,10 @@ function RouteArrows({ locations }: { locations: YatraLocation[] }) {
                                 <img src="/icons/left-arrow.png" style="width: 100%; height: auto; opacity: 1;" />
                             </div>
                         `,
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10],
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6],
                     })}
+                    zIndexOffset={-500}
                 />
             );
         }
@@ -157,7 +184,7 @@ function RouteArrows({ locations }: { locations: YatraLocation[] }) {
     return <>{arrows}</>;
 }
 
-export default function YatraMap({ locations }: YatraMapProps) {
+export default function YatraMap({ locations, highlightedId }: YatraMapProps) {
     return (
         <div className="w-full h-full relative z-0">
             <MapContainer
@@ -174,6 +201,7 @@ export default function YatraMap({ locations }: YatraMapProps) {
                 />
 
                 <MapBounds locations={locations} />
+                <MapCenter locations={locations} highlightedId={highlightedId} />
                 <RouteArrows locations={locations} />
 
                 {/* Markers */}
@@ -181,7 +209,8 @@ export default function YatraMap({ locations }: YatraMapProps) {
                     <Marker
                         key={loc.id}
                         position={[loc.latitude, loc.longitude]}
-                        icon={createNumberedMarker(loc.sequence, loc.status)}
+                        icon={createNumberedMarker(loc.sequence, loc.status, loc.id === highlightedId, loc.pinColor)}
+                        zIndexOffset={loc.id === highlightedId ? 2000 : 1000}
                     >
                         <Tooltip direction="top" offset={[0, -20]} opacity={1}>
                             <span className="font-bold text-xs">{loc.name}</span>
