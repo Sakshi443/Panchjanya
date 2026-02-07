@@ -102,49 +102,65 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
   const defaultCenter: [number, number] = [20.5937, 78.9629]; // India Center
   const [currentZoom, setCurrentZoom] = useState(5);
 
-  // Process temples to add offset to overlapping coordinates
+  // Smart Marker layout that prevents overlap
   const markersToRender = useMemo(() => {
-    const locMap = new Map<string, number>();
+    // 1. Define visual threshold in degrees (approx 40px visual overlap)
+    // 360 degrees / 2^zoom * (pixels / 256 tile size)
+    const threshold = (360 / Math.pow(2, currentZoom)) * (40 / 256);
 
-    // Group roughly by location to find overlaps
-    temples.forEach(t => {
-      if (t.latitude && t.longitude) {
-        const key = `${t.latitude.toFixed(4)},${t.longitude.toFixed(4)}`;
-        locMap.set(key, (locMap.get(key) || 0) + 1);
+    const processed: (Temple & { renderLat: number, renderLng: number })[] = [];
+    const unprocessed = temples.filter(t => t.latitude && t.longitude);
+
+    // 2. Simple greedy grouping
+    const usedIndices = new Set<number>();
+
+    unprocessed.forEach((base, i) => {
+      if (usedIndices.has(i)) return; // Already grouped
+      usedIndices.add(i);
+
+      const group = [base];
+
+      // Find neighbors
+      unprocessed.forEach((other, j) => {
+        if (i === j || usedIndices.has(j)) return;
+
+        const dLat = Math.abs(base.latitude - other.latitude);
+        const dLng = Math.abs(base.longitude - other.longitude);
+
+        // Simple box check is sufficient and faster than Euclidian for this
+        if (dLat < threshold && dLng < threshold) {
+          group.push(other);
+          usedIndices.add(j);
+        }
+      });
+
+      // 3. Process Group
+      if (group.length === 1) {
+        processed.push({ ...group[0], renderLat: group[0].latitude, renderLng: group[0].longitude });
+      } else {
+        // Calculate Centroid
+        const centerLat = group.reduce((sum, t) => sum + t.latitude, 0) / group.length;
+        const centerLng = group.reduce((sum, t) => sum + t.longitude, 0) / group.length;
+
+        // Distribute in circle
+        // Radius scales with threshold to ensure separation
+        const radius = threshold * 0.6;
+        const step = (2 * Math.PI) / group.length;
+
+        group.forEach((t, idx) => {
+          const angle = idx * step;
+          // Add spiral effect for larger groups to avoid perfect circles overlap? 
+          // Simple circle is fine for < 10 items usually.
+          processed.push({
+            ...t,
+            renderLat: centerLat + radius * Math.cos(angle),
+            renderLng: centerLng + radius * Math.sin(angle)
+          });
+        });
       }
     });
 
-    const currentCounts = new Map<string, number>();
-
-    return temples.map(t => {
-      if (!t.latitude || !t.longitude) return null;
-
-      const key = `${t.latitude.toFixed(4)},${t.longitude.toFixed(4)}`;
-      const totalAtLoc = locMap.get(key) || 1;
-
-      let finalLat = t.latitude;
-      let finalLng = t.longitude;
-
-      if (totalAtLoc > 1) {
-        const index = currentCounts.get(key) || 0;
-        currentCounts.set(key, index + 1);
-
-        // Dynamic Jitter: Increases as you zoom out (lower zoom), Decreases as you zoom in (higher zoom)
-        // Base radius at zoom 12 is ~0.002 degrees (~200m).
-        // Formula keeps visual spread roughly constant in pixels.
-        const baseRadius = 0.002;
-        const zoomFactor = Math.pow(2, 12 - currentZoom);
-        const radius = baseRadius * zoomFactor;
-
-        // Spread in a circle
-        const angle = (index / totalAtLoc) * 2 * Math.PI;
-
-        finalLat = t.latitude + radius * Math.cos(angle);
-        finalLng = t.longitude + radius * Math.sin(angle);
-      }
-
-      return { ...t, renderLat: finalLat, renderLng: finalLng };
-    }).filter(Boolean) as (Temple & { renderLat: number, renderLng: number })[];
+    return processed;
   }, [temples, currentZoom]);
 
   return (
