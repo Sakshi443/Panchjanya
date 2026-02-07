@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -274,34 +275,45 @@ export default function TempleArchitectureAdmin() {
           ? archHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
           : [...archHotspots, selectedHotspot];
 
+        // Optimistic Update
         setArchHotspots(updatedArch);
 
-        // Try generic Admin API first
-        const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hotspots: sanitizeData(updatedArch) })
-        });
+        try {
+          // Try generic Admin API first
+          const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hotspots: sanitizeData(updatedArch) })
+          });
 
-        if (!res.ok) {
-          throw new Error("API write failed.");
+          if (!res.ok) throw new Error("API write failed.");
+        } catch (apiError) {
+          console.warn("API failed, falling back to Client SDK...", apiError);
+          const docRef = doc(db, "temples", id);
+          await updateDoc(docRef, { hotspots: sanitizeData(updatedArch) });
         }
+
       } else {
         const updatedPresent = presentHotspots.some((h) => h.id === selectedHotspot.id)
           ? presentHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
           : [...presentHotspots, selectedHotspot];
 
+        // Optimistic Update
         setPresentHotspots(updatedPresent);
 
-        // Try generic Admin API with subcollection support
-        const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(sanitizeData(selectedHotspot))
-        });
+        try {
+          // Try generic Admin API with subcollection support
+          const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeData(selectedHotspot))
+          });
 
-        if (!res.ok) {
-          throw new Error("API subcollection write failed.");
+          if (!res.ok) throw new Error("API subcollection write failed.");
+        } catch (apiError) {
+          console.warn("API subcollection failed, falling back to Client SDK...", apiError);
+          const subDocRef = doc(db, "temples", id, "present_hotspots", selectedHotspot.id);
+          await setDoc(subDocRef, sanitizeData(selectedHotspot), { merge: true });
         }
       }
 
@@ -313,10 +325,10 @@ export default function TempleArchitectureAdmin() {
       setCurrentStep('architecture-view');
       setSelectedHotspot(null);
     } catch (error) {
-      console.error("Error saving hotspot:", error);
+      console.error("Critical Error saving hotspot (API & SDK both failed):", error);
       toast({
         title: "Error",
-        description: "Failed to save hotspot",
+        description: "Failed to save hotspot. Check console.",
         variant: "destructive",
       });
     }
@@ -2167,11 +2179,11 @@ export default function TempleArchitectureAdmin() {
           <DialogContent className="max-w-md rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">Map Architectural Hotspot</DialogTitle>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              <p className="text-sm text-slate-500 font-medium">
+              <DialogDescription className="text-sm text-slate-500 font-medium pt-2">
                 Choose which hotspot from the architectural view you want to map to this location:
-              </p>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-2 space-y-4">
               <div className="grid grid-cols-1 gap-2 max-h-[40vh] overflow-y-auto pr-2">
                 {archHotspots
                   .filter(ah => !presentHotspots.some(ph => ph.id === ah.id && (ph.imageIndex || 0) === adminImageIndex))
