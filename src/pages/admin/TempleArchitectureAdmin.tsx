@@ -211,11 +211,16 @@ export default function TempleArchitectureAdmin() {
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-    if (target.tagName !== "IMG") return;
+
+    // Allow clicking on the image OR the container div (for easier hitting)
+    // But ensure we calculate position relative to the IMAGE if possible, or the container if not.
+    if (target.tagName !== "IMG" && !target.closest(".relative.cursor-crosshair")) return;
 
     const rect = target.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    console.log("Image Clicked:", { x, y, viewType });
 
 
     if (viewType === 'present' && archHotspots.length > 0) {
@@ -264,9 +269,8 @@ export default function TempleArchitectureAdmin() {
 
     // Helper to remove undefined values
     const sanitizeData = (data: any): any => {
-      return JSON.parse(JSON.stringify(data, (key, value) => {
-        return value === undefined ? null : value;
-      }));
+      // JSON.stringify automatically removes undefined values from objects
+      return JSON.parse(JSON.stringify(data));
     };
 
     try {
