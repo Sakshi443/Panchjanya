@@ -1,7 +1,8 @@
-import { MapContainer, TileLayer, Marker, useMap, Tooltip, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, Tooltip } from "react-leaflet";
 import L from "leaflet";
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Temple } from "@/types";
+import MarkerClusterGroup from 'react-leaflet-cluster';
 
 // Spiritual Marker Generator
 const createCustomMarker = (isActive: boolean) => {
@@ -45,6 +46,31 @@ const createCustomMarker = (isActive: boolean) => {
   });
 };
 
+const createClusterCustomIcon = function (cluster: any) {
+  return L.divIcon({
+    html: `
+      <div style="
+        width: 40px;
+        height: 40px;
+        background-color: #C04000;
+        color: white;
+        border: 3px solid #ffedd5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-family: serif;
+        font-size: 14px;
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      ">
+        ${cluster.getChildCount()}
+      </div>`,
+    className: 'custom-marker-cluster',
+    iconSize: L.point(40, 40, true),
+  });
+}
+
 interface MapWithMarkersProps {
   temples: Temple[];
   onTempleClick: (id: string) => void;
@@ -87,81 +113,9 @@ function MapBoundsFitter({ temples, selectedTempleId }: { temples: Temple[], sel
 
   return null;
 }
-// Helper to detect overlapping coordinates and apply jitter feature
-
-function MapZoomListener({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
-  const map = useMapEvents({
-    zoomend: () => {
-      onZoomChange(map.getZoom());
-    },
-  });
-  return null;
-}
 
 export default function MapWithMarkers({ temples, onTempleClick, selectedTempleId }: MapWithMarkersProps) {
   const defaultCenter: [number, number] = [20.5937, 78.9629]; // India Center
-  const [currentZoom, setCurrentZoom] = useState(5);
-
-  // Smart Marker layout that prevents overlap
-  const markersToRender = useMemo(() => {
-    // 1. Define visual threshold in degrees (approx 40px visual overlap)
-    // 360 degrees / 2^zoom * (pixels / 256 tile size)
-    const threshold = (360 / Math.pow(2, currentZoom)) * (40 / 256);
-
-    const processed: (Temple & { renderLat: number, renderLng: number })[] = [];
-    const unprocessed = temples.filter(t => t.latitude && t.longitude);
-
-    // 2. Simple greedy grouping
-    const usedIndices = new Set<number>();
-
-    unprocessed.forEach((base, i) => {
-      if (usedIndices.has(i)) return; // Already grouped
-      usedIndices.add(i);
-
-      const group = [base];
-
-      // Find neighbors
-      unprocessed.forEach((other, j) => {
-        if (i === j || usedIndices.has(j)) return;
-
-        const dLat = Math.abs(base.latitude - other.latitude);
-        const dLng = Math.abs(base.longitude - other.longitude);
-
-        // Simple box check is sufficient and faster than Euclidian for this
-        if (dLat < threshold && dLng < threshold) {
-          group.push(other);
-          usedIndices.add(j);
-        }
-      });
-
-      // 3. Process Group
-      if (group.length === 1) {
-        processed.push({ ...group[0], renderLat: group[0].latitude, renderLng: group[0].longitude });
-      } else {
-        // Calculate Centroid
-        const centerLat = group.reduce((sum, t) => sum + t.latitude, 0) / group.length;
-        const centerLng = group.reduce((sum, t) => sum + t.longitude, 0) / group.length;
-
-        // Distribute in circle
-        // Radius scales with threshold to ensure separation
-        const radius = threshold * 0.6;
-        const step = (2 * Math.PI) / group.length;
-
-        group.forEach((t, idx) => {
-          const angle = idx * step;
-          // Add spiral effect for larger groups to avoid perfect circles overlap? 
-          // Simple circle is fine for < 10 items usually.
-          processed.push({
-            ...t,
-            renderLat: centerLat + radius * Math.cos(angle),
-            renderLng: centerLng + radius * Math.sin(angle)
-          });
-        });
-      }
-    });
-
-    return processed;
-  }, [temples, currentZoom]);
 
   return (
     <div className="w-full h-full z-0 relative">
@@ -178,31 +132,40 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
         />
 
         <MapBoundsFitter temples={temples} selectedTempleId={selectedTempleId} />
-        <MapZoomListener onZoomChange={setCurrentZoom} />
 
-        {markersToRender.map((temple) => (
-          <Marker
-            key={temple.id}
-            position={[temple.renderLat, temple.renderLng]}
-            icon={createCustomMarker(selectedTempleId === temple.id)}
-            eventHandlers={{
-              click: () => onTempleClick(temple.id),
-            }}
-          >
-            <Tooltip
-              direction="top"
-              offset={[0, -32]}
-              className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
-            >
-              <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">
-                <p className="font-heading text-primary font-bold text-sm">{temple.name}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                  {temple.district} District
-                </p>
-              </div>
-            </Tooltip>
-          </Marker>
-        ))}
+        <MarkerClusterGroup
+          chunkedLoading
+          iconCreateFunction={createClusterCustomIcon}
+          maxClusterRadius={40} // Default is 80, lower means smaller clusters (more detailed)
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+        >
+          {temples.map((temple) =>
+            temple.latitude && temple.longitude ? (
+              <Marker
+                key={temple.id}
+                position={[temple.latitude, temple.longitude]}
+                icon={createCustomMarker(selectedTempleId === temple.id)}
+                eventHandlers={{
+                  click: () => onTempleClick(temple.id),
+                }}
+              >
+                <Tooltip
+                  direction="top"
+                  offset={[0, -32]}
+                  className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
+                >
+                  <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">
+                    <p className="font-heading text-primary font-bold text-sm">{temple.name}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                      {temple.district} District
+                    </p>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ) : null
+          )}
+        </MarkerClusterGroup>
       </MapContainer>
     </div>
   );
