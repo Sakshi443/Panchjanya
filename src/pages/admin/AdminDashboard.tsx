@@ -42,10 +42,10 @@ export default function AdminDashboard() {
   const { user } = useAuth();
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      // 1. Fetch Stats (User count and Recent Activity)
+    // 1. Fetch Stats (User count and Recent Activity)
+    try {
       try {
         const statsRes = await fetch("/api/admin/stats");
         const statsContentType = statsRes.headers.get("content-type");
@@ -55,14 +55,15 @@ export default function AdminDashboard() {
           setUserCount(statsData.userCount || 0);
           setRecentActivity(statsData.recentActivity || []);
         } else {
-          // Fallback to client-side Firestore for local development
-          console.warn("Stats API not active locally. Using Client SDK.");
+          // Fallback to client-side Firestore
+          console.warn("Stats API failed or not active. Using Client SDK.");
           const { collection, getDocs, query, orderBy, limit } = await import("firebase/firestore");
-          const { db } = await import("@/firebase");
 
+          // Users
           const userSnap = await getDocs(collection(db, "users"));
           setUserCount(userSnap.size);
 
+          // Recent Activity
           const templeSnap = await getDocs(query(collection(db, "temples"), orderBy("createdAt", "desc"), limit(5)));
           const activity = templeSnap.docs.map(doc => {
             const data = doc.data();
@@ -76,7 +77,8 @@ export default function AdminDashboard() {
           setRecentActivity(activity);
         }
       } catch (err) {
-        console.warn("Stats API failed, using fallback:", err);
+        console.warn("Stats fetch error (API & Fallback):", err);
+        // Don't show toast here, just log warning so other parts can load
       }
 
       // 2. Fetch Temples
@@ -89,23 +91,23 @@ export default function AdminDashboard() {
           setTemples(templeData);
         } else {
           // Fallback for temples
-          console.warn("Temples API not active locally. Using Client SDK.");
+          console.warn("Temples API failed or not active. Using Client SDK.");
           const { collection, getDocs } = await import("firebase/firestore");
           const snapshot = await getDocs(collection(db, "temples"));
           const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setTemples(data);
         }
       } catch (err) {
-        console.warn("Temples API failed, using fallback:", err);
+        console.warn("Temples fetch error (API & Fallback):", err);
+        toast({
+          title: "Warning",
+          description: "Failed to load directory data completely.",
+          variant: "destructive",
+        });
       }
 
-    } catch (error: any) {
-      console.error("Error fetching dashboard data:", error);
-      toast({
-        title: "Error",
-        description: `Failed to load dashboard: ${error.message}`,
-        variant: "destructive",
-      });
+    } catch (globalError: any) {
+      console.error("Unexpected error in dashboard load:", globalError);
     } finally {
       setLoading(false);
     }
@@ -146,7 +148,7 @@ export default function AdminDashboard() {
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-1">
             <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Total Sthanas</p>
             <div className="flex items-end justify-between">
-              <h3 className="text-3xl font-extrabold text-slate-900">{temples.length || "1,240"}</h3>
+              <h3 className="text-3xl font-extrabold text-slate-900">{loading ? <Loader2 className="w-8 h-8 animate-spin" /> : (temples.length > 0 ? temples.length : 0)}</h3>
               <span className="text-[#1E3A8A] text-[10px] font-bold bg-[#1E3A8A]/5 px-2 py-1 rounded-md mb-1">Global Coverage</span>
             </div>
           </div>
