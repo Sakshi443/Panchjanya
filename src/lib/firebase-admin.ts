@@ -10,14 +10,20 @@ const getFirebaseAdmin = () => {
     const projectId = process.env.FIREBASE_PROJECT_ID;
 
     if (!privateKey || !clientEmail || !projectId) {
-        throw new Error("Missing Firebase Admin SDK environment variables.");
+        const missing = [];
+        if (!privateKey) missing.push("FIREBASE_PRIVATE_KEY");
+        if (!clientEmail) missing.push("FIREBASE_CLIENT_EMAIL");
+        if (!projectId) missing.push("FIREBASE_PROJECT_ID");
+
+        console.error("❌ Stats API Init Error: Missing Env Vars:", missing.join(", "));
+        throw new Error(`Missing Firebase Admin SDK environment variables: ${missing.join(", ")}`);
     }
 
     return admin.initializeApp({
         credential: admin.credential.cert({
             projectId,
             clientEmail,
-            privateKey: privateKey.replace(/\\n/g, '\n'),
+            privateKey: privateKey.replace(/\\n/g, '\n').replace(/"/g, ''), // Remove potential surrounding quotes from env var paste
         }),
     });
 };
