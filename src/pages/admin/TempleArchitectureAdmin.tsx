@@ -1,8 +1,8 @@
 // src/pages/admin/TempleArchitectureAdmin.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "@/firebase";
-import { doc, getDoc, updateDoc, collection, getDocs, setDoc, deleteDoc } from "firebase/firestore";
+// Firestore imports removed to enforce strict API usage
+
 import { v4 as uuidv4 } from "uuid";
 import { Hotspot, Leela, GlanceItem, AbbreviationItem, CustomBlock } from "@/types";
 import * as LucideIcons from "lucide-react";
@@ -112,12 +112,15 @@ export default function TempleArchitectureAdmin() {
       try {
         setLoading(true);
 
-        // 1. Try fetching via Admin API first
-        const res = await fetch(`/api/admin/temples?id=${id}`);
-        const contentType = res.headers.get("content-type");
+        // 1. Fetch Temple Data via Generic Admin API
+        const templeRes = await fetch(`/api/admin/data?collection=temples&id=${id}`);
+        const hotspotsRes = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots`);
 
-        if (res.ok && contentType?.includes("application/json")) {
-          const data = await res.json();
+        const templeContentType = templeRes.headers.get("content-type");
+        const hotspotsContentType = hotspotsRes.headers.get("content-type");
+
+        if (templeRes.ok && templeContentType?.includes("application/json")) {
+          const data = await templeRes.json();
           setTempleName(data.name || "Unknown Temple");
           setArchImageUrl(data.architectureImage || "");
           setPresentImageUrl(data.presentImage || data.images?.[0] || "");
@@ -125,7 +128,6 @@ export default function TempleArchitectureAdmin() {
           setPresentImages(data.presentImages || []);
           setTempleImages(data.images || []);
           setArchHotspots(data.hotspots || []);
-          setPresentHotspots(data.present_hotspots || []);
 
           setTodaysName(data.todaysName || "");
           setAddress(data.address || "");
@@ -147,61 +149,25 @@ export default function TempleArchitectureAdmin() {
           setContactDetails(data.contactDetails || "");
           setContactName(data.contactName || "");
           setContactNumber(data.contactNumber || "");
-        } else {
-          // Fallback to client-side Firestore
-          console.warn("Temple API not active locally. Using Client SDK.");
-          const snap = await getDoc(doc(db, "temples", id));
 
-          if (!snap.exists()) {
-            toast({
-              title: "Error",
-              description: "Temple not found",
-              variant: "destructive",
-            });
-            return;
+          // Handle present hotspots if the second call succeeded
+          if (hotspotsRes.ok && hotspotsContentType?.includes("application/json")) {
+            setPresentHotspots(await hotspotsRes.json());
           }
-
-          const data = snap.data();
-          setTempleName(data.name || "Unknown Temple");
-          setArchImageUrl(data.architectureImage || "");
-          setPresentImageUrl(data.presentImage || data.images?.[0] || "");
-          setArchImages(data.architectureImages || []);
-          setPresentImages(data.presentImages || []);
-          setTempleImages(data.images || []);
-          setArchHotspots(data.hotspots || []);
-
-          // Fetch present hotspots from subcollection
-          const presentHotspotsRef = collection(db, "temples", id, "present_hotspots");
-          const presentHotspotsSnap = await getDocs(presentHotspotsRef);
-          const presentHotspotsData = presentHotspotsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Hotspot));
-          setPresentHotspots(presentHotspotsData);
-
-          setTodaysName(data.todaysName || "");
-          setAddress(data.address || "");
-          setTaluka(data.taluka || "");
-          setDistrict(data.district || "");
-          setDirectionsText(data.directions_text || data.wayToReach || "");
-          setLocationLink(data.locationLink || "");
-          setLatitude(data.latitude || "");
-          setLongitude(data.longitude || "");
-          setDescriptionTitle(data.description_title || "Sthan At Glance");
-          setDescriptionText(data.description_text || data.description || "");
-          setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
-          setSthanaInfoText(data.sthana_info_text || data.sthana || "");
-          setDescriptionSections(data.descriptionSections || []);
-          setGlanceItems(data.glanceItems || []);
-          setAbbreviationItems(data.abbreviationItems || []);
-          setCustomBlocks(data.customBlocks || []);
-          setArchitectureDescription(data.architectureDescription || "");
-          setContactDetails(data.contactDetails || "");
-          setContactName(data.contactName || "");
-          setContactNumber(data.contactNumber || "");
+        } else {
+          throw new Error("Failed to fetch temple data via API. Fallback is disabled for security.");
         }
       } catch (error) {
         console.error("Error fetching temple:", error);
+
+        let errorMsg = "Failed to load temple data. Ensure the API is active.";
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+          errorMsg += " (Hint: Run 'npm run dev:admin' to start the local API server)";
+        }
+
         toast({
-          title: "Error",
-          description: "Failed to load temple data. Please check permissions.",
+          title: "API Error",
+          description: errorMsg,
           variant: "destructive",
         });
       } finally {
@@ -274,38 +240,39 @@ export default function TempleArchitectureAdmin() {
 
     try {
       if (viewType === 'architectural') {
-        // Architectural View: Update main doc array
         const updatedArch = archHotspots.some((h) => h.id === selectedHotspot.id)
           ? archHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
           : [...archHotspots, selectedHotspot];
 
         setArchHotspots(updatedArch);
 
-        // Try API first
-        const res = await fetch(`/api/admin/temples?id=${id}`, {
-          method: 'POST',
+        // Try generic Admin API first
+        const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ hotspots: sanitizeData(updatedArch) })
         });
 
         if (!res.ok) {
-          console.warn("API write failed, using fallback.");
-          await updateDoc(doc(db, "temples", id), {
-            hotspots: sanitizeData(updatedArch)
-          });
+          throw new Error("API write failed.");
         }
       } else {
-        // Present View: Update subcollection state
         const updatedPresent = presentHotspots.some((h) => h.id === selectedHotspot.id)
           ? presentHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
           : [...presentHotspots, selectedHotspot];
 
         setPresentHotspots(updatedPresent);
 
-        // Save to subcollection (API support for subcollections could be added, but for now fallback is fine if rules allow or use full doc update)
-        // Since we want to bypass rules, let's just use client SDK as fallback for now.
-        // Ideally we'd have a specific subcollection endpoint, but we can also just set it via client SDK.
-        await setDoc(doc(db, "temples", id, "present_hotspots", selectedHotspot.id), sanitizeData(selectedHotspot));
+        // Try generic Admin API with subcollection support
+        const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sanitizeData(selectedHotspot))
+        });
+
+        if (!res.ok) {
+          throw new Error("API subcollection write failed.");
+        }
       }
 
       toast({
@@ -353,15 +320,14 @@ export default function TempleArchitectureAdmin() {
     };
 
     try {
-      const res = await fetch(`/api/admin/temples?id=${id}`, {
+      const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
 
       if (!res.ok) {
-        console.warn("API save failed, using fallback.");
-        await updateDoc(doc(db, "temples", id), updateData);
+        throw new Error("API save failed.");
       }
 
       toast({ title: "Success", description: "Temple details updated." });
@@ -376,7 +342,18 @@ export default function TempleArchitectureAdmin() {
     try {
       const field = type === 'arch' ? "architectureImage" : "presentImage";
       const url = type === 'arch' ? archImageUrl : presentImageUrl;
-      await updateDoc(doc(db, "temples", id), { [field]: url });
+
+      // Use generic Admin API
+      const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: url })
+      });
+
+      if (!res.ok) {
+        throw new Error("API image save failed.");
+      }
+
       toast({ title: "Success", description: `${type === 'arch' ? 'Architecture' : 'Present'} image saved.` });
     } catch (e) {
       toast({ title: "Error", description: "Failed to save image.", variant: "destructive" });
@@ -468,16 +445,29 @@ export default function TempleArchitectureAdmin() {
 
     try {
       if (selectedHotspot.isPresent) {
-        // Delete from subcollection
-        await deleteDoc(doc(db, "temples", id, "present_hotspots", selectedHotspot.id));
+        // Delete from subcollection via generic Admin API
+        const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          throw new Error("API delete failed.");
+        }
         setPresentHotspots(presentHotspots.filter((h) => h.id !== selectedHotspot.id));
       } else {
-        // Delete from architectural hotspots array in main doc
+        // Delete from architectural hotspots array in main doc via generic Admin API
         const newArch = archHotspots.filter((h) => h.id !== selectedHotspot.id);
         setArchHotspots(newArch);
-        await updateDoc(doc(db, "temples", id), {
-          hotspots: newArch,
+
+        const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hotspots: newArch })
         });
+
+        if (!res.ok) {
+          throw new Error("API delete-update failed.");
+        }
       }
 
       toast({
@@ -501,16 +491,20 @@ export default function TempleArchitectureAdmin() {
     if (!id) return;
     if (!confirm("Are you sure you want to remove this hotspot from this specific photo? (It will still exist in the master list)")) return;
     try {
-      const hotspotToDelete = presentHotspots.find(h => h.id === hotspotId && (h.imageIndex || 0) === adminImageIndex);
-      if (hotspotToDelete) {
-        await deleteDoc(doc(db, "temples", id, "present_hotspots", hotspotId));
-        const updatedPresent = presentHotspots.filter(h => h.id !== hotspotId);
-        setPresentHotspots(updatedPresent);
-        toast({ title: "Unmapped", description: "Hotspot removed from this photo." });
+      // Use generic Admin API
+      const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${hotspotId}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        throw new Error("API unmap failed.");
       }
+
+      setPresentHotspots(presentHotspots.filter(h => h.id !== hotspotId));
+      toast({ title: "Unmapped", description: "Hotspot removed from this view." });
     } catch (e) {
       console.error("Error unmapping hotspot:", e);
-      toast({ title: "Error", description: "Failed to unmap hotspot." });
+      toast({ title: "Error", description: "Failed to unmap hotspot.", variant: "destructive" });
     }
   };
 
@@ -518,9 +512,14 @@ export default function TempleArchitectureAdmin() {
     if (!id) return;
     try {
       const fieldToUpdate = viewType === 'architectural' ? "architectureImage" : "presentImage";
-      await updateDoc(doc(db, "temples", id), {
-        [fieldToUpdate]: url,
+
+      const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [fieldToUpdate]: url })
       });
+
+      if (!res.ok) throw new Error("API image update failed.");
 
       if (viewType === 'architectural') {
         setArchImageUrl(url);
@@ -549,9 +548,13 @@ export default function TempleArchitectureAdmin() {
       const currentImages = viewType === 'architectural' ? archImages : presentImages;
       const updatedImages = [...currentImages, url];
 
-      await updateDoc(doc(db, "temples", id), {
-        [fieldToUpdate]: updatedImages,
+      const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [fieldToUpdate]: updatedImages })
       });
+
+      if (!res.ok) throw new Error("API supplemental image add failed.");
 
       if (viewType === 'architectural') {
         setArchImages(updatedImages);
@@ -596,9 +599,9 @@ export default function TempleArchitectureAdmin() {
         });
 
       // Update main images
-      await updateDoc(doc(db, "temples", id), {
-        [fieldToUpdate]: updatedImages,
-      });
+      const updatePayload: any = {
+        [fieldToUpdate]: updatedImages
+      };
 
       // Handle Hotspots updates
       if (viewType === 'architectural') {
@@ -611,34 +614,45 @@ export default function TempleArchitectureAdmin() {
             return h;
           });
 
-        await updateDoc(doc(db, "temples", id), {
-          hotspots: updatedHotspots
-        });
+        updatePayload.hotspots = updatedHotspots;
         setArchHotspots(updatedHotspots);
         setArchImages(updatedImages);
       } else {
-        // For present view, we'd need to update each doc in the subcollection if its imageIndex changes
-        // This is complex for a subcollection. For now, let's at least filter the state.
-        // Ideally, we loop through and update/delete in the subcollection.
+        // For present view, we are removing/updating subcollection items
+        // This requires multiple API calls or a batch.
+        // For strict API compliance, we will do sequential requests here manually since our generic API doesn't do batch yet.
+
         const hotspotsToDelete = presentHotspots.filter(h => (h.imageIndex || 0) === actualIndex);
         const hotspotsToUpdate = presentHotspots.filter(h => (h.imageIndex || 0) > actualIndex);
 
         for (const h of hotspotsToDelete) {
-          await deleteDoc(doc(db, "temples", id, "present_hotspots", h.id));
+          await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${h.id}`, { method: 'DELETE' });
         }
         for (const h of hotspotsToUpdate) {
-          await updateDoc(doc(db, "temples", id, "present_hotspots", h.id), {
-            imageIndex: h.imageIndex - 1
+          const updatedIndex = (h.imageIndex || 0) - 1;
+          await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${h.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageIndex: updatedIndex })
           });
         }
 
         const updatedPresent = presentHotspots
           .filter(h => (h.imageIndex || 0) !== actualIndex)
-          .map(h => (h.imageIndex || 0) > actualIndex ? { ...h, imageIndex: h.imageIndex - 1 } : h);
+          .map(h => (h.imageIndex || 0) > actualIndex ? { ...h, imageIndex: (h.imageIndex || 0) - 1 } : h);
 
         setPresentHotspots(updatedPresent);
         setPresentImages(updatedImages);
       }
+
+      // Update the main doc images
+      const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatePayload)
+      });
+
+      if (!res.ok) throw new Error("API supplemental image remove failed.");
 
       // Reset index to ensure we're not on a deleted or shifted index we don't understand
       if (adminImageIndex === actualIndex) {

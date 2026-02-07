@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
 import { db } from "@/firebase";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -117,26 +117,33 @@ export default function RajViharanAdmin() {
         pinColor: "#D4AF37" // Default regal gold
     });
 
-    useEffect(() => {
-        const q = query(collection(db, "yatraPlaces"), orderBy("sequence", "asc"));
-        const unsub = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as YatraPlace[];
-            setPlaces(data);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching yatra places:", error);
-            toast({
-                title: "Error",
-                description: "Failed to fetch yatra places",
-                variant: "destructive"
-            });
-            setLoading(false);
-        });
+    const fetchPlaces = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch("/api/admin/data?collection=yatraPlaces");
+            const contentType = res.headers.get("content-type");
 
-        return () => unsub();
+            if (res.ok && contentType?.includes("application/json")) {
+                const data = await res.json();
+                // Sort by sequence manually since API might not guarantee order
+                setPlaces(data.sort((a: any, b: any) => (a.sequence || 0) - (b.sequence || 0)));
+            } else {
+                // Fallback to client SDK
+                console.warn("Yatra API not active locally. Using Client SDK.");
+                const q = query(collection(db, "yatraPlaces"), orderBy("sequence", "asc"));
+                const snapshot = await getDocs(q);
+                setPlaces(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as YatraPlace[]);
+            }
+        } catch (error) {
+            console.error("Error fetching yatra places:", error);
+            toast({ title: "Error", description: "Failed to fetch yatra places", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPlaces();
     }, []);
 
     const handleEdit = (place: YatraPlace) => {
@@ -183,23 +190,35 @@ export default function RajViharanAdmin() {
         }
 
         try {
-            if (selectedPlace) {
-                // Update
-                const placeRef = doc(db, "yatraPlaces", selectedPlace.id);
-                await updateDoc(placeRef, formData);
-                toast({ title: "Success", description: "Yatra place updated" });
+            const method = selectedPlace ? 'PUT' : 'POST';
+            const url = selectedPlace ? `/api/admin/data?collection=yatraPlaces&id=${selectedPlace.id}` : `/api/admin/data?collection=yatraPlaces`;
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                toast({ title: "Success", description: selectedPlace ? "Yatra place updated" : "Yatra place created" });
             } else {
-                // Create
-                await addDoc(collection(db, "yatraPlaces"), formData);
-                toast({ title: "Success", description: "Yatra place created" });
+                console.warn("API write failed, using fallback.");
+                if (selectedPlace) {
+                    await updateDoc(doc(db, "yatraPlaces", selectedPlace.id), formData);
+                } else {
+                    await addDoc(collection(db, "yatraPlaces"), formData);
+                }
+                toast({ title: "Success (Fallback)", description: "Saved via Client SDK" });
             }
+
             setIsEditing(false);
             setSelectedPlace(null);
+            fetchPlaces(); // Refresh list
         } catch (error) {
             console.error("Error saving yatra place:", error);
             toast({
                 title: "Error",
-                description: "Failed to save yatra place",
+                description: "Failed to save yatra place. Please check permissions.",
                 variant: "destructive"
             });
         }
@@ -209,12 +228,20 @@ export default function RajViharanAdmin() {
         if (!confirm("Are you sure you want to delete this yatra place?")) return;
 
         try {
-            await deleteDoc(doc(db, "yatraPlaces", id));
-            toast({ title: "Success", description: "Yatra place deleted" });
+            const res = await fetch(`/api/admin/data?collection=yatraPlaces&id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast({ title: "Success", description: "Yatra place deleted" });
+            } else {
+                console.warn("API delete failed, using fallback.");
+                await deleteDoc(doc(db, "yatraPlaces", id));
+                toast({ title: "Success (Fallback)", description: "Deleted via Client SDK" });
+            }
+
             if (selectedPlace?.id === id) {
                 setIsEditing(false);
                 setSelectedPlace(null);
             }
+            fetchPlaces(); // Refresh
         } catch (error) {
             console.error("Error deleting yatra place:", error);
             toast({
@@ -233,10 +260,20 @@ export default function RajViharanAdmin() {
         const targetPlace = places[targetIndex];
 
         try {
-            // Swap sequences
-            await updateDoc(doc(db, "yatraPlaces", currentPlace.id), { sequence: targetPlace.sequence });
-            await updateDoc(doc(db, "yatraPlaces", targetPlace.id), { sequence: currentPlace.sequence });
+            // Swap sequences via API
+            await fetch(`/api/admin/data?collection=yatraPlaces&id=${currentPlace.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sequence: targetPlace.sequence })
+            });
+            await fetch(`/api/admin/data?collection=yatraPlaces&id=${targetPlace.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sequence: currentPlace.sequence })
+            });
+
             toast({ title: "Reordered", description: "Sequence updated successfully" });
+            fetchPlaces(); // Refresh
         } catch (error) {
             console.error("Error reordering:", error);
             toast({ title: "Error", description: "Failed to reorder items" });
@@ -259,12 +296,15 @@ export default function RajViharanAdmin() {
         setPlaces(reorderedPlaces);
 
         try {
-            // Update sequences in Firestore
-            // We'll update the sequence of each place to its new index + 1
+            // Update sequences via API
             const updates = reorderedPlaces.map((place, index) => {
                 const newSequence = index + 1;
                 if (place.sequence !== newSequence) {
-                    return updateDoc(doc(db, "yatraPlaces", place.id), { sequence: newSequence });
+                    return fetch(`/api/admin/data?collection=yatraPlaces&id=${place.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sequence: newSequence })
+                    });
                 }
                 return null;
             }).filter(Boolean);
@@ -278,7 +318,7 @@ export default function RajViharanAdmin() {
                 description: "Failed to persist new sequence",
                 variant: "destructive"
             });
-            // Optionally: Reload data from Firestore to revert optimistic state
+            fetchPlaces(); // Revert to server state
         }
     };
 

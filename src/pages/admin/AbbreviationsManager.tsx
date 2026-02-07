@@ -49,11 +49,20 @@ export default function AbbreviationsManager() {
     useEffect(() => {
         const fetchAbbreviations = async () => {
             try {
-                const docRef = doc(db, "settings", "abbreviations");
-                const docSnap = await getDoc(docRef);
+                setLoading(true);
+                const res = await fetch("/api/admin/data?collection=settings&id=abbreviations");
+                const contentType = res.headers.get("content-type");
 
-                if (docSnap.exists()) {
-                    setAbbreviationItems(docSnap.data().items || []);
+                if (res.ok && contentType?.includes("application/json")) {
+                    const data = await res.json();
+                    setAbbreviationItems(data.items || []);
+                } else {
+                    console.warn("Abbreviations API not active locally. Using Client SDK.");
+                    const docRef = doc(db, "settings", "abbreviations");
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        setAbbreviationItems(docSnap.data().items || []);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching abbreviations:", error);
@@ -94,19 +103,32 @@ export default function AbbreviationsManager() {
     const saveAbbreviations = async () => {
         setSaving(true);
         try {
-            await setDoc(doc(db, "settings", "abbreviations"), {
+            const updateData = {
                 items: abbreviationItems,
                 updatedAt: new Date()
+            };
+
+            const res = await fetch("/api/admin/data?collection=settings&id=abbreviations", {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData)
             });
-            toast({
-                title: "Success",
-                description: "Abbreviations updated successfully. They will appear on all temple pages."
-            });
+
+            if (res.ok) {
+                toast({
+                    title: "Success",
+                    description: "Abbreviations updated successfully."
+                });
+            } else {
+                console.warn("API save failed, using fallback.");
+                await setDoc(doc(db, "settings", "abbreviations"), updateData);
+                toast({ title: "Success (Fallback)", description: "Saved via Client SDK" });
+            }
         } catch (error) {
             console.error("Error saving:", error);
             toast({
                 title: "Error",
-                description: "Failed to save abbreviations.",
+                description: "Failed to save abbreviations. Please check permissions.",
                 variant: "destructive"
             });
         } finally {

@@ -64,13 +64,22 @@ export default function ManageYatra() {
     const fetchPlaces = async () => {
         try {
             setLoading(true);
-            const q = query(collection(db, "yatraPlaces"), orderBy("sequence", "asc"));
-            const snapshot = await getDocs(q);
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as YatraPlace[];
-            setPlaces(data);
+            const res = await fetch("/api/admin/data?collection=yatraPlaces");
+            const contentType = res.headers.get("content-type");
+
+            if (res.ok && contentType?.includes("application/json")) {
+                const data = await res.json();
+                setPlaces(data.sort((a: any, b: any) => (a.sequence || 0) - (b.sequence || 0)));
+            } else {
+                console.warn("Yatra API not active locally. Using Client SDK.");
+                const q = query(collection(db, "yatraPlaces"), orderBy("sequence", "asc"));
+                const snapshot = await getDocs(q);
+                const data = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as YatraPlace[];
+                setPlaces(data);
+            }
         } catch (error) {
             console.error("Error fetching yatra places:", error);
             toast({
@@ -87,22 +96,32 @@ export default function ManageYatra() {
         e.preventDefault();
 
         try {
-            if (editingPlace?.id) {
-                // Update existing place
-                const { id, ...updateData } = formData as any;
-                await updateDoc(doc(db, "yatraPlaces", editingPlace.id), updateData);
+            const method = editingPlace?.id ? 'PUT' : 'POST';
+            const url = editingPlace?.id
+                ? `/api/admin/data?collection=yatraPlaces&id=${editingPlace.id}`
+                : `/api/admin/data?collection=yatraPlaces`;
+
+            const { id, ...data } = formData as any;
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
                 toast({
                     title: "Success",
-                    description: "Yatra place updated successfully"
+                    description: editingPlace?.id ? "Yatra place updated successfully" : "Yatra place added successfully"
                 });
             } else {
-                // Add new place
-                const { id, ...addData } = formData as any;
-                await addDoc(collection(db, "yatraPlaces"), addData);
-                toast({
-                    title: "Success",
-                    description: "Yatra place added successfully"
-                });
+                console.warn("API write failed, using fallback.");
+                if (editingPlace?.id) {
+                    await updateDoc(doc(db, "yatraPlaces", editingPlace.id), data);
+                } else {
+                    await addDoc(collection(db, "yatraPlaces"), data);
+                }
+                toast({ title: "Success (Fallback)", description: "Saved via Client SDK" });
             }
 
             setIsDialogOpen(false);
@@ -112,7 +131,7 @@ export default function ManageYatra() {
             console.error("Error saving yatra place:", error);
             toast({
                 title: "Error",
-                description: "Failed to save yatra place",
+                description: "Failed to save yatra place. Please check permissions.",
                 variant: "destructive"
             });
         }
@@ -122,11 +141,17 @@ export default function ManageYatra() {
         if (!confirm("Are you sure you want to delete this yatra place?")) return;
 
         try {
-            await deleteDoc(doc(db, "yatraPlaces", id));
-            toast({
-                title: "Success",
-                description: "Yatra place deleted successfully"
-            });
+            const res = await fetch(`/api/admin/data?collection=yatraPlaces&id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast({
+                    title: "Success",
+                    description: "Yatra place deleted successfully"
+                });
+            } else {
+                console.warn("API delete failed, using fallback.");
+                await deleteDoc(doc(db, "yatraPlaces", id));
+                toast({ title: "Success (Fallback)", description: "Deleted via Client SDK" });
+            }
             fetchPlaces();
         } catch (error) {
             console.error("Error deleting yatra place:", error);
@@ -167,9 +192,17 @@ export default function ManageYatra() {
         const targetPlace = places[targetIndex];
 
         try {
-            // Swap sequences
-            await updateDoc(doc(db, "yatraPlaces", place.id!), { sequence: targetPlace.sequence });
-            await updateDoc(doc(db, "yatraPlaces", targetPlace.id!), { sequence: place.sequence });
+            // Swap sequences via API
+            await fetch(`/api/admin/data?collection=yatraPlaces&id=${place.id!}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sequence: targetPlace.sequence })
+            });
+            await fetch(`/api/admin/data?collection=yatraPlaces&id=${targetPlace.id!}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sequence: place.sequence })
+            });
 
             toast({
                 title: "Success",

@@ -81,7 +81,7 @@ export default function AdminDashboard() {
 
       // 2. Fetch Temples
       try {
-        const templesRes = await fetch("/api/admin/temples");
+        const templesRes = await fetch("/api/admin/data?collection=temples");
         const templesContentType = templesRes.headers.get("content-type");
 
         if (templesRes.ok && templesContentType?.includes("application/json")) {
@@ -89,6 +89,7 @@ export default function AdminDashboard() {
           setTemples(templeData);
         } else {
           // Fallback for temples
+          console.warn("Temples API not active locally. Using Client SDK.");
           const { collection, getDocs } = await import("firebase/firestore");
           const snapshot = await getDocs(collection(db, "temples"));
           const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));

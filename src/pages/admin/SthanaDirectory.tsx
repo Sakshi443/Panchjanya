@@ -44,7 +44,7 @@ export default function SthanaDirectory() {
     const fetchTemples = async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/admin/temples");
+            const response = await fetch("/api/admin/data?collection=temples");
             const contentType = response.headers.get("content-type");
 
             let data;
@@ -86,16 +86,17 @@ export default function SthanaDirectory() {
         if (!confirm(`Are you sure you want to delete '${name}'? This action cannot be undone.`)) return;
 
         try {
-            const response = await fetch(`/api/admin/temples?id=${id}`, {
+            const response = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
                 method: 'DELETE'
             });
             const contentType = response.headers.get("content-type");
 
-            if (response.ok && contentType?.includes("application/json")) {
+            if (response.ok) {
                 toast({ title: "Deleted", description: "Sthana record removed successfully." });
                 fetchTemples();
             } else {
                 // Fallback for local development
+                console.warn("API delete failed, using fallback.");
                 const { doc, deleteDoc } = await import("firebase/firestore");
                 await deleteDoc(doc(db, "temples", id));
                 toast({ title: "Deleted", description: "Sthana removed (via Client SDK fallback)." });

@@ -53,11 +53,12 @@ export default function TempleForm({ templeId }: TempleFormProps) {
 
         const fetchTemple = async () => {
             try {
-                const docRef = doc(db, "temples", templeId);
-                const snap = await getDoc(docRef);
+                setFetching(true);
+                const res = await fetch(`/api/admin/data?collection=temples&id=${templeId}`);
+                const contentType = res.headers.get("content-type");
 
-                if (snap.exists()) {
-                    const data = snap.data();
+                if (res.ok && contentType?.includes("application/json")) {
+                    const data = await res.json();
                     setName(data.name || "");
                     setAddress(data.address || "");
                     setCity(data.city || "");
@@ -66,7 +67,6 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     setLatitude(String(data.latitude ?? data.location?.lat ?? ""));
                     setLongitude(String(data.longitude ?? data.location?.lng ?? ""));
 
-                    // Populate new fields with fallbacks to old fields if they exist
                     setDescriptionTitle(data.description_title || "Sthan At Glance");
                     setDescriptionText(data.description_text || data.description || "");
 
@@ -80,20 +80,40 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     setImages(data.images || []);
                     setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
                 } else {
-                    toast({
-                        title: "Error",
-                        description: "Temple not found",
-                        variant: "destructive",
-                    });
-                    navigate("/admin/dashboard");
+                    console.warn("Temple API not active locally. Using Client SDK.");
+                    const docRef = doc(db, "temples", templeId);
+                    const snap = await getDoc(docRef);
+
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        setName(data.name || "");
+                        setAddress(data.address || "");
+                        setCity(data.city || "");
+                        setTaluka(data.taluka || "");
+                        setDistrict(data.district || "");
+                        setLatitude(String(data.latitude ?? data.location?.lat ?? ""));
+                        setLongitude(String(data.longitude ?? data.location?.lng ?? ""));
+
+                        setDescriptionTitle(data.description_title || "Sthan At Glance");
+                        setDescriptionText(data.description_text || data.description || "");
+
+                        setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
+                        setSthanaInfoText(data.sthana_info_text || data.sthana || "");
+
+                        setDirectionsTitle(data.directions_title || "Way to reach");
+                        setDirectionsText(data.directions_text || "");
+
+                        setLeela(data.leela || "");
+                        setImages(data.images || []);
+                        setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
+                    } else {
+                        toast({ title: "Error", description: "Temple not found", variant: "destructive" });
+                        navigate("/admin/dashboard");
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching temple:", error);
-                toast({
-                    title: "Error",
-                    description: "Failed to load temple data",
-                    variant: "destructive",
-                });
+                toast({ title: "Error", description: "Failed to load temple data", variant: "destructive" });
             } finally {
                 setFetching(false);
             }
@@ -113,21 +133,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
             const lngNum = parseFloat(longitude);
 
             if (isNaN(latNum) || isNaN(lngNum) || (latNum === 0 && lngNum === 0)) {
-                toast({
-                    title: "Invalid Coordinates",
-                    description: "Please enter valid Latitude and Longitude values.",
-                    variant: "destructive",
-                });
-                setLoading(false);
-                return;
-            }
-
-            if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-                toast({
-                    title: "Invalid Coordinates",
-                    description: "Latitude must be between -90 and 90. Longitude between -180 and 180.",
-                    variant: "destructive",
-                });
+                toast({ title: "Invalid Coordinates", description: "Please enter valid Latitude and Longitude values.", variant: "destructive" });
                 setLoading(false);
                 return;
             }
@@ -138,55 +144,60 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                 city,
                 taluka,
                 district,
-
-                // New Fields
                 description_title: descriptionTitle,
                 description_text: descriptionText,
-                description: descriptionText, // Backward comp.
-
+                description: descriptionText,
                 sthana_info_title: sthanaInfoTitle,
                 sthana_info_text: sthanaInfoText,
-                sthana: sthanaInfoText, // Backward comp.
-
+                sthana: sthanaInfoText,
                 directions_title: directionsTitle,
                 directions_text: directionsText,
-
                 leela,
                 images,
                 latitude: latNum,
                 longitude: lngNum,
                 location: { lat: latNum, lng: lngNum },
-                updatedAt: Timestamp.now(),
+                updatedAt: new Date().toISOString(),
                 updatedBy: user.uid,
             };
 
-            if (templeId) {
-                await updateDoc(doc(db, "temples", templeId), templeData);
-                toast({ title: "Success", description: "Temple updated successfully" });
-            } else {
-                const newDoc = await addDoc(collection(db, "temples"), {
-                    ...templeData,
-                    createdAt: Timestamp.now(),
-                    createdBy: user.uid,
-                });
-                toast({ title: "Success", description: "Temple created successfully" });
+            const method = templeId ? 'PUT' : 'POST';
+            const url = templeId ? `/api/admin/data?collection=temples&id=${templeId}` : `/api/admin/data?collection=temples`;
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(templeId ? templeData : { ...templeData, createdAt: new Date().toISOString(), createdBy: user.uid })
+            });
+
+            if (res.ok) {
+                const responseData = await res.json();
+                toast({ title: "Success", description: templeId ? "Temple updated successfully" : "Temple created successfully" });
+                const finalId = templeId || responseData.id;
                 if (hasArchitecture) {
-                    navigate(`/admin/architecture/${newDoc.id}`);
-                    return;
+                    navigate(`/admin/architecture/${finalId}`);
+                } else {
+                    navigate("/admin/dashboard");
                 }
+            } else {
+                console.warn("API write failed, using fallback.");
+                if (templeId) {
+                    await updateDoc(doc(db, "temples", templeId), { ...templeData, updatedAt: Timestamp.now() });
+                } else {
+                    const newDoc = await addDoc(collection(db, "temples"), { ...templeData, createdAt: Timestamp.now(), createdBy: user.uid });
+                    if (hasArchitecture) {
+                        navigate(`/admin/architecture/${newDoc.id}`);
+                        return;
+                    }
+                }
+                toast({ title: "Success (Fallback)", description: "Saved via Client SDK" });
                 navigate("/admin/dashboard");
             }
         } catch (error: any) {
             console.error("Error saving temple:", error);
-
-            let errorMessage = error.message;
-            if (error.code === 'permission-denied') {
-                errorMessage = "Permission denied! You must update your Firestore Database Rules in the Firebase Console to allow writes.";
-            }
-
             toast({
                 title: "Error",
-                description: errorMessage,
+                description: error.message || "Failed to save temple data. Please check permissions.",
                 variant: "destructive",
             });
         } finally {

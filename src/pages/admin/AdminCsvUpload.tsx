@@ -23,26 +23,15 @@ const AdminCsvUpload = () => {
           const rows: any[] = results.data;
 
           for (const r of rows) {
-            // Parse location
             const latitude = Number(r.latitude || r.lat || 0);
             const longitude = Number(r.longitude || r.lng || 0);
-
-            // Parse images
-            const images = r.images
-              ? r.images.split(";").map((x: string) => x.trim())
-              : [];
-
-            // Parse sub-temples JSON if provided (optional)
+            const images = r.images ? r.images.split(";").map((x: string) => x.trim()) : [];
             let subTemples = [];
             if (r.sub_temples_json) {
-              try {
-                subTemples = JSON.parse(r.sub_temples_json);
-              } catch {
-                console.warn("Invalid sub-temples JSON for:", r.name);
-              }
+              try { subTemples = JSON.parse(r.sub_temples_json); } catch { console.warn("Invalid sub-temples JSON for:", r.name); }
             }
 
-            await addDoc(collection(db, "temples"), {
+            const templeData = {
               name: r.name || "",
               city: r.city || "",
               taluka: r.taluka || "",
@@ -57,9 +46,21 @@ const AdminCsvUpload = () => {
               latitude,
               longitude,
               images,
-              sub_temples: subTemples, // expects array of {name, description, sthanaNo, image, location}
-              createdAt: Timestamp.now(),
-            });
+              sub_temples: subTemples,
+              createdAt: new Date().toISOString(),
+            };
+
+            try {
+              const res = await fetch("/api/admin/data?collection=temples", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(templeData)
+              });
+              if (!res.ok) throw new Error("API failed");
+            } catch (err) {
+              console.warn("API upload failed, using fallback.");
+              await addDoc(collection(db, "temples"), { ...templeData, createdAt: Timestamp.now() });
+            }
           }
 
           alert("CSV upload complete!");
