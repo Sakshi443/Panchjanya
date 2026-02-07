@@ -1,15 +1,15 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminDb } from '../../src/lib/firebase-admin.js';
+import { getAdminDb } from '../../src/lib/firebase-admin.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
         try {
             // 1. Get User Count (Admin SDK allows listUsers which is better, but this is simple for now)
-            const userSnapshot = await adminDb.collection("users").get();
+            const userSnapshot = await getAdminDb().collection("users").get();
             const userCount = userSnapshot.size;
 
             // 2. Get Recent Activity from Temples
-            const templeSnapshot = await adminDb.collection("temples")
+            const templeSnapshot = await getAdminDb().collection("temples")
                 .orderBy("createdAt", "desc")
                 .limit(5)
                 .get();

@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminDb } from '../../src/lib/firebase-admin.js';
+import { getAdminDb } from '../../src/lib/firebase-admin.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { collection, id, subcollection, subId } = req.query;
@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        let baseRef: any = adminDb.collection(collection);
+        let baseRef: any = getAdminDb().collection(collection);
         if (id && !Array.isArray(id)) {
             baseRef = baseRef.doc(id);
             if (subcollection && !Array.isArray(subcollection)) {
