@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CUSTOM_ICONS = [
     { name: "Temple", path: "/icons/Blue_temple_icon-removebg.png" },
@@ -42,6 +43,7 @@ const CUSTOM_ICONS = [
 
 export default function AbbreviationsManager() {
     const { toast } = useToast();
+    const { user } = useAuth();
     const [abbreviationItems, setAbbreviationItems] = useState<AbbreviationItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -50,7 +52,10 @@ export default function AbbreviationsManager() {
         const fetchAbbreviations = async () => {
             try {
                 setLoading(true);
-                const res = await fetch("/api/admin/data?collection=settings&id=abbreviations");
+                const token = await user?.getIdToken();
+                const res = await fetch("/api/admin/data?collection=settings&id=abbreviations", {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
                 const contentType = res.headers.get("content-type");
 
                 if (res.ok && contentType?.includes("application/json")) {
@@ -108,9 +113,13 @@ export default function AbbreviationsManager() {
                 updatedAt: new Date()
             };
 
+            const token = await user?.getIdToken();
             const res = await fetch("/api/admin/data?collection=settings&id=abbreviations", {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify(updateData)
             });
 

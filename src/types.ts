@@ -22,6 +22,8 @@ export interface Hotspot {
     oldImages?: string[]; // Historical images
     leelas?: Leela[]; // Stories associated with this location
     isPresent?: boolean; // New: Whether this hotspot should appear in Present View
+    sthanaId?: string; // New: Link to the source architectural hotspot (for Present View)
+    order?: number; // New: Display order
 }
 
 export interface DescriptionSection {
@@ -84,6 +86,7 @@ export interface Temple {
     presentImages?: string[];
     hotspots?: Hotspot[];
     presentHotspots?: Hotspot[];
+    present_hotspots?: Hotspot[];
     createdAt?: any;
     updatedAt?: any;
     is_published?: boolean;

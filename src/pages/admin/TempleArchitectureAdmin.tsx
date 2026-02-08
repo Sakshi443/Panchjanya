@@ -1,8 +1,6 @@
 // src/pages/admin/TempleArchitectureAdmin.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
-import { db } from "@/firebase";
 
 import { v4 as uuidv4 } from "uuid";
 import { Hotspot, Leela, GlanceItem, AbbreviationItem, CustomBlock } from "@/types";
@@ -30,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
 // Local UI state interfaces - The robust interfaces are in @/types
@@ -62,6 +61,8 @@ export default function TempleArchitectureAdmin() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const [templeName, setTempleName] = useState("");
   const [viewType, setViewType] = useState<'architectural' | 'present'>('architectural');
@@ -119,38 +120,45 @@ export default function TempleArchitectureAdmin() {
 
         // 1. Try Fetching via API
         try {
-          const templeRes = await fetch(`/api/admin/data?collection=temples&id=${id}`);
+          const token = await user?.getIdToken();
+          const templeRes = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+          });
           const contentType = templeRes.headers.get("content-type");
 
           if (templeRes.ok && contentType?.includes("application/json")) {
             data = await templeRes.json();
 
-            // Try fetching subcollection via API
+            // Load present hotspots from main doc field if it exists
+            if (data.present_hotspots && Array.isArray(data.present_hotspots)) {
+              presentHotspotsData = data.present_hotspots;
+            }
+
+            // Also check subcollection for legacy data
             try {
-              const hotspotsRes = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots`);
+              const hotspotsRes = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots`, {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+              });
               if (hotspotsRes.ok) {
-                presentHotspotsData = await hotspotsRes.json();
+                const subData = await hotspotsRes.json();
+                if (Array.isArray(subData) && subData.length > 0) {
+                  // Merge or prioritize? Let's prioritize subcollection if main field is empty
+                  if (presentHotspotsData.length === 0) {
+                    presentHotspotsData = subData;
+                  }
+                }
               }
             } catch (e) {
               console.warn("API subcollection fetch failed, ignoring for now.");
             }
           }
-        } catch (apiError) {
-          console.warn("API fetch failed, falling back to SDK:", apiError);
-        }
-
-        // 2. Fallback to Client SDK if API data missing
-        if (!data) {
-          console.log("Using Client SDK Fallback for Temple Data");
-          const docRef = doc(db, "temples", id);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            data = { id: docSnap.id, ...docSnap.data() };
-            // Note: Subcollections via client SDK are tricky without deeper queries, skipping for basic fallback or implement later if critical
-          } else {
-            throw new Error("Temple not found (checked API and Client SDK)");
-          }
+        } catch (apiError: any) {
+          console.error("API fetch failed:", apiError);
+          toast({
+            title: "API Error",
+            description: "Failed to connect to the Admin API. Ensure vercel dev is running.",
+            variant: "destructive",
+          });
         }
 
         // 3. Populate State
@@ -213,20 +221,21 @@ export default function TempleArchitectureAdmin() {
     // If we clicked on an existing hotspot, ignore (it has its own handler, but just in case of bubbling)
     if ((e.target as HTMLElement).closest('.group.absolute')) return;
 
-    // Use currentTarget (the container) to ensure coordinates are relative to the positioning context
-    const rect = e.currentTarget.getBoundingClientRect();
+    // Use imageRef to ensure coordinates are relative to the ACTUAL image features, even if scaled
+    if (!imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    console.log("Image Clicked (Fixed):", { x, y, viewType });
+    console.log("Image Clicked (Relative to Image):", { x, y, viewType });
 
 
-    if (viewType === 'present' && archHotspots.length > 0) {
+    if (viewType === 'present') {
       setPendingClickPosition({ x, y });
       return;
     }
 
-    // Default: Create a new hotspot (for arch view or if present view is empty/user wants new)
+    // Default: Create a new hotspot (for arch view)
     const newHotspot: Hotspot = {
       id: uuidv4(),
       x,
@@ -235,18 +244,19 @@ export default function TempleArchitectureAdmin() {
       title: "",
       description: "",
       significance: "",
-      number: (viewType === 'architectural' ? archHotspots.length : presentHotspots.length) + 1,
+      number: archHotspots.length + 1,
       images: [],
       oldImages: [],
       leelas: [],
       sthanPothiDescription: "",
       sthanPothiTitle: "",
       generalDescriptionTitle: "",
-      isPresent: viewType === 'present'
+      isPresent: false
     };
 
+    setArchHotspots(prev => [...prev, newHotspot]);
     setSelectedHotspot(newHotspot);
-    setCurrentStep('sthana-details');
+    return;
   };
 
   const displayImages = viewType === 'architectural'
@@ -258,41 +268,64 @@ export default function TempleArchitectureAdmin() {
 
   const handleHotspotEdit = (hotspot: Hotspot, e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelectedHotspot(hotspot);
-    setCurrentStep('sthana-details');
+    // Ensure the hotspot has isPresent flag so sync doesn't lose it
+    setSelectedHotspot({
+      ...hotspot,
+      isPresent: viewType === 'present' || hotspot.isPresent
+    });
+  };
+
+  // Helper helper to remove undefined values
+  const sanitizeData = (data: any): any => {
+    // JSON.stringify automatically removes undefined values from objects
+    return JSON.parse(JSON.stringify(data));
   };
 
   const saveHotspot = async () => {
     if (!selectedHotspot || !id) return;
 
-    // Helper to remove undefined values
-    const sanitizeData = (data: any): any => {
-      // JSON.stringify automatically removes undefined values from objects
-      return JSON.parse(JSON.stringify(data));
-    };
-
     try {
+      const sanitizedHotspot = sanitizeData(selectedHotspot);
+
       if (viewType === 'architectural') {
         const updatedArch = archHotspots.some((h) => h.id === selectedHotspot.id)
           ? archHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
           : [...archHotspots, selectedHotspot];
 
-        // Optimistic Update
         setArchHotspots(updatedArch);
 
+        // Architecture branch: Update main document AND subcollection
+        const payload = {
+          hotspots: sanitizeData(updatedArch)
+        };
+
         try {
-          // Try generic Admin API first
+          const token = await user?.getIdToken();
+
+          // 1. Update main document (Legacy/Frontend Support)
           const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hotspots: sanitizeData(updatedArch) })
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
           });
-
           if (!res.ok) throw new Error("API write failed.");
-        } catch (apiError) {
-          console.warn("API failed, falling back to Client SDK...", apiError);
-          const docRef = doc(db, "temples", id);
-          await updateDoc(docRef, { hotspots: sanitizeData(updatedArch) });
+
+          // 2. Update subcollection (Source of Truth Migration)
+          fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=architecture_hotspots&subId=${selectedHotspot.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(sanitizedHotspot)
+          }).catch(e => console.warn("Background architecture subcollection update failed:", e));
+
+        } catch (apiError: any) {
+          console.error("API save failed:", apiError);
+          throw apiError; // Re-throw to be caught by the outer catch
         }
 
       } else {
@@ -300,22 +333,30 @@ export default function TempleArchitectureAdmin() {
           ? presentHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
           : [...presentHotspots, selectedHotspot];
 
-        // Optimistic Update
         setPresentHotspots(updatedPresent);
 
+        // Present View Isolation: Write ONLY to the subcollection as requested
+        // Note: We also update the main doc's array for frontend compatibility if needed, 
+        // but user asked for "ONLY subcollection". Let's follow "ONLY" but keep state updated.
+
         try {
-          // Try generic Admin API with subcollection support
+          const token = await user?.getIdToken();
+
+          // Write directly to subcollection
           const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(sanitizeData(selectedHotspot))
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(sanitizedHotspot)
           });
 
           if (!res.ok) throw new Error("API subcollection write failed.");
-        } catch (apiError) {
-          console.warn("API subcollection failed, falling back to Client SDK...", apiError);
-          const subDocRef = doc(db, "temples", id, "present_hotspots", selectedHotspot.id);
-          await setDoc(subDocRef, sanitizeData(selectedHotspot), { merge: true });
+
+        } catch (apiError: any) {
+          console.error("API subcollection write failed:", apiError);
+          throw apiError;
         }
       }
 
@@ -361,31 +402,47 @@ export default function TempleArchitectureAdmin() {
       contactDetails,
       contactName,
       contactNumber,
+      hotspots: archHotspots,
+      // present_hotspots is handled exclusively via subcollection for isolation
+      // present_hotspots: presentHotspots, 
     };
 
     try {
+      const token = await user?.getIdToken();
       const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(updateData)
       });
-
-      if (!res.ok) {
+      if (res.ok) {
+        toast({ title: "Success", description: "Temple details updated." });
+      } else {
         throw new Error("API save failed.");
       }
+    } catch (e: any) {
+      console.error("API Save error:", e);
+      toast({ title: "Error", description: "Failed to save details: " + (e.message || "API Error"), variant: "destructive" });
+    }
+  };
 
-      toast({ title: "Success", description: "Temple details updated." });
-    } catch (e) {
-      console.warn("API Save error, trying Client SDK:", e);
-
-      try {
-        const docRef = doc(db, "temples", id);
-        await updateDoc(docRef, updateData);
-        toast({ title: "Success (Fallback)", description: "Saved via Client SDK." });
-      } catch (firestoreError) {
-        console.error("Critical Save Error:", firestoreError);
-        toast({ title: "Error", description: "Failed to save details (API and Firestore failed).", variant: "destructive" });
-      }
+  const saveTempleDetailsDirectly = async (data: any) => {
+    if (!id) return;
+    const sanitizedInput = sanitizeData(data);
+    try {
+      const token = await user?.getIdToken();
+      await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(sanitizedInput)
+      });
+    } catch (e: any) {
+      console.error("Direct save failed:", e);
     }
   };
 
@@ -396,9 +453,13 @@ export default function TempleArchitectureAdmin() {
       const url = type === 'arch' ? archImageUrl : presentImageUrl;
 
       // Use generic Admin API
+      const token = await user?.getIdToken();
       const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ [field]: url })
       });
 
@@ -407,17 +468,9 @@ export default function TempleArchitectureAdmin() {
       }
 
       toast({ title: "Success", description: `${type === 'arch' ? 'Architecture' : 'Present'} image saved.` });
-    } catch (e) {
-      console.warn("API Image Save error, trying Client SDK:", e);
-      try {
-        const field = type === 'arch' ? "architectureImage" : "presentImage";
-        const url = type === 'arch' ? archImageUrl : presentImageUrl;
-
-        await updateDoc(doc(db, "temples", id), { [field]: url });
-        toast({ title: "Success (Fallback)", description: "Image saved via Client SDK." });
-      } catch (fsError) {
-        toast({ title: "Error", description: "Failed to save image.", variant: "destructive" });
-      }
+    } catch (e: any) {
+      console.error("API Image Save error:", e);
+      toast({ title: "Error", description: "Failed to save image.", variant: "destructive" });
     }
   };
 
@@ -499,30 +552,49 @@ export default function TempleArchitectureAdmin() {
     setAbbreviationItems(newItems);
   };
 
-  const deleteHotspot = async () => {
-    if (!selectedHotspot || !id) return;
+  const deleteHotspot = async (targetHotspot?: Hotspot) => {
+    const hotspotToDelete = targetHotspot || selectedHotspot;
+    if (!hotspotToDelete || !id) return;
 
-    if (!confirm(`Are you sure you want to delete ${selectedHotspot.title || `Hotspot #${selectedHotspot.number}`}? This will remove it from all views.`)) return;
+    if (!confirm(`Are you sure you want to delete ${hotspotToDelete.title || `Hotspot #${hotspotToDelete.number}`}? This will remove it from all views.`)) return;
 
     try {
-      if (selectedHotspot.isPresent) {
-        // Delete from subcollection via generic Admin API
-        const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
-          method: 'DELETE'
+      if (hotspotToDelete.isPresent) {
+        // Delete from array in main doc
+        const newPresent = presentHotspots.filter((h) => h.id !== hotspotToDelete.id);
+        setPresentHotspots(newPresent);
+
+        const token = await user?.getIdToken();
+        const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ present_hotspots: newPresent })
         });
 
         if (!res.ok) {
           throw new Error("API delete failed.");
         }
-        setPresentHotspots(presentHotspots.filter((h) => h.id !== selectedHotspot.id));
+
+        // Also delete from subcollection for legacy support
+        fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${hotspotToDelete.id}`, {
+          method: 'DELETE',
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        }).catch(e => console.warn("Background subcollection delete failed:", e));
       } else {
         // Delete from architectural hotspots array in main doc via generic Admin API
-        const newArch = archHotspots.filter((h) => h.id !== selectedHotspot.id);
+        const newArch = archHotspots.filter((h) => h.id !== hotspotToDelete.id);
         setArchHotspots(newArch);
 
+        const token = await user?.getIdToken();
         const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({ hotspots: newArch })
         });
 
@@ -536,8 +608,9 @@ export default function TempleArchitectureAdmin() {
         description: "Hotspot removed successfully",
       });
 
-      setCurrentStep('architecture-view');
-      setSelectedHotspot(null);
+      if (selectedHotspot?.id === hotspotToDelete.id) {
+        setSelectedHotspot(null);
+      }
     } catch (error) {
       console.error("Error deleting hotspot:", error);
       toast({
@@ -553,8 +626,10 @@ export default function TempleArchitectureAdmin() {
     if (!confirm("Are you sure you want to remove this hotspot from this specific photo? (It will still exist in the master list)")) return;
     try {
       // Use generic Admin API
+      const token = await user?.getIdToken();
       const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${hotspotId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
       });
 
       if (!res.ok) {
@@ -574,9 +649,13 @@ export default function TempleArchitectureAdmin() {
     try {
       const fieldToUpdate = viewType === 'architectural' ? "architectureImage" : "presentImage";
 
+      const token = await user?.getIdToken();
       const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ [fieldToUpdate]: url })
       });
 
@@ -609,9 +688,13 @@ export default function TempleArchitectureAdmin() {
       const currentImages = viewType === 'architectural' ? archImages : presentImages;
       const updatedImages = [...currentImages, url];
 
+      const token = await user?.getIdToken();
       const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ [fieldToUpdate]: updatedImages })
       });
 
@@ -686,14 +769,21 @@ export default function TempleArchitectureAdmin() {
         const hotspotsToDelete = presentHotspots.filter(h => (h.imageIndex || 0) === actualIndex);
         const hotspotsToUpdate = presentHotspots.filter(h => (h.imageIndex || 0) > actualIndex);
 
+        const token = await user?.getIdToken();
         for (const h of hotspotsToDelete) {
-          await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${h.id}`, { method: 'DELETE' });
+          await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${h.id}`, {
+            method: 'DELETE',
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+          });
         }
         for (const h of hotspotsToUpdate) {
           const updatedIndex = (h.imageIndex || 0) - 1;
           await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${h.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({ imageIndex: updatedIndex })
           });
         }
@@ -707,9 +797,13 @@ export default function TempleArchitectureAdmin() {
       }
 
       // Update the main doc images
+      const token = await user?.getIdToken();
       const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(updatePayload)
       });
 
@@ -1382,7 +1476,7 @@ export default function TempleArchitectureAdmin() {
             </div>
 
             {/* View Switcher Tabs */}
-            <div className="flex justify-center bg-muted p-1 rounded-xl w-fit mx-auto">
+            <div className="flex justify-center bg-muted p-1 rounded-xl w-fit mx-auto relative group">
               <button
                 onClick={() => {
                   setViewType('architectural');
@@ -1395,18 +1489,29 @@ export default function TempleArchitectureAdmin() {
               >
                 Architecture View
               </button>
-              <button
-                onClick={() => {
-                  setViewType('present');
-                  setAdminImageIndex(0);
-                }}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${viewType === 'present'
-                  ? 'bg-white shadow-sm text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-                  }`}
-              >
-                Present View
-              </button>
+
+              <div className="relative">
+                <button
+                  disabled={!archImageUrl || archHotspots.length === 0}
+                  onClick={() => {
+                    setViewType('present');
+                    setAdminImageIndex(0);
+                  }}
+                  className={`px-6 py-2 rounded-lg font-medium transition-all ${viewType === 'present'
+                    ? 'bg-white shadow-sm text-primary'
+                    : (!archImageUrl || archHotspots.length === 0)
+                      ? 'text-slate-300 cursor-not-allowed'
+                      : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                  Present View
+                </button>
+                {(!archImageUrl || archHotspots.length === 0) && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                    Define Architecture Sthanas first
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Unified Multi-Image Management Slider */}
@@ -1452,6 +1557,7 @@ export default function TempleArchitectureAdmin() {
                     {displayImages[adminImageIndex] ? (
                       <>
                         <img
+                          ref={imageRef}
                           src={displayImages[adminImageIndex]}
                           alt="Active View"
                           className="max-h-[80vh] w-auto shadow-2xl transition-transform duration-700 select-none"
@@ -1478,6 +1584,37 @@ export default function TempleArchitectureAdmin() {
                               <div className={`absolute -inset-2 rounded-full animate-ping opacity-75 ${viewType === 'architectural' ? 'bg-red-600/30' : 'bg-blue-600/30'}`}></div>
                               <div className={`w-7 h-7 rounded-full border-2 border-white shadow-xl group-hover:scale-125 transition-all flex items-center justify-center cursor-pointer relative z-10 font-black text-[10px] text-white ${viewType === 'architectural' ? 'bg-red-600 group-hover:bg-red-500' : 'bg-blue-600 group-hover:bg-blue-500'}`}>
                                 {hotspot.number}
+
+                                {/* Quick Actions on Hover */}
+                                <div className="absolute -top-7 -right-7 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {/* Edit Button */}
+                                  <div
+                                    className="bg-blue-600 rounded-full p-1.5 border border-white shadow-lg hover:bg-blue-700 active:scale-95 cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleHotspotEdit(hotspot, e);
+                                    }}
+                                    title="Edit"
+                                  >
+                                    <LucideIcons.Pencil className="w-3 h-3 text-white" />
+                                  </div>
+
+                                  {/* Delete Button */}
+                                  <div
+                                    className="bg-red-600 rounded-full p-1.5 border border-white shadow-lg hover:bg-red-700 active:scale-95 cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (viewType === 'present') {
+                                        unmapHotspot(hotspot.id);
+                                      } else {
+                                        deleteHotspot(hotspot);
+                                      }
+                                    }}
+                                    title={viewType === 'present' ? "Unmap" : "Delete"}
+                                  >
+                                    <Trash2 className="w-3 h-3 text-white" />
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1712,14 +1849,13 @@ export default function TempleArchitectureAdmin() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                                  className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all shrink-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (viewType === 'present' && isPlaced) {
                                       unmapHotspot(hotspot.id);
                                     } else {
-                                      setSelectedHotspot(hotspot);
-                                      deleteHotspot();
+                                      deleteHotspot(hotspot);
                                     }
                                   }}
                                   title={viewType === 'present' && isPlaced ? "Unmap from this photo" : "Delete forever"}
@@ -1900,346 +2036,298 @@ export default function TempleArchitectureAdmin() {
             </Card>
 
             {/* Hotspot Edit Dialog */}
-          </div>
-        )}
-
-        {/* Step 3: Sthana Details */}
-        {currentStep === 'sthana-details' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h1 className="text-3xl font-serif font-bold text-primary tracking-tight">Sthana Information Management</h1>
-                <p className="text-sm text-slate-500 font-medium">Manage details, history, and photos for every sacred spot.</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={() => {
-                    const newSthana: Hotspot = {
-                      id: uuidv4(),
-                      number: archHotspots.length + 1,
-                      title: "",
-                      description: "",
-                      x: 0,
-                      y: 0,
-                      images: [],
-                      oldImages: [],
-                      leelas: [],
-                      sthanPothiTitle: "",
-                      sthanPothiDescription: "",
-                      generalDescriptionTitle: "",
-                    };
-                    setArchHotspots([...archHotspots, newSthana]);
-                    setSelectedHotspot(newSthana);
-                  }}
-                  className="bg-amber-600 text-white hover:bg-amber-700 rounded-xl px-6 h-12 shadow-lg shadow-amber-600/20 gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Add Sthana (No Hotspot)
-                </Button>
-                <Button onClick={saveTempleDetails} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-8 h-12 shadow-lg shadow-blue-900/20">
-                  <Save className="w-4 h-4 mr-2" /> Save All Changes
-                </Button>
-              </div>
-            </div>
-
-            {!selectedHotspot ? (
-              <div className="space-y-6">
-                {/* Search Bar */}
-                <div className="relative max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    placeholder="Search sthanas by name or description..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-11 rounded-xl bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {archHotspots
-                    .filter(h =>
-                    (h.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      h.description?.toLowerCase().includes(searchQuery.toLowerCase()))
-                    )
-                    .map((h) => (
-                      <Card
-                        key={h.id}
-                        className="group hover:border-primary/50 transition-all cursor-pointer overflow-hidden border-2"
-                        onClick={() => setSelectedHotspot(h)}
-                      >
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black">
-                              {h.number}
-                            </div>
-                            <Badge variant="outline" className="bg-white text-slate-400 capitalize">
-                              {h.images?.length || 0} Photos
-                            </Badge>
-                          </div>
-                          <CardTitle className="mt-4 text-xl">{h.title || "Untitled Sthana"}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-slate-500 line-clamp-2 min-h-[40px]">
-                            {h.description || "No description provided."}
-                          </p>
-                          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                            <div className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                              {h.x === 0 && h.y === 0 ? (
-                                <span className="text-amber-500">Unmapped (No Hotspot)</span>
-                              ) : (
-                                <span>Mapped to Arch View</span>
-                              )}
-                            </div>
-                            <span className="text-primary font-bold text-sm flex items-center gap-1">
-                              Edit Details <ChevronRight className="w-4 h-4" />
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  {archHotspots.length === 0 && (
-                    <div className="col-span-full py-20 text-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200">
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-slate-300">
-                        <ImageIcon className="w-8 h-8" />
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-800">No Sthanas Defined</h3>
-                      <p className="text-sm text-slate-500 mt-1">Add hotspots in Step 2 or create a stand-alone sthana here.</p>
-                    </div>
-                  )}
-                  {archHotspots.length > 0 && archHotspots.filter(h => (h.title?.toLowerCase().includes(searchQuery.toLowerCase()) || h.description?.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
-                    <div className="col-span-full py-20 text-center">
-                      <p className="text-slate-500">No sthanas match your search.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
+            <Dialog open={!!selectedHotspot} onOpenChange={(open) => !open && setSelectedHotspot(null)}>
+              <DialogContent className="max-w-5xl h-[90vh] overflow-y-auto rounded-2xl p-0 border-none shadow-2xl">
+                <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedHotspot(null)} className="rounded-full hover:bg-slate-100">
-                      <ArrowLeft className="w-5 h-5" />
-                    </Button>
+                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xl shadow-inner">
+                      {selectedHotspot?.number || "?"}
+                    </div>
                     <div>
-                      <h1 className="text-3xl font-serif font-bold text-primary tracking-tight">
-                        {selectedHotspot.title || "New Hotspot"}
-                      </h1>
-                      <p className="text-sm text-slate-500 mt-1">Refine descriptions, images, and leelas for this specific spot</p>
+                      <DialogTitle className="text-2xl font-serif font-bold text-primary tracking-tight">
+                        {selectedHotspot?.title || "Edit Sthana Details"}
+                        {viewType === 'present' && <span className="ml-3 text-xs font-sans font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Mapping Mode</span>}
+                      </DialogTitle>
+                      <DialogDescription className="text-sm text-slate-500 font-medium">
+                        {viewType === 'present'
+                          ? "Reposition or reorder this Sthana on the present-day view. Metadata is inherited from Architecture."
+                          : "Refine descriptions, images, and leelas for this sacred spot."
+                        }
+                      </DialogDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (viewType === 'present') {
+                          unmapHotspot(selectedHotspot.id);
+                        } else {
+                          deleteHotspot(selectedHotspot);
+                        }
+                      }}
+                      className="rounded-xl px-4 h-12 text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {viewType === 'present' ? "Unmap" : "Delete"}
+                    </Button>
                     <Button onClick={saveHotspot} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-8 h-12 shadow-lg shadow-blue-900/20">
                       <Save className="w-4 h-4 mr-2" /> Save Changes
                     </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setSelectedHotspot(null)} className="rounded-full hover:bg-slate-100">
+                      <X className="w-5 h-5" />
+                    </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Left Column: Basic Info & Content */}
-                  <div className="space-y-6">
+                <div className="p-8 space-y-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left Column: Basic Info & Content */}
+                    <div className="space-y-6">
+                      {selectedHotspot && (
+                        <>
 
-                    <Card className="border-slate-200">
-                      <CardHeader className="pb-3 border-b border-slate-100 mb-4 flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg font-bold">Visibility Settings</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                          <div className="space-y-0.5">
-                            <Label className="text-blue-900 font-bold">Show in Present View</Label>
-                            <p className="text-xs text-blue-600/70">Enable this to make this hotspot visible in the Present View section of the public site.</p>
-                          </div>
-                          <Switch
-                            checked={selectedHotspot.isPresent || false}
-                            onCheckedChange={(checked) => setSelectedHotspot({ ...selectedHotspot, isPresent: checked })}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
+                          {/* Sthan Pothi Card */}
+                          <Card className="border-slate-200 shadow-sm">
+                            <CardHeader className="pb-3 border-b border-slate-100 mb-4 bg-slate-50/50">
+                              <CardTitle className="text-lg font-bold">Sthan Pothi</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4 pt-4">
+                              <div className="space-y-2">
+                                <Label>Sthan Name</Label>
+                                <Input
+                                  value={selectedHotspot.title || ""}
+                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, title: e.target.value })}
+                                  placeholder="Enter the sacred name..."
+                                  className="h-12 rounded-xl"
+                                  disabled={viewType === 'present'}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Sthan Pothi Description</Label>
+                                <Textarea
+                                  value={selectedHotspot.sthanPothiDescription || ""}
+                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiDescription: e.target.value })}
+                                  placeholder="Specific scriptural details..."
+                                  rows={5}
+                                  className="rounded-xl"
+                                  disabled={viewType === 'present'}
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                    {/* Sthan Pothi Card */}
-                    <Card className="border-slate-200">
-                      <CardHeader className="pb-3 border-b border-slate-100 mb-4">
-                        <CardTitle className="text-lg font-bold">Sthan Pothi</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Sthan Name</Label>
-                          <div className="p-3 bg-slate-100 rounded-xl border border-slate-200 text-slate-700 font-bold">
-                            {selectedHotspot.title || "Untitled Sthan"}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Sthan Pothi Description</Label>
-                          <Textarea
-                            value={selectedHotspot.sthanPothiDescription || ""}
-                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiDescription: e.target.value })}
-                            placeholder="Specific scriptural details..."
-                            rows={5}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
+                          {/* Details Card */}
+                          <Card className="border-slate-200 shadow-sm">
+                            <CardHeader className="pb-3 border-b border-slate-100 mb-4 bg-slate-50/50">
+                              <CardTitle className="text-lg font-bold">Details</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4 pt-4">
+                              <div className="space-y-2">
+                                <Label>Title</Label>
+                                <Input
+                                  value={selectedHotspot.generalDescriptionTitle || "General Description"}
+                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, generalDescriptionTitle: e.target.value })}
+                                  placeholder="Heading for this section"
+                                  className="h-12 rounded-xl"
+                                  disabled={viewType === 'present'}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Content</Label>
+                                <Textarea
+                                  value={selectedHotspot.description}
+                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, description: e.target.value })}
+                                  placeholder="Brief architectural overview..."
+                                  rows={3}
+                                  className="rounded-xl"
+                                  disabled={viewType === 'present'}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Significance</Label>
+                                <Textarea
+                                  value={selectedHotspot.significance || ""}
+                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, significance: e.target.value })}
+                                  placeholder="Architectural or spiritual significance..."
+                                  rows={5}
+                                  className="rounded-xl"
+                                  disabled={viewType === 'present'}
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                    {/* Details Card (formerly Deep Details) */}
-                    <Card className="border-slate-200">
-                      <CardHeader className="pb-3 border-b border-slate-100 mb-4">
-                        <CardTitle className="text-lg font-bold">Details</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Title</Label>
-                          <Input
-                            value={selectedHotspot.generalDescriptionTitle || "General Description"}
-                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, generalDescriptionTitle: e.target.value })}
-                            placeholder="Heading for this section"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Content</Label>
-                          <Textarea
-                            value={selectedHotspot.description}
-                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, description: e.target.value })}
-                            placeholder="Brief architectural overview..."
-                            rows={3}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <Card className="border-slate-200 shadow-sm">
+                            <CardHeader className="pb-3 border-b border-slate-100 mb-4 flex flex-row items-center justify-between bg-slate-50/50">
+                              <CardTitle className="text-lg font-bold">Leelas (Stories)</CardTitle>
+                              {viewType === 'architectural' && (
+                                <Button variant="outline" size="sm" onClick={addLeela} className="rounded-lg h-8">
+                                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Leela
+                                </Button>
+                              )}
+                            </CardHeader>
+                            <CardContent className="space-y-4 pt-4">
+                              {(Array.isArray(selectedHotspot.leelas) ? selectedHotspot.leelas : []).map((leela: any, idx: number) => (
+                                <div key={typeof leela === 'string' ? idx : leela.id} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-3 relative group">
+                                  {viewType === 'architectural' && (
+                                    <button
+                                      onClick={() => removeLeela(typeof leela === 'string' ? leela : leela.id)}
+                                      className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px]">
+                                      {idx + 1}
+                                    </span>
+                                    <Input
+                                      placeholder="Story Title"
+                                      value={typeof leela === 'string' ? '' : leela.title}
+                                      className="bg-white h-10 rounded-xl"
+                                      disabled={viewType === 'present'}
+                                      onChange={(e) => {
+                                        const updatedLeelas = (selectedHotspot.leelas as any[]).map((l: any) =>
+                                          typeof l === 'string' ? l : (l.id === leela.id ? { ...l, title: e.target.value } : l)
+                                        );
+                                        setSelectedHotspot({ ...selectedHotspot, leelas: updatedLeelas as Leela[] });
+                                      }}
+                                    />
+                                  </div>
+                                  <Textarea
+                                    placeholder="Describe the divine story..."
+                                    rows={3}
+                                    className="bg-white rounded-xl"
+                                    value={typeof leela === 'string' ? leela : leela.description}
+                                    disabled={viewType === 'present'}
+                                    onChange={(e) => updateLeela(typeof leela === 'string' ? leela : leela.id, e.target.value)}
+                                  />
+                                </div>
+                              ))}
+                              {(!selectedHotspot.leelas || selectedHotspot.leelas.length === 0) && (
+                                <p className="text-sm text-slate-400 italic text-center py-6">No leelas added yet.</p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </>
+                      )}
+                    </div>
 
-                    <Card className="border-slate-200">
-                      <CardHeader className="pb-3 border-b border-slate-100 mb-4 flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg font-bold">Leelas (Stories)</CardTitle>
-                        <Button variant="outline" size="sm" onClick={addLeela} className="rounded-lg h-8">
-                          <Plus className="w-3.5 h-3.5 mr-1" /> Add Leela
-                        </Button>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {(Array.isArray(selectedHotspot.leelas) ? selectedHotspot.leelas : []).map((leela: any, idx: number) => (
-                          <div key={typeof leela === 'string' ? idx : leela.id} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 space-y-3 relative group">
-                            <button
-                              onClick={() => removeLeela(typeof leela === 'string' ? leela : leela.id)}
-                              className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px]">
-                                {idx + 1}
-                              </span>
-                              <Input
-                                placeholder="Title"
-                                value={typeof leela === 'string' ? '' : leela.title}
-                                className="bg-white h-8"
-                                onChange={(e) => {
-                                  const updatedLeelas = (selectedHotspot.leelas as any[]).map((l: any) =>
-                                    typeof l === 'string' ? l : (l.id === leela.id ? { ...l, title: e.target.value } : l)
-                                  );
-                                  setSelectedHotspot({ ...selectedHotspot, leelas: updatedLeelas as Leela[] });
-                                }}
-                              />
+                    {/* Right Column: Image Management */}
+                    <div className="space-y-6">
+                      {selectedHotspot && (
+                        <Card className="border-slate-200 overflow-hidden group/card shadow-sm hover:shadow-md transition-all">
+                          <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <ImageIcon className="w-4 h-4 text-blue-600" />
+                              <h3 className="font-bold text-slate-900">Sthan Photo Gallery</h3>
                             </div>
-                            <Textarea
-                              placeholder="Describe the story..."
-                              rows={3}
-                              className="bg-white"
-                              value={typeof leela === 'string' ? leela : leela.description}
-                              onChange={(e) => updateLeela(typeof leela === 'string' ? leela : leela.id, e.target.value)}
-                            />
+                            <Badge variant="outline" className="bg-white text-slate-400 font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                              {selectedHotspot.images.length} Photos
+                            </Badge>
                           </div>
-                        ))}
-                        {(!selectedHotspot.leelas || selectedHotspot.leelas.length === 0) && (
-                          <p className="text-sm text-slate-400 italic text-center py-6">No leelas added yet.</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Right Column: Image Management */}
-                  <div className="space-y-6">
-                    {/* Present Day Images */}
-                    <Card className="border-slate-200 overflow-hidden group/card shadow-sm hover:shadow-md transition-all">
-                      <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ImageIcon className="w-4 h-4 text-blue-600" />
-                          <h3 className="font-bold text-slate-900">Sthan Photo</h3>
-                        </div>
-                        <Badge variant="outline" className="bg-white text-slate-400 font-black text-[10px] uppercase tracking-widest">
-                          {selectedHotspot.images.length} Photos
-                        </Badge>
-                      </div>
-                      <CardContent className="p-6 space-y-4">
-                        <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-                          ℹ️ Photos added here will be displayed in the primary gallery for this sthana.
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          {selectedHotspot.images.map((url, idx) => (
-                            <div key={idx} className="relative aspect-[4/3] group rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
-                              <img src={url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              <button
-                                onClick={() => {
-                                  if (confirm("Remove this image?")) {
-                                    removeImageFromHotspot(idx, 'present');
-                                  }
-                                }}
-                                className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-xl scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all shadow-xl hover:bg-red-700 z-10"
-                                title="Remove image"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                          <CardContent className="p-6 space-y-4">
+                            <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
+                              ℹ️ Photos added here will be displayed in the primary gallery for this sthana.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {selectedHotspot.images.map((url, idx) => (
+                                <div key={idx} className="relative aspect-[4/3] group rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
+                                  <img src={url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  {viewType === 'architectural' && (
+                                    <button
+                                      onClick={() => {
+                                        if (confirm("Remove this image?")) {
+                                          removeImageFromHotspot(idx, 'present');
+                                        }
+                                      }}
+                                      className="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-xl scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all shadow-xl hover:bg-red-700 z-10"
+                                      title="Remove image"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                              {viewType === 'architectural' && (
+                                <div className="aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 transition-all flex items-center justify-center p-2 group/upload overflow-hidden">
+                                  <ImageUpload
+                                    folderPath={`hotspots/${id}/${selectedHotspot.id}/present`}
+                                    onUpload={(url) => setSelectedHotspot({
+                                      ...selectedHotspot,
+                                      images: [...selectedHotspot.images, url]
+                                    })}
+                                    label="Upload New Photo"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          ))}
-                          <div className="aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 transition-all flex items-center justify-center p-2 group/upload overflow-hidden">
-                            <ImageUpload
-                              folderPath={`hotspots/${id}/${selectedHotspot.id}/present`}
-                              onUpload={(url) => setSelectedHotspot({
-                                ...selectedHotspot,
-                                images: [...selectedHotspot.images, url]
-                              })}
-                              label="Upload"
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+                <div className="sticky bottom-0 bg-slate-50 border-t border-slate-100 p-6 flex justify-end gap-3 rounded-b-2xl">
+                  <Button variant="outline" onClick={() => setSelectedHotspot(null)} className="rounded-xl px-10 h-12">Cancel</Button>
+                  <Button onClick={saveHotspot} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-12 h-12 shadow-xl shadow-blue-900/20">
+                    <Save className="w-4 h-4 mr-2" /> Save & Record Sthana
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
+
 
         {/* Pick Hotspot Mapping Dialog */}
         <Dialog open={!!pendingClickPosition} onOpenChange={(open) => !open && setPendingClickPosition(null)}>
           <DialogContent className="max-w-md rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">Map Architectural Hotspot</DialogTitle>
+              <DialogTitle className="text-xl font-bold">Map Architectural Sthana</DialogTitle>
               <DialogDescription className="text-sm text-slate-500 font-medium pt-2">
-                Choose which hotspot from the architectural view you want to map to this location:
+                Select an existing Sthana from the Architecture View to map to this location:
               </DialogDescription>
             </DialogHeader>
             <div className="py-2 space-y-4">
               <div className="grid grid-cols-1 gap-2 max-h-[40vh] overflow-y-auto pr-2">
                 {archHotspots
-                  .filter(ah => !presentHotspots.some(ph => ph.id === ah.id && (ph.imageIndex || 0) === adminImageIndex))
+                  .filter(ah => !presentHotspots.some(ph => ph.sthanaId === ah.id || ph.id === ah.id))
                   .map(ah => (
                     <button
                       key={ah.id}
                       onClick={() => {
-                        const newPresentHotspot = {
-                          ...ah,
+                        const newPresentHotspot: Hotspot = {
+                          ...ah, // Inherit metadata
+                          sthanaId: ah.id, // Link to source
+                          id: uuidv4(), // Give it its own unique mapping ID
                           x: pendingClickPosition!.x,
                           y: pendingClickPosition!.y,
-                          imageIndex: adminImageIndex
+                          imageIndex: adminImageIndex,
+                          isPresent: true
                         };
-                        setPresentHotspots([...presentHotspots, newPresentHotspot]);
+                        const updatedPresent = [...presentHotspots, newPresentHotspot];
+                        setPresentHotspots(updatedPresent);
                         setPendingClickPosition(null);
 
-                        // User Request: Select the hotspot immediately after mapping
-                        setSelectedHotspot(newPresentHotspot);
-                        setCurrentStep('sthana-details');
+                        // Save mapping to subcollection
+                        const tokenPromise = user?.getIdToken();
+                        tokenPromise?.then(token => {
+                          fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${newPresentHotspot.id}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                            },
+                            body: JSON.stringify(sanitizeData(newPresentHotspot))
+                          }).catch(e => console.warn("Mapping subcollection save failed:", e));
+                        });
 
-                        toast({ title: "Mapped", description: `Hotspot #${ah.number} mapped and selected.` });
+                        setSelectedHotspot(newPresentHotspot);
+                        toast({ title: "Mapped", description: `Sthana "${ah.title}" mapped to Present View.` });
                       }}
                       className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors text-left"
                     >
@@ -2247,45 +2335,18 @@ export default function TempleArchitectureAdmin() {
                         {ah.number}
                       </span>
                       <div>
-                        <p className="font-bold text-slate-900">{ah.title || `Hotspot #${ah.number}`}</p>
+                        <p className="font-bold text-slate-900">{ah.title || `Sthana #${ah.number}`}</p>
                         <p className="text-xs text-slate-500 truncate max-w-[200px]">{ah.description}</p>
                       </div>
                     </button>
                   ))}
-                {archHotspots.filter(ah => !presentHotspots.some(ph => ph.id === ah.id && (ph.imageIndex || 0) === adminImageIndex)).length === 0 && (
-                  <p className="text-center py-8 text-slate-400 italic">No unmapped hotspots available.</p>
+                {archHotspots.filter(ah => !presentHotspots.some(ph => ph.sthanaId === ah.id || ph.id === ah.id)).length === 0 && (
+                  <p className="text-center py-8 text-slate-400 italic">No unmapped Sthanas available.</p>
                 )}
               </div>
             </div>
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button
-                onClick={() => {
-                  setPendingClickPosition(null);
-                  const newHotspot: Hotspot = {
-                    id: uuidv4(),
-                    x: pendingClickPosition!.x,
-                    y: pendingClickPosition!.y,
-                    imageIndex: adminImageIndex,
-                    title: "",
-                    description: "",
-                    significance: "",
-                    number: presentHotspots.length + 1,
-                    images: [],
-                    oldImages: [],
-                    leelas: [],
-                    sthanPothiDescription: "",
-                    sthanPothiTitle: "",
-                    generalDescriptionTitle: "",
-                    isPresent: true
-                  };
-                  setSelectedHotspot(newHotspot);
-                  setCurrentStep('sthana-details');
-                }}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Create New Hotspot
-              </Button>
-              <Button variant="outline" onClick={() => setPendingClickPosition(null)} className="rounded-xl w-full sm:w-auto">Cancel</Button>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setPendingClickPosition(null)} className="rounded-xl w-full">Cancel</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

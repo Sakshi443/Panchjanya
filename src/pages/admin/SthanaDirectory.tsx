@@ -3,6 +3,7 @@ import { collection, onSnapshot, deleteDoc, doc, Timestamp } from "firebase/fire
 import { db } from "@/firebase";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,12 +40,16 @@ export default function SthanaDirectory() {
 
     const navigate = useNavigate();
     const { toast } = useToast();
+    const { user } = useAuth();
 
     // 1. Data Fetching
     const fetchTemples = async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/admin/data?collection=temples");
+            const token = await user?.getIdToken();
+            const response = await fetch("/api/admin/data?collection=temples", {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
             const contentType = response.headers.get("content-type");
 
             let data;
@@ -86,8 +91,10 @@ export default function SthanaDirectory() {
         if (!confirm(`Are you sure you want to delete '${name}'? This action cannot be undone.`)) return;
 
         try {
+            const token = await user?.getIdToken();
             const response = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
             });
             const contentType = response.headers.get("content-type");
 

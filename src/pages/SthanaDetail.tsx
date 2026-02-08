@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { db } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, ChevronLeft, ChevronRight, Compass, History, BookOpen, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Temple } from "@/types";
+import { Temple, Hotspot } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 
@@ -28,32 +28,48 @@ export default function SthanaDetail() {
         const fetchTemple = async () => {
             if (!id || !sthanaId) return;
             try {
-                const snap = await getDoc(doc(db, "temples", id));
-                if (snap.exists()) {
-                    const data = snap.data() as Temple;
+                setLoading(true);
+                const templeSnap = await getDoc(doc(db, "temples", id));
+                if (!templeSnap.exists()) return;
+                const templeData = templeSnap.data() as Temple;
 
-                    // Always try to find the hotspot in BOTH arrays to get the most complete data
-                    const allHotspotsPool = [...(data.hotspots || []), ...(data.presentHotspots || [])];
-                    const foundInPool = allHotspotsPool.find((h: any) => h.id === sthanaId);
+                // 1. Fetch all hotspots from subcollections (The new source of truth)
+                const archRef = collection(db, "temples", id, "architecture_hotspots");
+                const presRef = collection(db, "temples", id, "present_hotspots");
 
-                    if (foundInPool) {
-                        setHotspot({
-                            ...foundInPool,
-                            number: foundInPool.number || (data.hotspots?.findIndex(h => h.id === sthanaId) + 1) || 1
-                        });
+                const [archSnap, presSnap] = await Promise.all([
+                    getDocs(archRef),
+                    getDocs(presRef)
+                ]);
+
+                const archHotspots = archSnap.docs.map(d => d.data() as Hotspot);
+                const presHotspots = presSnap.docs.map(d => d.data() as Hotspot);
+
+                // Fallback to legacy arrays if subcollections are empty
+                const finalArch = archHotspots.length > 0 ? archHotspots : (templeData.hotspots || []);
+                const finalPres = presHotspots.length > 0 ? presHotspots : (templeData.present_hotspots || templeData.presentHotspots || []);
+
+                // 2. Find target hotspot
+                let found = [...finalArch, ...finalPres].find(h => h.id === sthanaId);
+
+                if (found) {
+                    // if it's a mapping, merge with architectural source
+                    if (found.sthanaId) {
+                        const source = finalArch.find(ah => ah.id === found.sthanaId);
+                        found = { ...source, ...found };
                     }
-
-                    const hotspotsToUse = viewParam === 'present'
-                        ? (data.presentHotspots || [])
-                        : (data.hotspots || []);
-
-                    const formattedHotspots = hotspotsToUse.map((h, index) => ({
-                        ...h,
-                        number: h.number || index + 1
-                    })).sort((a, b) => (a.number || 0) - (b.number || 0));
-
-                    setAllHotspots(formattedHotspots);
+                    setHotspot(found);
                 }
+
+                // 3. Set all hotspots for navigation (view-specific)
+                const hotspotsToUse = viewParam === 'present' ? finalPres : finalArch;
+                const formatted = hotspotsToUse.map((h, index) => ({
+                    ...h,
+                    number: h.number || index + 1
+                })).sort((a, b) => (a.number || 0) - (b.number || 0));
+
+                setAllHotspots(formatted);
+
             } catch (error) {
                 console.error("Error fetching sthana:", error);
             } finally {

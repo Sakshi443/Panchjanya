@@ -102,3 +102,5 @@ scripts/output
 *.tsbuildinfo
 
 vite.config.ts.timestamp*
+
+.vercel

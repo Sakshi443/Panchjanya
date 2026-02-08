@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
       '/api/cloudinary': {
         target: 'https://api.cloudinary.com/v1_1',
         changeOrigin: true,

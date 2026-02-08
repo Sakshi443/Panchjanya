@@ -181,20 +181,53 @@ export default function ArchitectureViewer() {
                     presentImages: presImgs
                 });
 
-                // Add numbers to hotspots if they don't have them
-                const hotspotsWithNumbers = (data.hotspots || []).map((h, index) => ({
+                // Architecture Hotspots Fetch: Prioritize subcollection for strict isolation
+                let finalArchHotspots: any[] = [];
+                try {
+                    const archHotspotsRef = collection(db, "temples", id, "architecture_hotspots");
+                    const archHotspotsSnap = await getDocs(archHotspotsRef);
+                    const subcollectionArch = archHotspotsSnap.docs.map(doc => doc.data() as Hotspot);
+
+                    if (subcollectionArch.length > 0) {
+                        finalArchHotspots = subcollectionArch;
+                    } else if (data.hotspots && Array.isArray(data.hotspots)) {
+                        finalArchHotspots = data.hotspots;
+                    }
+                } catch (subErr) {
+                    console.warn("Architecture subcollection fetch failed:", subErr);
+                    if (data.hotspots && Array.isArray(data.hotspots)) {
+                        finalArchHotspots = data.hotspots;
+                    }
+                }
+
+                const archHotspotsWithNumbers = finalArchHotspots.map((h, index) => ({
                     ...h,
                     number: h.number || index + 1
                 }));
-                // Cast to Hotspot[] to satisfy the new interface (optional fields are fine)
-                setHotspots(hotspotsWithNumbers as Hotspot[]);
+                setHotspots(archHotspotsWithNumbers as Hotspot[]);
 
-                // Refactored: Fetch present hotspots from subcollection
-                const presentHotspotsRef = collection(db, "temples", id, "present_hotspots");
-                const presentHotspotsSnap = await getDocs(presentHotspotsRef);
-                const subcollectionHotspots = presentHotspotsSnap.docs.map(doc => doc.data() as Hotspot);
+                // Unified Fetch: Prioritize present_hotspots from subcollection for strict isolation
+                let finalPresentHotspots: any[] = [];
 
-                const presentHotspotsWithNumbers = subcollectionHotspots.map((h, index) => ({
+                try {
+                    const presentHotspotsRef = collection(db, "temples", id, "present_hotspots");
+                    const presentHotspotsSnap = await getDocs(presentHotspotsRef);
+                    const subcollectionHotspots = presentHotspotsSnap.docs.map(doc => doc.data() as Hotspot);
+
+                    if (subcollectionHotspots.length > 0) {
+                        finalPresentHotspots = subcollectionHotspots;
+                    } else if ((data.present_hotspots && Array.isArray(data.present_hotspots)) || (data.presentHotspots && Array.isArray(data.presentHotspots))) {
+                        // Fallback to main document array (Legacy/Initial)
+                        finalPresentHotspots = data.present_hotspots || data.presentHotspots || [];
+                    }
+                } catch (subErr) {
+                    console.warn("Subcollection fetch failed, falling back to main doc data:", subErr);
+                    if (data.present_hotspots && Array.isArray(data.present_hotspots)) {
+                        finalPresentHotspots = data.present_hotspots;
+                    }
+                }
+
+                const presentHotspotsWithNumbers = finalPresentHotspots.map((h, index) => ({
                     ...h,
                     number: h.number || index + 1
                 }));
@@ -252,7 +285,20 @@ export default function ArchitectureViewer() {
 
     // Create unified hotspots list for Pothi and List
     const unifiedHotspots = (() => {
-        const combined = [...hotspots, ...presentHotspots];
+        // Architecture hotspots are the primary definitions
+        const baseArch = hotspots.map(h => ({ ...h, isPresent: false }));
+
+        // Present hotspots are mappings that inherit from Architecture
+        const mergedPresent = presentHotspots.map(ph => {
+            const source = hotspots.find(ah => ah.id === ph.sthanaId || ah.id === ph.id);
+            return {
+                ...source,
+                ...ph, // Overrides x, y, order, imageIndex, and any Present-specific data
+                isPresent: true
+            };
+        });
+
+        const combined = [...baseArch, ...mergedPresent];
         const unique = Array.from(new Map(combined.map(h => [h.id, h])).values());
         return unique.sort((a, b) => (a.number || 0) - (b.number || 0));
     })();
@@ -515,15 +561,7 @@ export default function ArchitectureViewer() {
                                     {(() => {
                                         const activeHotspots = imageType === 'architectural'
                                             ? hotspots
-                                            : [
-                                                ...presentHotspots.filter(h => (h.imageIndex || 0) === currentImageIndex),
-                                                ...hotspots.filter(h =>
-                                                    // Only show fallback if NOT present in presentHotspots at all
-                                                    h.isPresent &&
-                                                    !presentHotspots.some(ph => ph.id === h.id) &&
-                                                    (h.imageIndex || 0) === currentImageIndex
-                                                )
-                                            ];
+                                            : unifiedHotspots.filter(h => h.isPresent && (h.imageIndex || 0) === currentImageIndex);
 
                                         return (showHotspots || selectedHotspotId) && activeHotspots
                                             .map((hotspot) => {

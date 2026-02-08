@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import Papa from "papaparse";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import { db } from "@/firebase";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminCsvUpload = () => {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const { user } = useAuth();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCsvFile(e.target.files?.[0] || null);
@@ -51,9 +53,13 @@ const AdminCsvUpload = () => {
             };
 
             try {
+              const token = await user?.getIdToken();
               const res = await fetch("/api/admin/data?collection=temples", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify(templeData)
               });
               if (!res.ok) throw new Error("API failed");

@@ -186,24 +186,34 @@ const Dashboard = () => {
 
                     <div className="space-y-3">
                         <Link to="/help-center">
-                            <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-card hover:border-primary/50 hover:bg-accent/10 group">
+                            <Button
+                                variant="outline"
+                                className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-card hover:border-primary/50 hover:bg-accent/10 group"
+                            >
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-accent/10 text-accent-gold border border-accent/40 rounded-full">
                                         <HelpCircle className="w-5 h-5" />
                                     </div>
-                                    <span className="font-heading font-bold text-foreground text-lg">About Panchajanya</span>
+                                    <span className="font-heading font-bold text-lg text-amber-800">
+                                        About Panchajanya
+                                    </span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                             </Button>
                         </Link>
 
                         <Link to="/profile">
-                            <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-card shadow-sm hover:border-primary/50 hover:bg-accent/10 group">
+                            <Button
+                                variant="outline"
+                                className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-card shadow-sm hover:border-primary/50 hover:bg-accent/10 group"
+                            >
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-accent/10 text-accent-gold border border-accent/40 rounded-full">
                                         <User className="w-5 h-5" />
                                     </div>
-                                    <span className="font-heading font-bold text-foreground text-lg">My Account</span>
+                                    <span className="font-heading font-bold text-lg text-amber-800">
+                                        My Account
+                                    </span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                             </Button>

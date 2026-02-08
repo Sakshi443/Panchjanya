@@ -34,6 +34,7 @@ import {
     Map
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { YatraPlace } from "@/types";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -101,6 +102,7 @@ export default function RajViharanAdmin() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSequenceExpanded, setIsSequenceExpanded] = useState(true);
     const { toast } = useToast();
+    const { user } = useAuth();
 
     // Form state
     const [formData, setFormData] = useState<Partial<YatraPlace & { pinColor: string }>>({
@@ -120,7 +122,10 @@ export default function RajViharanAdmin() {
     const fetchPlaces = async () => {
         try {
             setLoading(true);
-            const res = await fetch("/api/admin/data?collection=yatraPlaces");
+            const token = await user?.getIdToken();
+            const res = await fetch("/api/admin/data?collection=yatraPlaces", {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
             const contentType = res.headers.get("content-type");
 
             if (res.ok && contentType?.includes("application/json")) {
@@ -204,9 +209,13 @@ export default function RajViharanAdmin() {
             const method = selectedPlace ? 'PUT' : 'POST';
             const url = selectedPlace ? `/api/admin/data?collection=yatraPlaces&id=${selectedPlace.id}` : `/api/admin/data?collection=yatraPlaces`;
 
+            const token = await user?.getIdToken();
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -239,7 +248,11 @@ export default function RajViharanAdmin() {
         if (!confirm("Are you sure you want to delete this yatra place?")) return;
 
         try {
-            const res = await fetch(`/api/admin/data?collection=yatraPlaces&id=${id}`, { method: 'DELETE' });
+            const token = await user?.getIdToken();
+            const res = await fetch(`/api/admin/data?collection=yatraPlaces&id=${id}`, {
+                method: 'DELETE',
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
             if (res.ok) {
                 toast({ title: "Success", description: "Yatra place deleted" });
             } else {
@@ -271,15 +284,22 @@ export default function RajViharanAdmin() {
         const targetPlace = places[targetIndex];
 
         try {
+            const token = await user?.getIdToken();
             // Swap sequences via API
             await fetch(`/api/admin/data?collection=yatraPlaces&id=${currentPlace.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ sequence: targetPlace.sequence })
             });
             await fetch(`/api/admin/data?collection=yatraPlaces&id=${targetPlace.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ sequence: currentPlace.sequence })
             });
 
@@ -307,13 +327,17 @@ export default function RajViharanAdmin() {
         setPlaces(reorderedPlaces);
 
         try {
+            const token = await user?.getIdToken();
             // Update sequences via API
             const updates = reorderedPlaces.map((place, index) => {
                 const newSequence = index + 1;
                 if (place.sequence !== newSequence) {
                     return fetch(`/api/admin/data?collection=yatraPlaces&id=${place.id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                        },
                         body: JSON.stringify({ sequence: newSequence })
                     });
                 }

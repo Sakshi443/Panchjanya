@@ -1,7 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { getAdminDb } from '../../src/lib/firebase-admin.js';
+import { verifyAdmin } from '../../src/lib/auth-middleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    const decodedToken = await verifyAdmin(req, res);
+    if (!decodedToken) return; // Response handled by verifyAdmin
+
     const { collection, id, subcollection, subId } = req.query;
 
     if (!collection || Array.isArray(collection)) {
@@ -35,6 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (req.method === 'POST') {
             const data = req.body;
+            console.log(`[API POST] Collection: ${collection}, ID: ${id || 'N/A'}, Sub: ${subcollection || 'N/A'}`);
             // baseRef must be a collection for POST
             if (typeof baseRef.add !== 'function') return res.status(400).json({ error: "Target must be a collection for POST" });
             const docRef = await baseRef.add(data);
@@ -45,6 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // baseRef must be a doc for PUT
             if (typeof baseRef.set !== 'function') return res.status(400).json({ error: "Target must be a document for PUT. Ensure ID (and subId if applicable) is provided." });
             const data = req.body;
+            console.log(`[API PUT] Collection: ${collection}, ID: ${id}, Sub: ${subcollection || 'N/A'}, SubID: ${subId || 'N/A'}`);
             await baseRef.set(data, { merge: true });
             return res.status(200).json({ success: true });
         }

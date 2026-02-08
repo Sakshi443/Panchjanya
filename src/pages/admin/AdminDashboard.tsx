@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/firebase";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,62 +44,53 @@ export default function AdminDashboard() {
 
     // 1. Fetch Stats (User count and Recent Activity)
     try {
-      try {
-        const statsRes = await fetch("/api/admin/stats");
-        const statsContentType = statsRes.headers.get("content-type");
+      const token = await user?.getIdToken();
 
-        if (statsRes.ok && statsContentType?.includes("application/json")) {
+      try {
+        const statsRes = await fetch("/api/admin/stats", {
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+
+        if (statsRes.ok) {
           const statsData = await statsRes.json();
           setUserCount(statsData.userCount || 0);
           setRecentActivity(statsData.recentActivity || []);
         } else {
-          // Fallback to client-side Firestore
-          console.warn("Stats API failed or not active. Using Client SDK.");
-          const { collection, getDocs, query, orderBy, limit } = await import("firebase/firestore");
-
-          // Users
-          const userSnap = await getDocs(collection(db, "users"));
-          setUserCount(userSnap.size);
-
-          // Recent Activity
-          const templeSnap = await getDocs(query(collection(db, "temples"), orderBy("createdAt", "desc"), limit(5)));
-          const activity = templeSnap.docs.map(doc => {
-            const data = doc.data();
-            return {
-              type: "New Sthana",
-              message: `Added '${data.name}' to ${data.district || "Directory"}`,
-              time: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
-              color: "bg-emerald-500"
-            };
+          const errorData = await statsRes.json().catch(() => ({}));
+          console.error("Stats API failed:", errorData.error || statsRes.statusText);
+          toast({
+            title: "Error",
+            description: "Failed to load platform statistics from API.",
+            variant: "destructive",
           });
-          setRecentActivity(activity);
         }
       } catch (err) {
-        console.warn("Stats fetch error (API & Fallback):", err);
-        // Don't show toast here, just log warning so other parts can load
+        console.error("Stats fetch error:", err);
       }
 
       // 2. Fetch Temples
       try {
-        const templesRes = await fetch("/api/admin/data?collection=temples");
-        const templesContentType = templesRes.headers.get("content-type");
+        const templesRes = await fetch("/api/admin/data?collection=temples", {
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
 
-        if (templesRes.ok && templesContentType?.includes("application/json")) {
+        if (templesRes.ok) {
           const templeData = await templesRes.json();
           setTemples(templeData);
         } else {
-          // Fallback for temples
-          console.warn("Temples API failed or not active. Using Client SDK.");
-          const { collection, getDocs } = await import("firebase/firestore");
-          const snapshot = await getDocs(collection(db, "temples"));
-          const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setTemples(data);
+          const errorData = await templesRes.json().catch(() => ({}));
+          console.error("Temples API failed:", errorData.error || templesRes.statusText);
+          toast({
+            title: "Error",
+            description: `Failed to load directory data: ${errorData.error || "API Error"}`,
+            variant: "destructive",
+          });
         }
-      } catch (err) {
-        console.warn("Temples fetch error (API & Fallback):", err);
+      } catch (err: any) {
+        console.error("Temples fetch error:", err);
         toast({
-          title: "Warning",
-          description: "Failed to load directory data completely.",
+          title: "Network Error",
+          description: "Could not connect to the Admin API.",
           variant: "destructive",
         });
       }

@@ -2,57 +2,46 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ---- USERS COLLECTION ----
-    match /users/{userId} {
-      // Users can read their own profile, admins can read all (includes list/get)
-      allow read, list: if request.auth != null && (request.auth.uid == userId || isAdmin());
-
-      // Only the authenticated user can write to their own document
-      allow write: if request.auth != null && request.auth.uid == userId;
+    
+    // ---- HELPER FUNCTIONS ----
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.admin == "true" ||
+        request.auth.token.email in ["mmanoorkar9@gmail.com", "omkar@omnifex.com", "admin@panchjanya.com"]
+      );
     }
 
-    // ---- TEMPLES COLLECTION ----
+    // ---- BREAKGLASS: ADMINS GET FULL ACCESS ----
+    // This ensures that even if specific rules are tight, admins never get permission denied.
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---- PUBLIC READ COLLECTIONS ----
+    // Everyone can read these, but only admins can write (handled by the breakglass rule).
+    
     match /temples/{templeId} {
-      // Everyone can read temple info publicly
       allow read: if true;
-
-      // Only Admins can write (add/update/delete)
-      allow write: if isAdmin();
-
-      // ---- SUBCOLLECTIONS (hotspots, present_hotspots, etc.) ----
+      
+      // Nested subcollections
       match /{allSubcollections=**} {
         allow read: if true;
-        allow write: if isAdmin();
       }
     }
 
-    // ---- YATRA PLACES COLLECTION ----
     match /yatraPlaces/{placeId} {
       allow read: if true;
-      allow write: if isAdmin();
     }
 
-    // ---- SETTINGS COLLECTION ----
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin();
     }
 
-    // ---- DEFAULT RULE FOR EVERYTHING ELSE ----
-    match /{document=**} {
-      allow read: if false;
-      allow write: if false;
+    // ---- USERS COLLECTION ----
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if request.auth != null && (request.auth.uid == userId);
     }
   }
-}
-
-// ---- FUNCTION TO CHECK ADMIN ROLE ----
-function isAdmin() {
-  return request.auth != null
-    && (
-      (request.auth.token.admin == true || request.auth.token.admin == "true")
-      || request.auth.token.email == "mmanoorkar9@gmail.com"
-      || request.auth.token.email == "omkar@omnifex.com"
-    );
 }

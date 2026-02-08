@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +45,7 @@ export default function ManageYatra() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingPlace, setEditingPlace] = useState<YatraPlace | null>(null);
     const { toast } = useToast();
+    const { user } = useAuth();
 
     // Form state
     const [formData, setFormData] = useState<YatraPlace>({
@@ -64,7 +66,10 @@ export default function ManageYatra() {
     const fetchPlaces = async () => {
         try {
             setLoading(true);
-            const res = await fetch("/api/admin/data?collection=yatraPlaces");
+            const token = await user?.getIdToken();
+            const res = await fetch("/api/admin/data?collection=yatraPlaces", {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
             const contentType = res.headers.get("content-type");
 
             if (res.ok && contentType?.includes("application/json")) {
@@ -103,9 +108,13 @@ export default function ManageYatra() {
 
             const { id, ...data } = formData as any;
 
+            const token = await user?.getIdToken();
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify(data)
             });
 
@@ -141,7 +150,11 @@ export default function ManageYatra() {
         if (!confirm("Are you sure you want to delete this yatra place?")) return;
 
         try {
-            const res = await fetch(`/api/admin/data?collection=yatraPlaces&id=${id}`, { method: 'DELETE' });
+            const token = await user?.getIdToken();
+            const res = await fetch(`/api/admin/data?collection=yatraPlaces&id=${id}`, {
+                method: 'DELETE',
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
             if (res.ok) {
                 toast({
                     title: "Success",
@@ -192,15 +205,22 @@ export default function ManageYatra() {
         const targetPlace = places[targetIndex];
 
         try {
+            const token = await user?.getIdToken();
             // Swap sequences via API
             await fetch(`/api/admin/data?collection=yatraPlaces&id=${place.id!}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ sequence: targetPlace.sequence })
             });
             await fetch(`/api/admin/data?collection=yatraPlaces&id=${targetPlace.id!}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ sequence: place.sequence })
             });
 

@@ -1,8 +1,12 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { getAdminDb } from '../../src/lib/firebase-admin.js';
+import { verifyAdmin } from '../../src/lib/auth-middleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
+        const decodedToken = await verifyAdmin(req, res);
+        if (!decodedToken) return; // Response handled by verifyAdmin
+
         try {
             // 1. Get User Count (Admin SDK allows listUsers which is better, but this is simple for now)
             const userSnapshot = await getAdminDb().collection("users").get();
