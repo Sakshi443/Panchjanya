@@ -55,6 +55,9 @@ const CUSTOM_ICONS = [
   { name: "Available", path: "/icons/glance/available.svg" },
   { name: "Quarantine", path: "/icons/glance/quarantine.svg" },
   { name: "Warehouse", path: "/icons/glance/warehouse.svg" },
+  { name: "Temple Simple", path: "/icons/glance/temple_simple.svg" },
+  { name: "Temple Solid", path: "/icons/glance/temple_solid.svg" },
+  { name: "Route Path", path: "/icons/glance/route_path.svg" },
 ];
 
 export default function TempleArchitectureAdmin() {
