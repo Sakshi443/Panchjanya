@@ -79,6 +79,7 @@ export default function TempleArchitectureAdmin() {
 
   // New Temple Metadata & Sections
   const [todaysName, setTodaysName] = useState("");
+  const [todaysNameTitle, setTodaysNameTitle] = useState("Todays Name");
   const [address, setAddress] = useState("");
   const [taluka, setTaluka] = useState("");
   const [district, setDistrict] = useState("");
@@ -175,6 +176,7 @@ export default function TempleArchitectureAdmin() {
           setArchHotspots(data.hotspots || []);
 
           setTodaysName(data.todaysName || "");
+          setTodaysNameTitle(data.todaysNameTitle || "Todays Name");
           setAddress(data.address || "");
           setTaluka(data.taluka || "");
           setDistrict(data.district || "");
@@ -385,6 +387,7 @@ export default function TempleArchitectureAdmin() {
     const updateData = {
       name: templeName,
       todaysName,
+      todaysNameTitle,
       address,
       taluka,
       district,
@@ -977,7 +980,15 @@ export default function TempleArchitectureAdmin() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-sm font-semibold text-slate-700">Todays Name <span className="text-slate-400 font-normal">(Optional)</span></Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={todaysNameTitle}
+                          onChange={(e) => setTodaysNameTitle(e.target.value)}
+                          className="h-8 p-0 px-2 w-fit min-w-[120px] text-sm font-semibold text-slate-700 border-transparent hover:border-slate-200 focus:border-blue-500 rounded-md transition-all"
+                          placeholder="Label Name"
+                        />
+                        <span className="text-slate-400 font-normal text-sm">(Optional)</span>
+                      </div>
                       <Input
                         value={todaysName}
                         onChange={(e) => setTodaysName(e.target.value)}
@@ -2376,6 +2387,7 @@ export default function TempleArchitectureAdmin() {
             </div>
           )}
       </div>
-    </div >
+      {/* )} */}
+    </div>
   );
 }
