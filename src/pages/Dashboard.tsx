@@ -18,23 +18,23 @@ const Dashboard = () => {
     const userName = user?.displayName; // Fallback name from design
 
     return (
-        <div className="w-full min-h-screen bg-background">
+        <div className="w-full min-h-screen bg-[#F9F6F0]">
             <div className="max-w-md mx-auto lg:max-w-4xl px-4 lg:px-6 pb-24 space-y-8 animate-in fade-in duration-500">
 
                 {/* Top Bar */}
                 <div className="relative flex items-center justify-center py-4">
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-green-900/10 rounded-full flex items-center justify-center border border-green-900/20">
                         <img src="/icons/Logo.svg" alt="Logo" className="w-12 h-12 object-contain opacity-100" />
                     </div>
-                    <h1 className="text-2xl font-heading font-bold text-landing-primary">Panchajanya</h1>
+                    <h1 className="text-2xl font-heading font-bold text-[#0f3c6e]">Panchajanya</h1>
                 </div>
 
                 {/* Greeting Section */}
                 <div className="space-y-2 mt-4 lg:mt-0 text-left">
-                    <h1 className="text-3xl lg:text-4xl font-heading font-bold text-landing-primary">
+                    <h1 className="text-3xl lg:text-4xl font-heading font-bold text-[#0f3c6e]">
                         {userName}
                     </h1>
-                    <p className="text-primary italic text-center font-medium font-serif text-lg">
+                    <p className="text-amber-600 italic text-center font-medium font-serif text-lg">
                         Jai Shri Chakradhar
                     </p>
                 </div>
@@ -44,14 +44,14 @@ const Dashboard = () => {
 
                     {/* Literature - Top Left */}
                     <Link to="/literature" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-accent/20 bg-card shadow-sm hover:shadow-md">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-accent/10 rounded-xl text-accent-gold border border-accent/40 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <BookOpen className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-landing-primary group-hover:text-accent-gold transition-colors">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     Literature
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -63,14 +63,14 @@ const Dashboard = () => {
 
                     {/* Digital Library - Top Right */}
                     <Link to="/e-library" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-accent/20 bg-card shadow-sm hover:shadow-md">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-accent/10 rounded-xl text-accent-gold border border-accent/40 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <Library className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-landing-primary group-hover:text-accent-gold transition-colors">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     Digital Library
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -82,14 +82,14 @@ const Dashboard = () => {
 
                     {/* What's New - Bottom Left */}
                     <Link to="/whats-new" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-accent/20 bg-card shadow-sm hover:shadow-md">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-accent/10 rounded-xl text-accent-gold border border-accent/40 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <Sparkles className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-landing-primary group-hover:text-accent-gold transition-colors">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     What's New
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -101,14 +101,14 @@ const Dashboard = () => {
 
                     {/* Jigyasa - Bottom Right */}
                     <Link to="/jigyasa" className="group">
-                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-accent/20 bg-card shadow-sm hover:shadow-md">
+                        <Card className="h-full p-5 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 border-[#B48A17]/20 bg-white shadow-[0_4px_20px_-2px_rgba(180,138,23,0.1)]">
                             <div className="flex justify-start">
-                                <div className="p-3 bg-accent/10 rounded-xl text-accent-gold border border-accent/40 group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-[#FFF4D1]/40 rounded-xl text-[#B48A17] border border-[#B48A17]/40 group-hover:scale-110 transition-transform duration-300">
                                     <BrainCircuit className="w-6 h-6" />
                                 </div>
                             </div>
                             <div className="mt-4 space-y-1">
-                                <h3 className="font-heading font-bold text-lg text-landing-primary group-hover:text-accent-gold transition-colors">
+                                <h3 className="font-heading font-bold text-lg text-blue-900 group-hover:text-[#B48A17] transition-colors">
                                     Jigyasa
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -120,7 +120,7 @@ const Dashboard = () => {
                 </div>
 
                 <Link to="/dashboard/sthana-vandan" className="block group">
-                    <div className="relative overflow-hidden rounded-2xl bg-landing-primary p-6 text-white transition-all duration-300 border-b-4 border-accent/60 shadow-lg">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#B48A17]/60 shadow-lg">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="relative z-10 flex items-center justify-between">
@@ -130,7 +130,7 @@ const Dashboard = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-display font-bold text-xl">Sthaan Vandan</h3>
-                                    <p className="text-white/80 text-sm mt-1">
+                                    <p className="text-blue-100 text-sm mt-1">
                                         Sacred Salutation to holy sites.
                                     </p>
                                 </div>
@@ -151,7 +151,7 @@ const Dashboard = () => {
 
                 {/* Raj Viharan Banner */}
                 <Link to="/raj-viharan" className="block group">
-                    <div className="relative overflow-hidden rounded-2xl bg-landing-primary p-6 text-white transition-all duration-300 border-b-4 border-accent/60 shadow-lg">
+                    <div className="relative overflow-hidden rounded-2xl bg-[#0f3c6e] p-6 text-white transition-all duration-300 border-b-4 border-[#B48A17]/60 shadow-lg">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="relative z-10 flex items-center justify-between">
@@ -161,7 +161,7 @@ const Dashboard = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-display font-bold text-xl">Raj Viharan</h3>
-                                    <p className="text-white/80 text-sm mt-1">
+                                    <p className="text-blue-100 text-sm mt-1">
                                         Live Yatra status & historical traces.
                                     </p>
                                 </div>
@@ -180,40 +180,30 @@ const Dashboard = () => {
                 </Link>
 
                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 border-l-4 border-primary pl-3">
-                        <h2 className="font-heading font-bold text-xl text-landing-primary">Quick Support</h2>
+                    <div className="flex items-center gap-2 border-l-4 border-[#D97706] pl-3">
+                        <h2 className="font-heading font-bold text-xl text-blue-900">Quick Support</h2>
                     </div>
 
                     <div className="space-y-3">
                         <Link to="/help-center">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-card hover:border-primary/50 hover:bg-accent/10 group"
-                            >
+                            <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 rounded-xl border-border/50 bg-white hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-accent/10 text-accent-gold border border-accent/40 rounded-full">
+                                    <div className="p-2 bg-[#FFF4D1] text-[#B48A17] border border-[#B48A17]/40 rounded-full">
                                         <HelpCircle className="w-5 h-5" />
                                     </div>
-                                    <span className="font-heading font-bold text-lg text-amber-800">
-                                        About Panchajanya
-                                    </span>
+                                    <span className="font-heading font-bold text-amber-900 text-lg">About Panchajanya</span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                             </Button>
                         </Link>
 
                         <Link to="/profile">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-card shadow-sm hover:border-primary/50 hover:bg-accent/10 group"
-                            >
+                            <Button variant="outline" className="w-full justify-between h-auto py-4 px-5 mt-3 rounded-xl border-border/50 bg-white shadow-sm hover:border-primary/50 hover:bg-orange-50/50 group">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-accent/10 text-accent-gold border border-accent/40 rounded-full">
+                                    <div className="p-2 bg-[#FFF4D1] text-[#B48A17] border border-[#B48A17]/40 rounded-full">
                                         <User className="w-5 h-5" />
                                     </div>
-                                    <span className="font-heading font-bold text-lg text-amber-800">
-                                        My Account
-                                    </span>
+                                    <span className="font-heading font-bold text-amber-900 text-lg">My Account</span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                             </Button>

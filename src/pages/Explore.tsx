@@ -13,6 +13,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import DataTableFilter from "@/components/ui/data-table-filter";
+import { getSthanTypes, generateSthanPinSVG } from "@/utils/sthanTypes";
+import { SthanType } from "@/types/sthanType";
 
 
 // Custom styles for Leaflet popup close button
@@ -47,10 +49,25 @@ const exploreIcon = new L.Icon({
 // Custom Blue Temple Icon for Pin Points
 const templePinIcon = new L.Icon({
     iconUrl: '/icons/Untitled design.png',
-    iconSize: [60, 60],
-    iconAnchor: [30, 60], // Bottom center
-    popupAnchor: [0, -55], // Adjusted for new icon height
+    iconSize: [40, 40],
+    iconAnchor: [20, 40], // Bottom center
+    popupAnchor: [0, -35], // Adjusted for new icon height
 });
+
+let sthanIconsMap: Record<string, L.Icon> = {};
+
+// Helper function to get icon by sthan type
+function getIconBySthan(sthan: string | undefined): L.Icon {
+    if (!sthan) return templePinIcon;
+
+    const normalizedSthan = sthan.trim();
+
+    if (normalizedSthan in sthanIconsMap) {
+        return sthanIconsMap[normalizedSthan];
+    }
+
+    return templePinIcon;
+}
 
 // Inner Map Component to handle center/zoom updates
 function MapEffect({ temples }: { temples: Temple[] }) {
@@ -132,7 +149,7 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
     return (
         <Marker
             position={[temple.latitude || 0, temple.longitude || 0]}
-            icon={templePinIcon}
+            icon={getIconBySthan((temple as any).sthan)}
             eventHandlers={{
                 click: () => onSelect(temple),
                 popupopen: () => setIsPopupOpen(true),
@@ -240,6 +257,7 @@ const Explore = () => {
     const [allTemplesForOptions, setAllTemplesForOptions] = useState<Temple[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilters, setShowFilters] = useState(false);
+    const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
 
     // Pending states (for UI dropdowns)
     const [pendingDistrict, setPendingDistrict] = useState<string>("");
@@ -254,6 +272,25 @@ const Explore = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
+
+    // Load sthan types and generate icons
+    useEffect(() => {
+        const loadSthanTypes = async () => {
+            const types = await getSthanTypes();
+            setSthanTypes(types);
+
+            // Generate icons for each sthan type
+            types.forEach(st => {
+                sthanIconsMap[st.name] = new L.Icon({
+                    iconUrl: generateSthanPinSVG(st.color),
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 40],
+                    popupAnchor: [0, -35],
+                });
+            });
+        };
+        loadSthanTypes();
+    }, []);
 
     // 1. Fetch all temples ONCE to populate filter options (Districts/Talukas)
     useEffect(() => {
@@ -602,6 +639,21 @@ const Explore = () => {
                         )
                     ))}
                 </MapContainer>
+            </div>
+
+            {/* Map Legend */}
+            <div className="absolute bottom-6 right-6 z-[400] pointer-events-auto">
+                <div className="bg-background/95 backdrop-blur-md border border-border rounded-xl p-4 shadow-lg">
+                    <h3 className="font-heading font-bold text-sm text-foreground mb-3">Sthan Types</h3>
+                    <div className="space-y-2">
+                        {sthanTypes.map(st => (
+                            <div key={st.id} className="flex items-center gap-2">
+                                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: st.color }}></div>
+                                <span className="text-xs text-muted-foreground">{st.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );

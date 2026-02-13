@@ -12,6 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Compass, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getSthanTypes } from "@/utils/sthanTypes";
+import { SthanType } from "@/types/sthanType";
 
 interface TempleFormProps {
     templeId?: string;
@@ -47,6 +50,8 @@ export default function TempleForm({ templeId }: TempleFormProps) {
     const [leela, setLeela] = useState(""); // Keeping for legacy/compatibility
     const [images, setImages] = useState<string[]>([]);
     const [hasArchitecture, setHasArchitecture] = useState(false);
+    const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
+    const [sthan, setSthan] = useState("");
 
     useEffect(() => {
         if (!templeId) return;
@@ -79,6 +84,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                     setLeela(data.leela || "");
                     setImages(data.images || []);
                     setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
+                    setSthan(data.sthan || "");
                 } else {
                     console.warn("Temple API not active locally. Using Client SDK.");
                     const docRef = doc(db, "temples", templeId);
@@ -106,6 +112,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                         setLeela(data.leela || "");
                         setImages(data.images || []);
                         setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
+                        setSthan(data.sthan || "");
                     } else {
                         toast({ title: "Error", description: "Temple not found", variant: "destructive" });
                         navigate("/admin/dashboard");
@@ -121,6 +128,14 @@ export default function TempleForm({ templeId }: TempleFormProps) {
 
         fetchTemple();
     }, [templeId, navigate, toast]);
+
+    useEffect(() => {
+        const loadSthanTypes = async () => {
+            const types = await getSthanTypes();
+            setSthanTypes(types);
+        };
+        loadSthanTypes();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -157,6 +172,7 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                 latitude: latNum,
                 longitude: lngNum,
                 location: { lat: latNum, lng: lngNum },
+                sthan,
                 updatedAt: new Date().toISOString(),
                 updatedBy: user.uid,
             };
@@ -292,6 +308,19 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                                     onChange={(e) => setDistrict(e.target.value)}
                                     placeholder="e.g. Thanjavur"
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="sthan">Sthan Type *</Label>
+                                <Select value={sthan} onValueChange={setSthan} required>
+                                    <SelectTrigger id="sthan">
+                                        <SelectValue placeholder="Select Sthan Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {sthanTypes.map(st => (
+                                            <SelectItem key={st.id} value={st.name}>{st.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </CardContent>

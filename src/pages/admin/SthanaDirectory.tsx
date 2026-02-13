@@ -27,6 +27,9 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { SthanTypeManager } from "@/components/admin/SthanTypeManager";
+import { getSthanTypes } from "@/utils/sthanTypes";
+import { SthanType } from "@/types/sthanType";
 
 export default function SthanaDirectory() {
     const [temples, setTemples] = useState<any[]>([]);
@@ -37,6 +40,8 @@ export default function SthanaDirectory() {
     const [selectedDistrict, setSelectedDistrict] = useState<string>("District");
     const [selectedTaluka, setSelectedTaluka] = useState<string>("Taluka");
     const [selectedStatus, setSelectedStatus] = useState<string>("Status");
+    const [selectedSthan, setSelectedSthan] = useState<string>("Sthan Type");
+    const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
 
     const navigate = useNavigate();
     const { toast } = useToast();
@@ -84,7 +89,13 @@ export default function SthanaDirectory() {
 
     useEffect(() => {
         fetchTemples();
+        loadSthanTypes();
     }, []);
+
+    const loadSthanTypes = async () => {
+        const types = await getSthanTypes();
+        setSthanTypes(types);
+    };
 
     // 2. Delete Handler
     const handleDelete = async (id: string, name: string) => {
@@ -128,9 +139,10 @@ export default function SthanaDirectory() {
 
         const matchesDistrict = selectedDistrict === "District" || t.district === selectedDistrict;
         const matchesTaluka = selectedTaluka === "Taluka" || t.taluka === selectedTaluka;
+        const matchesSthan = selectedSthan === "Sthan Type" || t.sthan === selectedSthan;
         // const matchesStatus = ... (Implement when status field exists)
 
-        return matchesSearch && matchesDistrict && matchesTaluka;
+        return matchesSearch && matchesDistrict && matchesTaluka && matchesSthan;
     });
 
     const formatDate = (date: Date) => {
@@ -160,6 +172,7 @@ export default function SthanaDirectory() {
                             <Info className="w-5 h-5 mr-2" />
                             Manage Abbreviations
                         </Button>
+                        <SthanTypeManager />
                         <Button
                             onClick={() => navigate("/admin/temples/add")}
                             className="bg-[#C9A961] hover:bg-[#b89b58] text-white font-bold rounded-xl h-12 px-6 shadow-sm shadow-amber-900/10 transition-all hover:scale-[1.02] active:scale-95"
@@ -242,6 +255,25 @@ export default function SthanaDirectory() {
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
+
+                        {/* Sthan Type Filter */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-12 px-4 rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold min-w-[120px] justify-between">
+                                    {selectedSthan}
+                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSelectedSthan("Sthan Type")} className="font-bold cursor-pointer">All Types</DropdownMenuItem>
+                                {sthanTypes.map(st => (
+                                    <DropdownMenuItem key={st.id} onClick={() => setSelectedSthan(st.name)} className="cursor-pointer">
+                                        <div className="w-3 h-3 rounded mr-2" style={{ backgroundColor: st.color }} />
+                                        {st.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
@@ -300,6 +332,24 @@ export default function SthanaDirectory() {
                                             {temple.city ? `${temple.city}, ` : ''}{temple.district}
                                         </span>
                                     </div>
+
+                                    {/* Sthan Type Badge */}
+                                    {temple.sthan && (
+                                        <div className="mb-2">
+                                            <span
+                                                className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+                                                style={{
+                                                    backgroundColor: temple.sthan === 'Avasthan' ? '#D4AF37' :
+                                                        temple.sthan === 'Asan' ? '#0E3C6F' :
+                                                            temple.sthan === 'Vasti' ? '#228B22' :
+                                                                temple.sthan === 'Mandalik' ? '#6A0DAD' : '#94a3b8',
+                                                    color: 'white'
+                                                }}
+                                            >
+                                                {temple.sthan}
+                                            </span>
+                                        </div>
+                                    )}
 
                                     <p className="text-[11px] text-slate-400 font-medium">
                                         Added: {formatDate(temple.createdAtDate)}

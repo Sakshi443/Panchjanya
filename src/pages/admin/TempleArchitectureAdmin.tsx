@@ -27,6 +27,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getSthanTypes } from "@/utils/sthanTypes";
+import { SthanType } from "@/types/sthanType";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -99,6 +102,8 @@ export default function TempleArchitectureAdmin() {
   const [contactDetails, setContactDetails] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+  const [sthan, setSthan] = useState("");
+  const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
 
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -196,6 +201,7 @@ export default function TempleArchitectureAdmin() {
           setContactDetails(data.contactDetails || "");
           setContactName(data.contactName || "");
           setContactNumber(data.contactNumber || "");
+          setSthan(data.sthan || "");
 
           if (presentHotspotsData.length > 0) {
             setPresentHotspots(presentHotspotsData);
@@ -219,7 +225,13 @@ export default function TempleArchitectureAdmin() {
       }
     };
 
+    const loadSthanTypes = async () => {
+      const types = await getSthanTypes();
+      setSthanTypes(types);
+    };
+
     fetchData();
+    loadSthanTypes();
   }, [id, toast]);
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -408,6 +420,7 @@ export default function TempleArchitectureAdmin() {
       contactDetails,
       contactName,
       contactNumber,
+      sthan,
       hotspots: archHotspots,
       // present_hotspots is handled exclusively via subcollection for isolation
       // present_hotspots: presentHotspots, 
@@ -1026,6 +1039,19 @@ export default function TempleArchitectureAdmin() {
                         className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                       />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-700">Sthan Type *</Label>
+                    <Select value={sthan} onValueChange={setSthan}>
+                      <SelectTrigger className="h-12 rounded-xl border-slate-200">
+                        <SelectValue placeholder="Select Sthan Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sthanTypes.map(st => (
+                          <SelectItem key={st.id} value={st.name}>{st.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
