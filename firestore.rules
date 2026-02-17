@@ -2,17 +2,49 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper: Check if user is an authenticated admin via custom claim
     function isAdmin() {
-      return request.auth != null &&
-             request.auth.token.admin == true;
+      return request.auth != null && request.auth.token.admin == true;
     }
 
+    // Helper: Check if the request is for the current user's own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Public collections (Public Read, Admin Write)
     match /temples/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /users/{id} {
+    match /sthan_types/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /yatraPlaces/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User data security
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+      
+      // Subcollection for saved temples
+      match /savedTemples/{templeId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Default deny
+    match /{document=**} {
       allow read, write: if isAdmin();
     }
   }
