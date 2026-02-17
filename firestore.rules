@@ -1,47 +1,19 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // ---- HELPER FUNCTIONS ----
+
     function isAdmin() {
-      return request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.token.admin == "true" ||
-        request.auth.token.email in ["mmanoorkar9@gmail.com", "omkar@omnifex.com", "admin@panchjanya.com"]
-      );
+      return request.auth != null &&
+             request.auth.token.admin == true;
     }
 
-    // ---- BREAKGLASS: ADMINS GET FULL ACCESS ----
-    // This ensures that even if specific rules are tight, admins never get permission denied.
-    match /{document=**} {
+    match /temples/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{id} {
       allow read, write: if isAdmin();
-    }
-
-    // ---- PUBLIC READ COLLECTIONS ----
-    // Everyone can read these, but only admins can write (handled by the breakglass rule).
-    
-    match /temples/{templeId} {
-      allow read: if true;
-      
-      // Nested subcollections
-      match /{allSubcollections=**} {
-        allow read: if true;
-      }
-    }
-
-    match /yatraPlaces/{placeId} {
-      allow read: if true;
-    }
-
-    match /settings/{settingId} {
-      allow read: if true;
-    }
-
-    // ---- USERS COLLECTION ----
-    match /users/{userId} {
-      // Users can read their own profile
-      allow read: if request.auth != null && (request.auth.uid == userId);
     }
   }
 }

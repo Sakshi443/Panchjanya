@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAdminDb } from '../../src/lib/firebase-admin.js';
-import { verifyAdmin } from '../../src/lib/auth-middleware.js';
+import { adminDb } from '../_lib/firebaseAdmin';
+import { verifyAdmin } from '../_lib/authMiddleware';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
@@ -9,11 +9,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         try {
             // 1. Get User Count (Admin SDK allows listUsers which is better, but this is simple for now)
-            const userSnapshot = await getAdminDb().collection("users").get();
+            const userSnapshot = await adminDb.collection("users").get();
             const userCount = userSnapshot.size;
 
             // 2. Get Recent Activity from Temples
-            const templeSnapshot = await getAdminDb().collection("temples")
+            const templeSnapshot = await adminDb.collection("temples")
                 .orderBy("createdAt", "desc")
                 .limit(5)
                 .get();
@@ -37,5 +37,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
     }
 
-    return res.status(405).end();
+    return res.status(405).json({ error: "Method not allowed" });
 }

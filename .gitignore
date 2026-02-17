@@ -104,3 +104,4 @@ scripts/output
 vite.config.ts.timestamp*
 
 .vercel
+.env*.local

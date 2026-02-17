@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAdminDb } from '../../src/lib/firebase-admin.js';
-import { verifyAdmin } from '../../src/lib/auth-middleware.js';
+import { adminDb } from '../_lib/firebaseAdmin';
+import { verifyAdmin } from '../_lib/authMiddleware';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const decodedToken = await verifyAdmin(req, res);
@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        let baseRef: any = getAdminDb().collection(collection);
+        let baseRef: any = adminDb.collection(collection);
         if (id && !Array.isArray(id)) {
             baseRef = baseRef.doc(id);
             if (subcollection && !Array.isArray(subcollection)) {

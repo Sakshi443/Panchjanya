@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAdminAuth } from '../../src/lib/firebase-admin.js';
+import { adminAuth } from '../_lib/firebaseAdmin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).end();
@@ -20,8 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const user = await getAdminAuth().getUserByEmail(email);
-        await getAdminAuth().setCustomUserClaims(user.uid, { admin: true });
+        const user = await adminAuth.getUserByEmail(email);
+        await adminAuth.setCustomUserClaims(user.uid, { admin: true });
 
         console.log(`✅ Successfully promoted ${email} to Admin status.`);
         return res.status(200).json({
