@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminDb } from '../_lib/firebaseAdmin';
-import { verifyAdmin } from '../_lib/authMiddleware';
+import { adminDb } from '../_lib/firebaseAdmin.js';
+import { verifyAdmin } from '../_lib/authMiddleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const decodedToken = await verifyAdmin(req, res);

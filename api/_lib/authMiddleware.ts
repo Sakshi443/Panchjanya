@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminAuth } from './firebaseAdmin';
+import { adminAuth } from './firebaseAdmin.js';
 
 export async function verifyAdmin(req: VercelRequest, res: VercelResponse) {
     const authHeader = req.headers.authorization;
