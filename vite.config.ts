@@ -29,15 +29,10 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 1500,
-    // Optimize chunks for better loading
+    // Let Vite handle chunking naturally to avoid React internals splitting issues
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-          'ui': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          'map': ['leaflet', 'react-leaflet'],
-        },
+        // No manualChunks for React internals
       },
     },
   },
