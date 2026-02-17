@@ -428,19 +428,16 @@ const Explore = () => {
             label: `${t} (${allTemplesForOptions.filter(curr => curr.taluka === t && (!pendingDistrict || curr.district === pendingDistrict)).length})`
         }));
 
-    // 4. Sthana Category Options with Counts from Database
-    const sthanaOptions = [
-        { value: "Avasthan Sthan", label: "Avasthan Sthan" },
-        { value: "Aasan Sthan", label: "Aasan Sthan" },
-        { value: "Vasti sthan", label: "Vasti sthan" },
-        { value: "Mandlik Sthan", label: "Mandlik Sthan" },
-    ].map(opt => {
-        const count = allTemplesForOptions.filter(t =>
-            (t.sthana && t.sthana.toLowerCase().includes(opt.value.toLowerCase())) ||
-            (t.description_text && t.description_text.toLowerCase().includes(opt.value.toLowerCase())) ||
-            (t.description && t.description.toLowerCase().includes(opt.value.toLowerCase()))
-        ).length;
-        return { ...opt, label: `${opt.label} (${count})` };
+    // 4. Dynamic Sthana Category Options from Database
+    const sthanaOptions = sthanTypes.map(st => {
+        const count = allTemplesForOptions.filter(t => {
+            const templeSthan = (t as any).sthan || t.sthana || "";
+            return templeSthan.toLowerCase().includes(st.name.toLowerCase());
+        }).length;
+        return {
+            value: st.name,
+            label: `${st.name} (${count})`
+        };
     });
 
     // Client-side filtering for Search and Sthana Category (Substring matches)
@@ -451,6 +448,7 @@ const Explore = () => {
             temple.district?.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesSthana = !appliedSthanaType || (
+            ((temple as any).sthan && (temple as any).sthan.toLowerCase().includes(appliedSthanaType.toLowerCase())) ||
             (temple.sthana && temple.sthana.toLowerCase().includes(appliedSthanaType.toLowerCase())) ||
             (temple.description_text && temple.description_text.toLowerCase().includes(appliedSthanaType.toLowerCase())) ||
             (temple.description && temple.description.toLowerCase().includes(appliedSthanaType.toLowerCase()))
