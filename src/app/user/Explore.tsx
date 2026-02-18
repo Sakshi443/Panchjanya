@@ -282,7 +282,7 @@ const Explore = () => {
             // Generate icons for each sthan type
             types.forEach(st => {
                 sthanIconsMap[st.name] = new L.Icon({
-                    iconUrl: generateSthanPinSVG(st.color),
+                    iconUrl: generateSthanPinSVG(st.color, st.pinType),
                     iconSize: [40, 40],
                     iconAnchor: [20, 40],
                     popupAnchor: [0, -35],
@@ -646,7 +646,11 @@ const Explore = () => {
                     <div className="space-y-2">
                         {sthanTypes.map(st => (
                             <div key={st.id} className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: st.color }}></div>
+                                <img
+                                    src={generateSthanPinSVG(st.color, st.pinType)}
+                                    alt={st.name}
+                                    className="w-5 h-5 object-contain flex-shrink-0"
+                                />
                                 <span className="text-xs text-muted-foreground">{st.name}</span>
                             </div>
                         ))}

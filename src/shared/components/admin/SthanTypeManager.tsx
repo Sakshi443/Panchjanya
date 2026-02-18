@@ -5,9 +5,27 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Plus, Trash2, Pencil, GripVertical } from 'lucide-react';
-import { getSthanTypes, createSthanType, updateSthanType, deleteSthanType } from '@/shared/utils/sthanTypes';
-import { SthanType } from '@/shared/types/sthanType';
+import { getSthanTypes, createSthanType, updateSthanType, deleteSthanType, generateSthanPinSVG } from '@/shared/utils/sthanTypes';
+import { SthanType, PinType } from '@/shared/types/sthanType';
 import { useToast } from '@/shared/hooks/use-toast';
+
+const PIN_OPTIONS: { value: PinType; label: string; previewSrc: string }[] = [
+    {
+        value: 'default',
+        label: 'Default Pin',
+        previewSrc: '', // generated dynamically
+    },
+    {
+        value: 'aasan_sthan',
+        label: 'Aasan Sthan Pin',
+        previewSrc: '/icons/Aasan Sthan pin.svg',
+    },
+    {
+        value: 'mahasthan',
+        label: 'Mahasthan Pin',
+        previewSrc: '/icons/mahasthan pin.png',
+    },
+];
 
 export function SthanTypeManager() {
     const [open, setOpen] = useState(false);
@@ -18,6 +36,7 @@ export function SthanTypeManager() {
     // Form state
     const [name, setName] = useState('');
     const [color, setColor] = useState('#000000');
+    const [pinType, setPinType] = useState<PinType>('default');
 
     const { toast } = useToast();
 
@@ -58,14 +77,14 @@ export function SthanTypeManager() {
         setLoading(true);
         try {
             if (editingId) {
-                await updateSthanType(editingId, { name, color });
+                await updateSthanType(editingId, { name, color, pinType });
                 toast({
                     title: 'Success',
                     description: 'Sthan type updated successfully',
                 });
             } else {
                 const order = sthanTypes.length + 1;
-                await createSthanType({ name, color, order });
+                await createSthanType({ name, color, order, pinType });
                 toast({
                     title: 'Success',
                     description: 'Sthan type created successfully',
@@ -89,6 +108,7 @@ export function SthanTypeManager() {
         setEditingId(type.id);
         setName(type.name);
         setColor(type.color);
+        setPinType(type.pinType || 'default');
     };
 
     const handleDelete = async (id: string) => {
@@ -119,6 +139,7 @@ export function SthanTypeManager() {
         setEditingId(null);
         setName('');
         setColor('#000000');
+        setPinType('default');
     };
 
     return (
@@ -171,6 +192,59 @@ export function SthanTypeManager() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Pin Type Selector */}
+                        <div className="space-y-2">
+                            <Label>Pin Type</Label>
+                            <div className="grid grid-cols-3 gap-3">
+                                {PIN_OPTIONS.map((option) => {
+                                    const previewUrl = option.value === 'default'
+                                        ? generateSthanPinSVG(color, 'default')
+                                        : option.previewSrc;
+
+                                    // For custom images, we use them directly. For default/Aasan Sthan (SVG), we use the helper if needed or direct path.
+                                    // generateSthanPinSVG handles default and aasan_sthan (if we pass color).
+                                    // But here we want a static preview for selection? 
+                                    // Actually, let's use generateSthanPinSVG for all if possible, or fallback to option.previewSrc
+
+                                    let displaySrc = previewUrl;
+                                    if (option.value === 'aasan_sthan') {
+                                        // Use the colored version for preview
+                                        displaySrc = generateSthanPinSVG(color, 'aasan_sthan');
+                                    } else if (option.value === 'mahasthan') {
+                                        // Use the static PNG
+                                        displaySrc = option.previewSrc;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => setPinType(option.value)}
+                                            className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${pinType === option.value
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                        >
+                                            <img
+                                                src={displaySrc}
+                                                alt={option.label}
+                                                className="w-10 h-10 object-contain"
+                                            />
+                                            <span className="text-xs font-medium text-slate-700">
+                                                {option.label}
+                                            </span>
+                                            {pinType === option.value && (
+                                                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">
+                                                    Selected
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
                         <div className="flex gap-2">
                             <Button type="submit" disabled={loading}>
                                 {loading ? 'Saving...' : editingId ? 'Update' : 'Add'}
@@ -200,14 +274,27 @@ export function SthanTypeManager() {
                                         className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                                     >
                                         <GripVertical className="w-4 h-4 text-slate-400 cursor-grab" />
-                                        <div
-                                            className="w-6 h-6 rounded border border-slate-300"
-                                            style={{ backgroundColor: type.color }}
-                                            title={type.color}
+                                        {/* Pin preview with color */}
+                                        <img
+                                            src={generateSthanPinSVG(type.color, type.pinType)}
+                                            alt={type.pinType === 'aasan_sthan' ? 'Aasan Sthan Pin' : 'Default Pin'}
+                                            className="w-8 h-8 object-contain flex-shrink-0"
+                                        // title={`${type.pinType === 'aasan_sthan' ? 'Aasan Sthan' : 'Default'} pin · ${type.color}`}
                                         />
                                         <div className="flex-1">
                                             <div className="font-medium text-sm">{type.name}</div>
-                                            <div className="text-xs text-slate-500">{type.color}</div>
+                                            <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                                                <span
+                                                    className="inline-block w-2.5 h-2.5 rounded-full border border-slate-300"
+                                                    style={{ backgroundColor: type.color }}
+                                                />
+                                                {type.color}
+                                                <span className="text-slate-300">·</span>
+                                                <span>
+                                                    {type.pinType === 'aasan_sthan' ? 'Aasan Sthan' :
+                                                        type.pinType === 'mahasthan' ? 'Mahasthan' : 'Default'}
+                                                </span>
+                                            </div>
                                         </div>
                                         <div className="flex gap-1">
                                             <Button
