@@ -1,5 +1,5 @@
 // src/types/sthanType.ts
-export type PinType = 'default' | 'aasan_sthan' | 'mahasthan';
+export type PinType = 'default' | 'aasan_sthan' | 'mahasthan' | 'mandalik' | 'avasthan';
 
 export interface SthanType {
     id: string;

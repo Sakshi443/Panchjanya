@@ -5,9 +5,10 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Plus, Trash2, Pencil, GripVertical } from 'lucide-react';
-import { getSthanTypes, createSthanType, updateSthanType, deleteSthanType, generateSthanPinSVG } from '@/shared/utils/sthanTypes';
+import { getSthanTypes, createSthanType, updateSthanType, deleteSthanType, generateSthanPinSVG, updateSthanTypesOrder } from '@/shared/utils/sthanTypes';
 import { SthanType, PinType } from '@/shared/types/sthanType';
 import { useToast } from '@/shared/hooks/use-toast';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 const PIN_OPTIONS: { value: PinType; label: string; previewSrc: string }[] = [
     {
@@ -25,6 +26,24 @@ const PIN_OPTIONS: { value: PinType; label: string; previewSrc: string }[] = [
         label: 'Mahasthan Pin',
         previewSrc: '/icons/mahasthan pin.png',
     },
+    {
+        value: 'mandalik',
+        label: 'Mandalik Pin',
+        previewSrc: '/icons/Mandalik_Sthan.svg',
+    },
+    {
+        value: 'avasthan',
+        label: 'Avasthan Pin',
+        previewSrc: '/icons/Blue_temple_icon.svg',
+    },
+];
+
+const PRESET_COLORS = [
+    '#0e3c6f', // Navy Blue
+    '#d4af37', // Gold
+    '#6a0dad', // Purple
+    '#228b22', // Forest Green
+    '#ff0000', // Red
 ];
 
 export function SthanTypeManager() {
@@ -135,6 +154,37 @@ export function SthanTypeManager() {
         }
     };
 
+    const handleDragEnd = async (result: DropResult) => {
+        if (!result.destination) return;
+
+        const sourceIndex = result.source.index;
+        const destinationIndex = result.destination.index;
+
+        if (sourceIndex === destinationIndex) return;
+
+        const reorderedTypes = Array.from(sthanTypes);
+        const [removed] = reorderedTypes.splice(sourceIndex, 1);
+        reorderedTypes.splice(destinationIndex, 0, removed);
+
+        // Optimistic update
+        setSthanTypes(reorderedTypes);
+
+        try {
+            await updateSthanTypesOrder(reorderedTypes);
+            toast({
+                title: 'Success',
+                description: 'Order updated successfully',
+            });
+        } catch (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to update order',
+                variant: 'destructive',
+            });
+            loadSthanTypes(); // Revert on failure
+        }
+    };
+
     const resetForm = () => {
         setEditingId(null);
         setName('');
@@ -174,21 +224,36 @@ export function SthanTypeManager() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="color">Color *</Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        id="color"
-                                        type="color"
-                                        value={color}
-                                        onChange={(e) => setColor(e.target.value)}
-                                        className="w-20 h-10 cursor-pointer"
-                                    />
-                                    <Input
-                                        type="text"
-                                        value={color}
-                                        onChange={(e) => setColor(e.target.value)}
-                                        placeholder="#000000"
-                                        className="flex-1"
-                                    />
+                                <div className="space-y-3">
+                                    <div className="flex flex-wrap gap-2">
+                                        {PRESET_COLORS.map((preset) => (
+                                            <button
+                                                key={preset}
+                                                type="button"
+                                                onClick={() => setColor(preset)}
+                                                className={`w-8 h-8 rounded-full border-2 transition-all ${color === preset ? 'border-blue-500 scale-110 shadow-sm' : 'border-transparent hover:scale-105'
+                                                    }`}
+                                                style={{ backgroundColor: preset }}
+                                                title={preset}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="color"
+                                            type="color"
+                                            value={color}
+                                            onChange={(e) => setColor(e.target.value)}
+                                            className="w-12 h-10 p-1 cursor-pointer"
+                                        />
+                                        <Input
+                                            type="text"
+                                            value={color}
+                                            onChange={(e) => setColor(e.target.value)}
+                                            placeholder="#000000"
+                                            className="flex-1 font-mono text-sm uppercase"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -214,6 +279,9 @@ export function SthanTypeManager() {
                                     } else if (option.value === 'mahasthan') {
                                         // Use the static PNG
                                         displaySrc = option.previewSrc;
+                                    } else if (option.value === 'mandalik') {
+                                        // Use the generated Mandalik Pin
+                                        displaySrc = generateSthanPinSVG(color, 'mandalik');
                                     }
 
                                     return (
@@ -222,8 +290,8 @@ export function SthanTypeManager() {
                                             type="button"
                                             onClick={() => setPinType(option.value)}
                                             className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${pinType === option.value
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'
                                                 }`}
                                         >
                                             <img
@@ -267,60 +335,79 @@ export function SthanTypeManager() {
                                 No sthan types yet. Add one above.
                             </div>
                         ) : (
-                            <div className="space-y-2">
-                                {sthanTypes.map((type) => (
-                                    <div
-                                        key={type.id}
-                                        className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                                    >
-                                        <GripVertical className="w-4 h-4 text-slate-400 cursor-grab" />
-                                        {/* Pin preview with color */}
-                                        <img
-                                            src={generateSthanPinSVG(type.color, type.pinType)}
-                                            alt={type.pinType === 'aasan_sthan' ? 'Aasan Sthan Pin' : 'Default Pin'}
-                                            className="w-8 h-8 object-contain flex-shrink-0"
-                                        // title={`${type.pinType === 'aasan_sthan' ? 'Aasan Sthan' : 'Default'} pin · ${type.color}`}
-                                        />
-                                        <div className="flex-1">
-                                            <div className="font-medium text-sm">{type.name}</div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1.5">
-                                                <span
-                                                    className="inline-block w-2.5 h-2.5 rounded-full border border-slate-300"
-                                                    style={{ backgroundColor: type.color }}
-                                                />
-                                                {type.color}
-                                                <span className="text-slate-300">·</span>
-                                                <span>
-                                                    {type.pinType === 'aasan_sthan' ? 'Aasan Sthan' :
-                                                        type.pinType === 'mahasthan' ? 'Mahasthan' : 'Default'}
-                                                </span>
-                                            </div>
+                            <DragDropContext onDragEnd={handleDragEnd}>
+                                <Droppable droppableId="sthan-types">
+                                    {(provided) => (
+                                        <div
+                                            {...provided.droppableProps}
+                                            ref={provided.innerRef}
+                                            className="space-y-2"
+                                        >
+                                            {sthanTypes.map((type, index) => (
+                                                <Draggable key={type.id} draggableId={type.id} index={index}>
+                                                    {(provided, snapshot) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            className={`flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg transition-all ${snapshot.isDragging ? 'shadow-lg border-blue-200 z-50' : 'hover:bg-slate-50'
+                                                                }`}
+                                                        >
+                                                            <div {...provided.dragHandleProps} className="p-1 hover:bg-slate-100 rounded cursor-grab">
+                                                                <GripVertical className="w-4 h-4 text-slate-400" />
+                                                            </div>
+                                                            <img
+                                                                src={generateSthanPinSVG(type.color, type.pinType)}
+                                                                alt={type.name}
+                                                                className="w-8 h-8 object-contain flex-shrink-0"
+                                                            />
+                                                            <div className="flex-1">
+                                                                <div className="font-medium text-sm">{type.name}</div>
+                                                                <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                                                                    <span
+                                                                        className="inline-block w-2.5 h-2.5 rounded-full border border-slate-300"
+                                                                        style={{ backgroundColor: type.color }}
+                                                                    />
+                                                                    {type.color}
+                                                                    <span className="text-slate-300">·</span>
+                                                                    <span>
+                                                                        {type.pinType === 'aasan_sthan' ? 'Aasan Sthan' :
+                                                                            type.pinType === 'mahasthan' ? 'Mahasthan' :
+                                                                                type.pinType === 'mandalik' ? 'Mandalik' :
+                                                                                    type.pinType === 'avasthan' ? 'Avasthan' : 'Default'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleEdit(type)}
+                                                                    className="h-8 w-8 p-0"
+                                                                >
+                                                                    <Pencil className="w-3.5 h-3.5" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleDelete(type.id)}
+                                                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                            {provided.placeholder}
                                         </div>
-                                        <div className="flex gap-1">
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={() => handleEdit(type)}
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                <Pencil className="w-3.5 h-3.5" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={() => handleDelete(type.id)}
-                                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
                         )}
                     </div>
                 </div>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

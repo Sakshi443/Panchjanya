@@ -41,9 +41,14 @@ export const getCloudinaryImages = async (folder: string) => {
         const response = await fetch(`${url}?${queryParams}`);
 
         if (!response.ok) {
+            const errorText = await response.text();
             console.error("Cloudinary API Error:", response.status, response.statusText);
-            const errData = await response.json();
-            console.error("Cloudinary Error Details:", JSON.stringify(errData, null, 2));
+            try {
+                const errData = JSON.parse(errorText);
+                console.error("Cloudinary Error Details:", JSON.stringify(errData, null, 2));
+            } catch (e) {
+                console.error("Cloudinary Raw Error:", errorText);
+            }
             return [];
         }
 
@@ -91,8 +96,13 @@ export const uploadToCloudinary = async (file: File, folder: string) => {
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Upload failed");
+        const errorText = await response.text();
+        try {
+            const errorData = JSON.parse(errorText);
+            throw new Error(errorData.error?.message || "Upload failed");
+        } catch (e) {
+            throw new Error(`Upload failed with status ${response.status}: ${errorText.substring(0, 100)}...`);
+        }
     }
 
     const data = await response.json();

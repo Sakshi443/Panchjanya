@@ -41,17 +41,17 @@ const popupStyles = `
 // Custom Icon for 'Explore' Map (Golden Circle with Symbol)
 const exploreIcon = new L.Icon({
     iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzAzLm9yZy9yZ2IvMjAwMC9zdmciPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjE4IiBmaWxsPSIjRkNCOTAwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8cGF0aCBkPSJNMjAgMTJ2MTZNMTIgMjBoMTYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg==', // Placeholder SVG base64
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-    popupAnchor: [0, -20],
+    iconSize: [52, 52],
+    iconAnchor: [26, 52],
+    popupAnchor: [0, -48],
 });
 
 // Custom Blue Temple Icon for Pin Points
 const templePinIcon = new L.Icon({
     iconUrl: '/icons/Untitled design.png',
-    iconSize: [40, 40],
-    iconAnchor: [20, 40], // Bottom center
-    popupAnchor: [0, -35], // Adjusted for new icon height
+    iconSize: [52, 52],
+    iconAnchor: [26, 52], // Bottom center
+    popupAnchor: [0, -48], // Adjusted for new icon height
 });
 
 let sthanIconsMap: Record<string, L.Icon> = {};
@@ -283,9 +283,9 @@ const Explore = () => {
             types.forEach(st => {
                 sthanIconsMap[st.name] = new L.Icon({
                     iconUrl: generateSthanPinSVG(st.color, st.pinType),
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 40],
-                    popupAnchor: [0, -35],
+                    iconSize: [52, 52],
+                    iconAnchor: [26, 52],
+                    popupAnchor: [0, -48],
                 });
             });
         };
@@ -649,7 +649,7 @@ const Explore = () => {
                                 <img
                                     src={generateSthanPinSVG(st.color, st.pinType)}
                                     alt={st.name}
-                                    className="w-5 h-5 object-contain flex-shrink-0"
+                                    className="w-6 h-6 object-contain flex-shrink-0"
                                 />
                                 <span className="text-xs text-muted-foreground">{st.name}</span>
                             </div>

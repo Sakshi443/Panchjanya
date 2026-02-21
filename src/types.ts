@@ -6,12 +6,16 @@ export interface Leela {
     number?: number;
 }
 
+export type HotspotType = 'structure' | 'asset' | 'entry' | 'special' | 'zone';
+
 export interface Hotspot {
     id: string;
     x: number;
     y: number;
     title: string;
     description: string;
+    type?: HotspotType; // New: Categorization
+    parentId?: string; // New: For clustering/grouping
     significance?: string; // Detailed architectural/spiritual info
     sthanPothiTitle?: string; // New: Title for Sthan Pothi section
     sthanPothiDescription?: string; // New: Specific description for sthan pothi

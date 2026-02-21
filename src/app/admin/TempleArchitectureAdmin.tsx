@@ -63,6 +63,83 @@ const CUSTOM_ICONS = [
   { name: "Route Path", path: "/icons/glance/route_path.svg" },
 ];
 
+interface HotspotMarkerProps {
+  hotspot: Hotspot;
+  viewType: 'architectural' | 'present';
+  zoom: number;
+  onEdit: (h: Hotspot, e: React.MouseEvent) => void;
+  onDelete: (h: Hotspot) => void;
+  onUnmap: (id: string) => void;
+  isClustered?: boolean;
+  clusterCount?: number;
+}
+
+const HotspotMarker = ({
+  hotspot,
+  viewType,
+  zoom,
+  onEdit, // Now interpreted as 'start repositioning'
+  onDelete,
+  onUnmap,
+  isClustered,
+  clusterCount
+}: HotspotMarkerProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className="absolute z-30 transition-all duration-300 ease-in-out"
+      style={{
+        top: `${hotspot.y}%`,
+        left: `${hotspot.x}%`,
+        transform: `translate(-50%, -50%) scale(${isHovered ? 1.2 : 1})`,
+        opacity: isHovered ? 1 : 0.8
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative flex items-center justify-center cursor-pointer group">
+        {/* Simple Numbered Circle */}
+        <div className={`w-8 h-8 rounded-full shadow-lg border-2 border-white flex items-center justify-center font-black text-xs text-white transition-all duration-300
+                    ${viewType === 'architectural' ? 'bg-slate-700 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-700'}
+                    ${isHovered ? 'ring-4 ring-blue-500/30' : ''}`}>
+          {hotspot.number}
+        </div>
+
+        {/* Edit/Delete Icons on Hover */}
+        {isHovered && (
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1 bg-white rounded-xl shadow-2xl border border-slate-200 animate-in fade-in zoom-in slide-in-from-bottom-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="w-7 h-7 rounded-lg hover:bg-blue-50 text-blue-600"
+              title="Move Hotspot"
+              onClick={(e) => { e.stopPropagation(); onEdit(hotspot, e); }}
+            >
+              <LucideIcons.Pencil className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="w-7 h-7 rounded-lg hover:bg-red-50 text-red-600"
+              title="Delete Hotspot"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm("Remove this hotspot placement?")) {
+                  if (viewType === 'present') onUnmap(hotspot.id);
+                  else onDelete(hotspot);
+                }
+              }}
+            >
+              <LucideIcons.Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function TempleArchitectureAdmin() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -104,8 +181,9 @@ export default function TempleArchitectureAdmin() {
   const [contactNumber, setContactNumber] = useState("");
   const [sthan, setSthan] = useState("");
   const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
-
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
+
+  const [repositioningId, setRepositioningId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -238,14 +316,30 @@ export default function TempleArchitectureAdmin() {
     // If we clicked on an existing hotspot, ignore (it has its own handler, but just in case of bubbling)
     if ((e.target as HTMLElement).closest('.group.absolute')) return;
 
-    // Use imageRef to ensure coordinates are relative to the ACTUAL image features, even if scaled
     if (!imageRef.current) return;
     const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    console.log("Image Clicked (Relative to Image):", { x, y, viewType });
+    // Handle Repositioning
+    if (repositioningId) {
+      const updatedHotspots = currentHotspots.map(h =>
+        h.id === repositioningId ? { ...h, x, y } : h
+      );
 
+      if (viewType === 'architectural') setArchHotspots(updatedHotspots);
+      else setPresentHotspots(updatedHotspots);
+
+      setRepositioningId(null);
+      toast({ title: "Position Updated", description: "Hotspot relocated successfully." });
+
+      // Auto-save the position
+      const movedHotspot = updatedHotspots.find(h => h.id === repositioningId);
+      if (movedHotspot) {
+        saveHotspotAtPosition(movedHotspot, updatedHotspots);
+      }
+      return;
+    }
 
     if (viewType === 'present') {
       setPendingClickPosition({ x, y });
@@ -260,20 +354,14 @@ export default function TempleArchitectureAdmin() {
       imageIndex: adminImageIndex,
       title: "",
       description: "",
-      significance: "",
       number: archHotspots.length + 1,
       images: [],
-      oldImages: [],
-      leelas: [],
-      sthanPothiDescription: "",
-      sthanPothiTitle: "",
-      generalDescriptionTitle: "",
-      isPresent: false
+      isPresent: false,
+      type: 'structure'
     };
 
     setArchHotspots(prev => [...prev, newHotspot]);
-    setSelectedHotspot(newHotspot);
-    return;
+    toast({ title: "Hotspot Added", description: `Placement #${newHotspot.number} created.` });
   };
 
   const displayImages = viewType === 'architectural'
@@ -285,11 +373,45 @@ export default function TempleArchitectureAdmin() {
 
   const handleHotspotEdit = (hotspot: Hotspot, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Ensure the hotspot has isPresent flag so sync doesn't lose it
-    setSelectedHotspot({
-      ...hotspot,
-      isPresent: viewType === 'present' || hotspot.isPresent
+    setRepositioningId(hotspot.id);
+    toast({
+      title: "Repositioning Mode",
+      description: "Click anywhere on the image to move this hotspot."
     });
+  };
+
+  const saveHotspotAtPosition = async (hotspot: Hotspot, allHotspots: Hotspot[]) => {
+    if (!id) return;
+    try {
+      const token = await user?.getIdToken();
+      const sanitized = sanitizeData(hotspot);
+
+      const collectionParam = viewType === 'architectural' ? 'architecture_hotspots' : 'present_hotspots';
+
+      // Update specific hotspot in its subcollection
+      fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=${collectionParam}&subId=${hotspot.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(sanitized)
+      });
+
+      // Also sync the main array for architectural view (legacy support)
+      if (viewType === 'architectural') {
+        fetch(`/api/admin/data?collection=temples&id=${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ hotspots: sanitizeData(allHotspots) })
+        });
+      }
+    } catch (e) {
+      console.error("Auto-save failed:", e);
+    }
   };
 
   // Helper helper to remove undefined values
@@ -298,101 +420,6 @@ export default function TempleArchitectureAdmin() {
     return JSON.parse(JSON.stringify(data));
   };
 
-  const saveHotspot = async () => {
-    if (!selectedHotspot || !id) return;
-
-    try {
-      const sanitizedHotspot = sanitizeData(selectedHotspot);
-
-      if (viewType === 'architectural') {
-        const updatedArch = archHotspots.some((h) => h.id === selectedHotspot.id)
-          ? archHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
-          : [...archHotspots, selectedHotspot];
-
-        setArchHotspots(updatedArch);
-
-        // Architecture branch: Update main document AND subcollection
-        const payload = {
-          hotspots: sanitizeData(updatedArch)
-        };
-
-        try {
-          const token = await user?.getIdToken();
-
-          // 1. Update main document (Legacy/Frontend Support)
-          const res = await fetch(`/api/admin/data?collection=temples&id=${id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(payload)
-          });
-          if (!res.ok) throw new Error("API write failed.");
-
-          // 2. Update subcollection (Source of Truth Migration)
-          fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=architecture_hotspots&subId=${selectedHotspot.id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(sanitizedHotspot)
-          }).catch(e => console.warn("Background architecture subcollection update failed:", e));
-
-        } catch (apiError: any) {
-          console.error("API save failed:", apiError);
-          throw apiError; // Re-throw to be caught by the outer catch
-        }
-
-      } else {
-        const updatedPresent = presentHotspots.some((h) => h.id === selectedHotspot.id)
-          ? presentHotspots.map((h) => (h.id === selectedHotspot.id ? selectedHotspot : h))
-          : [...presentHotspots, selectedHotspot];
-
-        setPresentHotspots(updatedPresent);
-
-        // Present View Isolation: Write ONLY to the subcollection as requested
-        // Note: We also update the main doc's array for frontend compatibility if needed, 
-        // but user asked for "ONLY subcollection". Let's follow "ONLY" but keep state updated.
-
-        try {
-          const token = await user?.getIdToken();
-
-          // Write directly to subcollection
-          const res = await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=present_hotspots&subId=${selectedHotspot.id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(sanitizedHotspot)
-          });
-
-          if (!res.ok) throw new Error("API subcollection write failed.");
-
-        } catch (apiError: any) {
-          console.error("API subcollection write failed:", apiError);
-          throw apiError;
-        }
-      }
-
-      toast({
-        title: "Success",
-        description: "Hotspot saved successfully",
-      });
-
-      setCurrentStep('architecture-view');
-      setSelectedHotspot(null);
-    } catch (error) {
-      console.error("Critical Error saving hotspot (API & SDK both failed):", error);
-      toast({
-        title: "Error",
-        description: "Failed to save hotspot. Check console.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const saveTempleDetails = async () => {
     if (!id) return;
@@ -1262,7 +1289,12 @@ export default function TempleArchitectureAdmin() {
                                       <Button variant="outline" className="w-full justify-between h-10 rounded-xl border-amber-100 bg-white">
                                         <div className="flex items-center gap-2 truncate">
                                           {item.icon ? (
-                                            <img src={item.icon} className="w-4 h-4 object-contain" alt="icon" />
+                                            <img
+                                              src={item.icon}
+                                              className="w-4 h-4 object-contain"
+                                              alt="icon"
+                                              onError={(e) => (e.currentTarget.src = "/icons/sthaan.png")}
+                                            />
                                           ) : (
                                             <Info className="w-4 h-4 text-amber-600" />
                                           )}
@@ -1598,67 +1630,29 @@ export default function TempleArchitectureAdmin() {
                       <>
                         <img
                           ref={imageRef}
-                          src={displayImages[adminImageIndex]}
+                          src={displayImages[adminImageIndex] || "/icons/temple-placeholder.jpg"}
                           alt="Active View"
-                          className="max-h-[80vh] w-auto shadow-2xl transition-transform duration-700 select-none"
+                          className="max-h-[80vh] w-auto shadow-2xl transition-transform duration-700 select-none pb-24"
                           draggable={false}
+                          onError={(e) => (e.currentTarget.src = "/icons/temple-placeholder.jpg")}
                         />
 
                         {/* Active Image Hotspots */}
-                        {currentHotspots.filter(h => (h.imageIndex || 0) === adminImageIndex).map((hotspot) => (
-                          <div
-                            key={hotspot.id}
-                            className="absolute group z-30"
-                            style={{
-                              top: `${hotspot.y}%`,
-                              left: `${hotspot.x}%`,
-                              transform: "translate(-50%, -50%)",
-                            }}
-                            onClick={(e) => handleHotspotEdit(hotspot, e)}
-                          >
-                            <div
-                              className="relative"
-                              onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
-                              onMouseLeave={() => setHoveredHotspotId(null)}
-                            >
-                              <div className={`absolute -inset-2 rounded-full animate-ping opacity-75 ${viewType === 'architectural' ? 'bg-red-600/30' : 'bg-blue-600/30'}`}></div>
-                              <div className={`w-7 h-7 rounded-full border-2 border-white shadow-xl group-hover:scale-125 transition-all flex items-center justify-center cursor-pointer relative z-10 font-black text-[10px] text-white ${viewType === 'architectural' ? 'bg-red-600 group-hover:bg-red-500' : 'bg-blue-600 group-hover:bg-blue-500'}`}>
-                                {hotspot.number}
+                        {currentHotspots
+                          .filter(h => (h.imageIndex || 0) === adminImageIndex)
+                          .map((hotspot) => (
+                            <HotspotMarker
+                              key={hotspot.id}
+                              hotspot={hotspot}
+                              viewType={viewType}
+                              zoom={zoom}
+                              onEdit={handleHotspotEdit}
+                              onDelete={deleteHotspot}
+                              onUnmap={unmapHotspot}
+                            />
+                          ))
+                        }
 
-                                {/* Quick Actions on Hover */}
-                                <div className="absolute -top-7 -right-7 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  {/* Edit Button */}
-                                  <div
-                                    className="bg-blue-600 rounded-full p-1.5 border border-white shadow-lg hover:bg-blue-700 active:scale-95 cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleHotspotEdit(hotspot, e);
-                                    }}
-                                    title="Edit"
-                                  >
-                                    <LucideIcons.Pencil className="w-3 h-3 text-white" />
-                                  </div>
-
-                                  {/* Delete Button */}
-                                  <div
-                                    className="bg-red-600 rounded-full p-1.5 border border-white shadow-lg hover:bg-red-700 active:scale-95 cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (viewType === 'present') {
-                                        unmapHotspot(hotspot.id);
-                                      } else {
-                                        deleteHotspot(hotspot);
-                                      }
-                                    }}
-                                    title={viewType === 'present' ? "Unmap" : "Delete"}
-                                  >
-                                    <Trash2 className="w-3 h-3 text-white" />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
                       </>
                     ) : (
                       <div className="text-white text-center p-20 border-4 border-dashed border-white/10 rounded-3xl backdrop-blur-sm">
@@ -1859,7 +1853,9 @@ export default function TempleArchitectureAdmin() {
                               setPendingClickPosition(null);
                               toast({ title: "Mapped", description: `Hotspot #${hotspot.number} mapped to photo.` });
                             } else {
-                              handleHotspotEdit(hotspot, e);
+                              setSelectedHotspot(hotspot);
+                              setCurrentStep('sthana-details');
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
                             }
                           }}
                           onMouseEnter={() => setHoveredHotspotId(hotspot.id)}
@@ -1907,7 +1903,7 @@ export default function TempleArchitectureAdmin() {
                             <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                               <span>Position: {hotspot.x.toFixed(1)}%, {hotspot.y.toFixed(1)}%</span>
                               <span className="flex items-center gap-1 group-hover:text-primary">
-                                Edit Details <ChevronRight className="w-3 h-3" />
+                                Move / Position <ChevronRight className="w-3 h-3" />
                               </span>
                             </div>
                           </CardContent>
@@ -2075,253 +2071,310 @@ export default function TempleArchitectureAdmin() {
               </CardContent>
             </Card>
 
-            {/* Hotspot Edit Dialog */}
-            <Dialog open={!!selectedHotspot} onOpenChange={(open) => !open && setSelectedHotspot(null)}>
-              <DialogContent className="max-w-5xl h-[90vh] overflow-y-auto rounded-2xl p-0 border-none shadow-2xl">
-                <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xl shadow-inner">
-                      {selectedHotspot?.number || "?"}
-                    </div>
-                    <div>
-                      <DialogTitle className="text-2xl font-serif font-bold text-primary tracking-tight">
-                        {selectedHotspot?.title || "Edit Sthana Details"}
-                        {viewType === 'present' && <span className="ml-3 text-xs font-sans font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Mapping Mode</span>}
-                      </DialogTitle>
-                      <DialogDescription className="text-sm text-slate-500 font-medium">
-                        {viewType === 'present'
-                          ? "Reposition or reorder this Sthana on the present-day view. Metadata is inherited from Architecture."
-                          : "Refine descriptions, images, and leelas for this sacred spot."
-                        }
-                      </DialogDescription>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (viewType === 'present') {
-                          unmapHotspot(selectedHotspot.id);
-                        } else {
-                          deleteHotspot(selectedHotspot);
-                        }
-                      }}
-                      className="rounded-xl px-4 h-12 text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      {viewType === 'present' ? "Unmap" : "Delete"}
-                    </Button>
-                    <Button onClick={saveHotspot} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-8 h-12 shadow-lg shadow-blue-900/20">
-                      <Save className="w-4 h-4 mr-2" /> Save Changes
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedHotspot(null)} className="rounded-full hover:bg-slate-100">
-                      <X className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="p-8 space-y-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Left Column: Basic Info & Content */}
-                    <div className="space-y-6">
-                      {selectedHotspot && (
-                        <>
-
-                          {/* Sthan Pothi Card */}
-                          <Card className="border-slate-200 shadow-sm">
-                            <CardHeader className="pb-3 border-b border-slate-100 mb-4 bg-slate-50/50">
-                              <CardTitle className="text-lg font-bold">Sthan Pothi</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4 pt-4">
-                              <div className="space-y-2">
-                                <Label>Sthan Name</Label>
-                                <Input
-                                  value={selectedHotspot.title || ""}
-                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, title: e.target.value })}
-                                  placeholder="Enter the sacred name..."
-                                  className="h-12 rounded-xl"
-                                  disabled={viewType === 'present'}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Sthan Pothi Description</Label>
-                                <Textarea
-                                  value={selectedHotspot.sthanPothiDescription || ""}
-                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiDescription: e.target.value })}
-                                  placeholder="Specific scriptural details..."
-                                  rows={5}
-                                  className="rounded-xl"
-                                  disabled={viewType === 'present'}
-                                />
-                              </div>
-                            </CardContent>
-                          </Card>
-
-                          {/* Details Card */}
-                          <Card className="border-slate-200 shadow-sm">
-                            <CardHeader className="pb-3 border-b border-slate-100 mb-4 bg-slate-50/50">
-                              <CardTitle className="text-lg font-bold">Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4 pt-4">
-                              <div className="space-y-2">
-                                <Label>Title</Label>
-                                <Input
-                                  value={selectedHotspot.generalDescriptionTitle || "General Description"}
-                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, generalDescriptionTitle: e.target.value })}
-                                  placeholder="Heading for this section"
-                                  className="h-12 rounded-xl"
-                                  disabled={viewType === 'present'}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Content</Label>
-                                <Textarea
-                                  value={selectedHotspot.description}
-                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, description: e.target.value })}
-                                  placeholder="Brief architectural overview..."
-                                  rows={3}
-                                  className="rounded-xl"
-                                  disabled={viewType === 'present'}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Significance</Label>
-                                <Textarea
-                                  value={selectedHotspot.significance || ""}
-                                  onChange={(e) => setSelectedHotspot({ ...selectedHotspot, significance: e.target.value })}
-                                  placeholder="Architectural or spiritual significance..."
-                                  rows={5}
-                                  className="rounded-xl"
-                                  disabled={viewType === 'present'}
-                                />
-                              </div>
-                            </CardContent>
-                          </Card>
-
-                          <Card className="border-slate-200 shadow-sm">
-                            <CardHeader className="pb-3 border-b border-slate-100 mb-4 flex flex-row items-center justify-between bg-slate-50/50">
-                              <CardTitle className="text-lg font-bold">Leelas (Stories)</CardTitle>
-                              {viewType === 'architectural' && (
-                                <Button variant="outline" size="sm" onClick={addLeela} className="rounded-lg h-8">
-                                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Leela
-                                </Button>
-                              )}
-                            </CardHeader>
-                            <CardContent className="space-y-4 pt-4">
-                              {(Array.isArray(selectedHotspot.leelas) ? selectedHotspot.leelas : []).map((leela: any, idx: number) => (
-                                <div key={typeof leela === 'string' ? idx : leela.id} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-3 relative group">
-                                  {viewType === 'architectural' && (
-                                    <button
-                                      onClick={() => removeLeela(typeof leela === 'string' ? leela : leela.id)}
-                                      className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px]">
-                                      {idx + 1}
-                                    </span>
-                                    <Input
-                                      placeholder="Story Title"
-                                      value={typeof leela === 'string' ? '' : leela.title}
-                                      className="bg-white h-10 rounded-xl"
-                                      disabled={viewType === 'present'}
-                                      onChange={(e) => {
-                                        const updatedLeelas = (selectedHotspot.leelas as any[]).map((l: any) =>
-                                          typeof l === 'string' ? l : (l.id === leela.id ? { ...l, title: e.target.value } : l)
-                                        );
-                                        setSelectedHotspot({ ...selectedHotspot, leelas: updatedLeelas as Leela[] });
-                                      }}
-                                    />
-                                  </div>
-                                  <Textarea
-                                    placeholder="Describe the divine story..."
-                                    rows={3}
-                                    className="bg-white rounded-xl"
-                                    value={typeof leela === 'string' ? leela : leela.description}
-                                    disabled={viewType === 'present'}
-                                    onChange={(e) => updateLeela(typeof leela === 'string' ? leela : leela.id, e.target.value)}
-                                  />
-                                </div>
-                              ))}
-                              {(!selectedHotspot.leelas || selectedHotspot.leelas.length === 0) && (
-                                <p className="text-sm text-slate-400 italic text-center py-6">No leelas added yet.</p>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Right Column: Image Management */}
-                    <div className="space-y-6">
-                      {selectedHotspot && (
-                        <Card className="border-slate-200 overflow-hidden group/card shadow-sm hover:shadow-md transition-all">
-                          <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <ImageIcon className="w-4 h-4 text-blue-600" />
-                              <h3 className="font-bold text-slate-900">Sthan Photo Gallery</h3>
-                            </div>
-                            <Badge variant="outline" className="bg-white text-slate-400 font-black text-[10px] uppercase tracking-widest px-3 py-1">
-                              {selectedHotspot.images.length} Photos
-                            </Badge>
-                          </div>
-                          <CardContent className="p-6 space-y-4">
-                            <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-                              ℹ️ Photos added here will be displayed in the primary gallery for this sthana.
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {selectedHotspot.images.map((url, idx) => (
-                                <div key={idx} className="relative aspect-[4/3] group rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
-                                  <img src={url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                  {viewType === 'architectural' && (
-                                    <button
-                                      onClick={() => {
-                                        if (confirm("Remove this image?")) {
-                                          removeImageFromHotspot(idx, 'present');
-                                        }
-                                      }}
-                                      className="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-xl scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all shadow-xl hover:bg-red-700 z-10"
-                                      title="Remove image"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                              {viewType === 'architectural' && (
-                                <div className="aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 transition-all flex items-center justify-center p-2 group/upload overflow-hidden">
-                                  <ImageUpload
-                                    folderPath={`hotspots/${id}/${selectedHotspot.id}/present`}
-                                    onUpload={(url) => setSelectedHotspot({
-                                      ...selectedHotspot,
-                                      images: [...selectedHotspot.images, url]
-                                    })}
-                                    label="Upload New Photo"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="sticky bottom-0 bg-slate-50 border-t border-slate-100 p-6 flex justify-end gap-3 rounded-b-2xl">
-                  <Button variant="outline" onClick={() => setSelectedHotspot(null)} className="rounded-xl px-10 h-12">Cancel</Button>
-                  <Button onClick={saveHotspot} className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-12 h-12 shadow-xl shadow-blue-900/20">
-                    <Save className="w-4 h-4 mr-2" /> Save & Record Sthana
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         )}
 
+
+        {/* Step 3: Sthana Details */}
+        {currentStep === 'sthana-details' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
+            {!selectedHotspot ? (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-serif font-bold text-primary tracking-tight">Sthana Details</h1>
+                    <p className="text-sm text-slate-500 font-medium">Manage content, leelas, and photos for each sacred pinpoint.</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        placeholder="Search hotspots..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 w-64 rounded-xl border-slate-200"
+                      />
+                    </div>
+                    <Button onClick={saveTempleDetails} className="bg-blue-900 text-white rounded-xl px-6">
+                      <Save className="w-4 h-4 mr-2" /> Save All
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {archHotspots
+                    .filter(h => h.title.toLowerCase().includes(searchQuery.toLowerCase()) || h.number?.toString().includes(searchQuery))
+                    .map((hotspot) => (
+                      <Card
+                        key={hotspot.id}
+                        className="group hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-200 cursor-pointer overflow-hidden rounded-3xl"
+                        onClick={() => setSelectedHotspot(hotspot)}
+                      >
+                        <CardContent className="p-0">
+                          <div className="aspect-video bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                            {hotspot.images?.[0] ? (
+                              <img
+                                src={hotspot.images[0]}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => (e.currentTarget.src = "/placeholder-temple.jpg")}
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center gap-2">
+                                <ImageIcon className="w-12 h-12 text-slate-300" />
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Image</span>
+                              </div>
+                            )}
+                            <div className="absolute top-4 left-4 w-10 h-10 rounded-2xl bg-white shadow-xl flex items-center justify-center font-black text-blue-900 border border-slate-100">
+                              {hotspot.number}
+                            </div>
+                          </div>
+                          <div className="p-6 space-y-3">
+                            <div>
+                              <h3 className="font-bold text-slate-900 text-lg group-hover:text-blue-600 transition-colors">
+                                {hotspot.title || `Sthana #${hotspot.number}`}
+                              </h3>
+                              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">
+                                {hotspot.type || 'Structure'}
+                              </p>
+                            </div>
+                            <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
+                              {hotspot.description || "No description provided yet."}
+                            </p>
+                            <div className="pt-4 flex items-center justify-between border-t border-slate-50">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                <LucideIcons.Book className="w-3 h-3 text-blue-400" /> {hotspot.leelas?.length || 0} Stories
+                              </span>
+                              <Button variant="ghost" size="sm" className="text-blue-600 font-black text-xs hover:bg-blue-50">
+                                EDIT CONTENT <ChevronRight className="w-3 h-3 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-8 max-w-4xl mx-auto">
+                {/* Editing Header */}
+                <div className="flex items-center justify-between sticky top-20 z-40 bg-[#F9F6F0]/80 backdrop-blur-md py-4">
+                  <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" onClick={() => setSelectedHotspot(null)} className="rounded-xl">
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-blue-900 text-white flex items-center justify-center font-black text-lg">
+                        {selectedHotspot.number}
+                      </div>
+                      <h2 className="text-2xl font-serif font-bold text-primary truncate max-w-sm">
+                        {selectedHotspot.title || `Edit Sthana #${selectedHotspot.number}`}
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Content */}
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  {/* Primary Content */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden h-full">
+                      <CardHeader className="bg-slate-50 border-b border-slate-100 pb-3">
+                        <CardTitle className="text-lg font-bold">General Description</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6 pt-6">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Sthan Name</Label>
+                          <Input
+                            value={selectedHotspot.title || ""}
+                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, title: e.target.value })}
+                            placeholder="e.g. Garbhagriha"
+                            className="h-12 rounded-2xl border-slate-200 focus:border-blue-500"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-black uppercase tracking-widest text-slate-400">General Description</Label>
+                        </div>
+                        <div className="space-y-2">
+                          <Textarea
+                            value={selectedHotspot.description}
+                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, description: e.target.value })}
+                            placeholder="Main architectural overview..."
+                            rows={4}
+                            className="rounded-2xl border-slate-200 min-h-[140px]"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden h-full">
+                      <CardHeader className="bg-slate-50 border-b border-slate-100 pb-3">
+                        <CardTitle className="text-lg font-bold">Sthan Pothi Details</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6 pt-6">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Sthan Pothi Details</Label>
+                        </div>
+                        <div className="space-y-2">
+                          <Textarea
+                            value={selectedHotspot.sthanPothiDescription || ""}
+                            onChange={(e) => setSelectedHotspot({ ...selectedHotspot, sthanPothiDescription: e.target.value })}
+                            placeholder="Details from scripture..."
+                            rows={8}
+                            className="rounded-2xl border-slate-200 min-h-[200px]"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Leelas Section */}
+                  <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden">
+                    <CardHeader className="bg-slate-50 border-b border-slate-100 flex flex-row items-center justify-between pb-3">
+                      <CardTitle className="text-lg font-bold">Divine Leelas</CardTitle>
+                      <Button variant="outline" size="sm" onClick={addLeela} className="rounded-xl h-10 border-blue-200 text-blue-600 bg-white">
+                        <Plus className="w-4 h-4 mr-2" /> Add Story
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-8">
+                      {Array.isArray(selectedHotspot.leelas) && selectedHotspot.leelas.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-6">
+                          {selectedHotspot.leelas.map((leela: any, idx: number) => (
+                            <div key={leela.id} className="p-6 bg-slate-50 border border-slate-100 rounded-3xl relative group/leela shadow-sm">
+                              <button
+                                onClick={() => removeLeela(leela.id)}
+                                className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover/leela:opacity-100"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <div className="flex items-center gap-4 mb-4">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs">
+                                  {idx + 1}
+                                </div>
+                                <Input
+                                  placeholder="Leela Title"
+                                  value={leela.title || ""}
+                                  className="bg-white rounded-xl font-bold h-10"
+                                  onChange={(e) => {
+                                    const updatedLeelas = (selectedHotspot.leelas as any[]).map((l: any) =>
+                                      l.id === leela.id ? { ...l, title: e.target.value } : l
+                                    );
+                                    setSelectedHotspot({ ...selectedHotspot, leelas: updatedLeelas as Leela[] });
+                                  }}
+                                />
+                              </div>
+                              <Textarea
+                                placeholder="Describe the divine leela..."
+                                rows={4}
+                                className="bg-white rounded-2xl p-4"
+                                value={leela.description}
+                                onChange={(e) => updateLeela(leela.id, e.target.value)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-12 flex flex-col items-center text-slate-300 border-2 border-dashed border-slate-200 rounded-3xl">
+                          <LucideIcons.BookOpen className="w-12 h-12 mb-3 opacity-20" />
+                          <p className="font-bold text-slate-400">No divine stories added to this sthana yet.</p>
+                          <Button variant="link" onClick={addLeela} className="text-blue-600 text-sm font-black mt-2">
+                            Add the first Leela
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Photo Gallery */}
+                  <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden">
+                    <CardHeader className="bg-slate-50 border-b border-slate-100 flex flex-row items-center justify-between pb-3">
+                      <div className="flex items-center gap-3">
+                        <ImageIcon className="w-5 h-5 text-blue-600" />
+                        <CardTitle className="text-lg font-bold">Image & Media Gallery</CardTitle>
+                      </div>
+                      <Badge variant="outline" className="bg-white text-slate-400 font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full border-slate-200">
+                        {selectedHotspot.images?.length || 0} Photos Attached
+                      </Badge>
+                    </CardHeader>
+                    <CardContent className="p-8">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {selectedHotspot.images?.map((url: string, idx: number) => (
+                          <div key={idx} className="relative aspect-square group rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
+                            <img
+                              src={url || "/icons/sthaan.png"}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              onError={(e) => (e.currentTarget.src = "/icons/sthaan.png")}
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => {
+                                  if (confirm("Remove this image?")) {
+                                    removeImageFromHotspot(idx, 'present');
+                                  }
+                                }}
+                                className="bg-red-600 text-white p-3 rounded-2xl scale-90 hover:scale-100 transition-all shadow-xl hover:bg-red-700"
+                                title="Remove image"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="aspect-square rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/5 transition-all flex items-center justify-center p-4 group/upload overflow-hidden">
+                          <ImageUpload
+                            folderPath={`hotspots/${id}/${selectedHotspot.id}/present`}
+                            onUpload={(url) => setSelectedHotspot({
+                              ...selectedHotspot,
+                              images: [...(selectedHotspot.images || []), url]
+                            })}
+                            label="Attach Photo"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Final Actions Footer (Sticky) */}
+                <div className="sticky bottom-4 z-50 bg-white/90 backdrop-blur-xl border border-slate-200 p-4 rounded-[2.5rem] shadow-2xl flex items-center justify-between gap-6 px-8 max-w-2xl mx-auto ring-1 ring-slate-950/5">
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Selected:</p>
+                    <p className="text-sm font-bold text-slate-900 truncate max-w-[150px]">{selectedHotspot.title || `Pin #${selectedHotspot.number}`}</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button variant="ghost" onClick={() => setSelectedHotspot(null)} className="rounded-2xl font-bold px-6 h-12">Back to List</Button>
+                    <Button
+                      onClick={async () => {
+                        const updated = archHotspots.map(h => h.id === selectedHotspot.id ? selectedHotspot : h);
+                        setArchHotspots(updated);
+
+                        try {
+                          const token = await user?.getIdToken();
+                          await fetch(`/api/admin/data?collection=temples&id=${id}&subcollection=architecture_hotspots&subId=${selectedHotspot.id}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                            },
+                            body: JSON.stringify(sanitizeData(selectedHotspot))
+                          });
+                          toast({ title: "Updated", description: "Metadata synced across view." });
+                          setSelectedHotspot(null);
+                        } catch (e) {
+                          console.error(e);
+                          toast({ title: "Sync Failed", variant: "destructive" });
+                        }
+                      }}
+                      className="bg-blue-600 text-white hover:bg-blue-700 rounded-2xl px-10 h-12 shadow-xl shadow-blue-600/20 font-bold"
+                    >
+                      Save & Return
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+        }
 
         {/* Pick Hotspot Mapping Dialog */}
         <Dialog open={!!pendingClickPosition} onOpenChange={(open) => !open && setPendingClickPosition(null)}>
@@ -2366,7 +2419,6 @@ export default function TempleArchitectureAdmin() {
                           }).catch(e => console.warn("Mapping subcollection save failed:", e));
                         });
 
-                        setSelectedHotspot(newPresentHotspot);
                         toast({ title: "Mapped", description: `Sthana "${ah.title}" mapped to Present View.` });
                       }}
                       className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors text-left"
@@ -2411,9 +2463,10 @@ export default function TempleArchitectureAdmin() {
                 Add New Hotspot
               </Button>
             </div>
-          )}
-      </div>
+          )
+        }
+      </div >
       {/* )} */}
-    </div>
+    </div >
   );
 }

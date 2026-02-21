@@ -5,6 +5,21 @@ import { SthanType, CreateSthanTypeInput, UpdateSthanTypeInput } from '@/shared/
 
 const STHAN_TYPES_COLLECTION = 'sthan_types';
 
+let avasthanTemplate: string | null = null;
+
+/**
+ * Load SVG templates from public directory
+ */
+const loadTemplates = async () => {
+    if (avasthanTemplate) return;
+    try {
+        const response = await fetch('/icons/Blue_temple_icon.svg');
+        avasthanTemplate = await response.text();
+    } catch (error) {
+        console.error('Failed to load SVG templates:', error);
+    }
+};
+
 /**
  * Fetch all sthan types from Firestore
  */
@@ -70,11 +85,32 @@ export const deleteSthanType = async (id: string): Promise<void> => {
 };
 
 /**
+ * Update the order of all sthan types
+ */
+export const updateSthanTypesOrder = async (reorderedTypes: SthanType[]): Promise<void> => {
+    try {
+        const batch = reorderedTypes.map((type, index) => {
+            const docRef = doc(db, STHAN_TYPES_COLLECTION, type.id);
+            return updateDoc(docRef, {
+                order: index + 1,
+                updatedAt: new Date().toISOString(),
+            });
+        });
+        await Promise.all(batch);
+    } catch (error) {
+        console.error('Error updating sthan types order:', error);
+        throw error;
+    }
+};
+
+/**
  * Generate SVG pin data URL with custom color — dispatches by pinType
  */
 export const generateSthanPinSVG = (color: string, pinType?: string): string => {
     if (pinType === 'aasan_sthan') return generateAasanSthanPinSVG(color);
     if (pinType === 'mahasthan') return '/icons/mahasthan pin.png';
+    if (pinType === 'mandalik') return generateMandalikSthanPinSVG(color);
+    if (pinType === 'avasthan') return generateAvasthanSthanPinSVG(color);
     return generateDefaultPinSVG(color);
 };
 
@@ -96,6 +132,42 @@ const generateDefaultPinSVG = (color: string): string => {
 </svg>`;
 
     return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
+/**
+ * Generate the Mandalik Sthan pin SVG with custom color
+ */
+const generateMandalikSthanPinSVG = (color: string): string => {
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+<path d="M0 0 C31.25257157 25.47414122 52.10309746 61.50911786 56.49462891 101.77880859 C60.77309642 147.90047916 42.3908827 185.81814278 19.01464844 224.41992188 C18.12683066 225.91145574 17.24002978 227.40359561 16.35449219 228.89648438 C10.3608216 238.92644877 3.94527682 248.67518131 -2.47793579 258.43249512 C-40.86658027 316.76521427 -73.94453322 376.96652423 -89.61035156 445.48242188 C-90.06705138 447.46196612 -90.52517566 449.44118281 -90.98535156 451.41992188 C-91.15881104 452.1760376 -91.33227051 452.93215332 -91.51098633 453.71118164 C-92.4186156 457.31714318 -92.67994584 458.21848406 -95.92285156 460.35742188 C-98.98535156 461.41992188 -98.98535156 461.41992188 -101.98535156 461.41992188 C-102.13045166 460.69740234 -102.27555176 459.97488281 -102.42504883 459.23046875 C-109.6695683 423.49046307 -120.64268413 389.54637531 -135.98535156 356.41992188 C-136.45166992 355.40365723 -136.91798828 354.38739258 -137.3984375 353.34033203 C-147.86570999 330.62053158 -159.83540624 308.74931083 -173.46533203 287.77294922 C-175.0642337 285.2978104 -176.63858885 282.8083821 -178.20800781 280.31445312 C-183.17354681 272.43462509 -188.1722569 264.58538274 -193.38378906 256.86523438 C-193.94789993 256.02945358 -193.94789993 256.02945358 -194.52340698 255.17678833 C-195.09165695 254.33493484 -195.09165695 254.33493484 -195.67138672 253.47607422 C-204.03799786 241.07757439 -211.90973262 228.48841214 -219.26904297 215.45849609 C-221.07369109 212.26352448 -222.89452104 209.07808292 -224.71582031 205.89257812 C-234.06876744 189.46013939 -242.08065214 173.68682524 -247.37841797 155.48242188 C-247.89626743 153.72265026 -248.45786054 151.97584949 -249.02832031 150.23242188 C-251.73094312 139.46605508 -252.34646241 128.66853372 -252.29785156 117.60742188 C-252.29366211 116.29443115 -252.28947266 114.98144043 -252.28515625 113.62866211 C-252.17180429 103.87134977 -251.33575844 94.89216245 -248.98535156 85.41992188 C-248.6953125 84.15792969 -248.40527344 82.8959375 -248.10644531 81.59570312 C-241.26086113 53.72644198 -226.70633662 30.8702748 -206.98535156 10.41992188 C-206.35757813 9.71738281 -205.72980469 9.01484375 -205.08300781 8.29101562 C-153.78612987 -47.42600145 -56.47514391 -44.94676972 0 0 Z " fill="${color}" transform="translate(347.9853515625,37.580078125)"/>
+<path d="M0 0 C11.31435861 8.8595304 18.56475997 20.69919338 21.39453125 34.875 C22.53091806 50.60958658 18.49909342 65.09498129 8.14453125 77.1875 C-1.4255245 87.14035798 -13.76639475 94.17915821 -27.76953125 95.078125 C-43.57927486 95.29225245 -55.87658673 91.00545588 -67.41015625 80.09130859 C-77.94667413 69.79206869 -83.61828746 57.76442816 -83.91796875 42.875 C-83.98002997 28.87502365 -78.38522735 14.93654825 -68.60546875 4.875 C-48.4881556 -12.54396636 -22.29664996 -15.51071301 0 0 Z " fill="#010000" transform="translate(282.60546875,102.125)"/>
+</svg>`;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
+/**
+ * Generate the Avasthan (Temple) pin SVG with custom color
+ * If template not yet loaded, returns the original icon path
+ */
+const generateAvasthanSthanPinSVG = (color: string): string => {
+    if (!avasthanTemplate) {
+        // Trigger background load
+        loadTemplates();
+        return '/icons/Blue_temple_icon.svg';
+    }
+
+    // Replace all blue shades with the custom color
+    // Original blue shades to target: #091C47, #1E4E81, #1F4D7E, #1F4D80, #1F4E81
+    let svg = avasthanTemplate
+        .replace(/#091C47/g, color)
+        .replace(/#1E4E81/g, color)
+        .replace(/#1F4D7E/g, color)
+        .replace(/#1F4D80/g, color)
+        .replace(/#1F4E81/g, color);
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 };
 
 /**

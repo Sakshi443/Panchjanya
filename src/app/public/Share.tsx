@@ -29,8 +29,8 @@ const createMarkerIcon = (status: string, number: number) => {
     className: "custom-yatra-marker",
     html: `
       <div style="
-        width: 28px;
-        height: 28px;
+        width: 52px;
+        height: 52px;
         background-color: ${color};
         border: 2px solid white;
         border-radius: 50%;
@@ -40,13 +40,13 @@ const createMarkerIcon = (status: string, number: number) => {
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         font-weight: bold;
         color: white;
-        font-size: 11px;
+        font-size: 18px;
       ">
         ${number}
       </div>
     `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    iconSize: [52, 52],
+    iconAnchor: [26, 26],
   });
 };
 

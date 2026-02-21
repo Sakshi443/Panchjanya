@@ -6,7 +6,7 @@ import type { Temple } from "@/types";
 // Spiritual Marker Generator
 const createCustomMarker = (isActive: boolean) => {
   const color = isActive ? "#FF9933" : "#C04000"; // Saffron vs Deep Maroon-ish Red
-  const size = isActive ? 40 : 32;
+  const size = 52;
 
   return L.divIcon({
     className: "custom-temple-marker",
@@ -41,8 +41,8 @@ const createCustomMarker = (isActive: boolean) => {
         </div>
       </div>
     `,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size],
+    iconSize: [52, 52],
+    iconAnchor: [26, 52],
   });
 };
 
@@ -171,7 +171,7 @@ export default function MapWithMarkers({ temples, onTempleClick, selectedTempleI
           >
             <Tooltip
               direction="top"
-              offset={[0, -32]}
+              offset={[0, -26]}
               className="rounded-lg shadow-xl border-none p-0 overflow-hidden"
             >
               <div className="px-3 py-2 bg-white/95 backdrop-blur-sm border-l-4 border-primary">

@@ -33,8 +33,8 @@ const createNumberedMarker = (sequence: number, status: string, isHighlighted: b
         className: `custom-number-marker ${isHighlighted ? 'active-marker' : ''}`,
         html: `
             <div class="${pulseClass}" style="
-                width: ${isHighlighted ? '42px' : '32px'};
-                height: ${isHighlighted ? '42px' : '32px'};
+                width: 52px;
+                height: 52px;
                 background-color: ${mainBg};
                 border: 3px solid ${borderColor};
                 border-radius: 50%;
@@ -43,15 +43,15 @@ const createNumberedMarker = (sequence: number, status: string, isHighlighted: b
                 justify-content: center;
                 color: ${textColor};
                 font-weight: bold;
-                font-size: ${isHighlighted ? '18px' : '14px'};
+                font-size: 20px;
                 box-shadow: 0 0 15px rgba(0,0,0,0.3);
                 transition: all 0.3s ease;
             ">
                 ${sequence}
             </div>
         `,
-        iconSize: [isHighlighted ? 42 : 32, isHighlighted ? 42 : 32],
-        iconAnchor: [isHighlighted ? 21 : 16, isHighlighted ? 21 : 16],
+        iconSize: [52, 52],
+        iconAnchor: [26, 26],
     });
 };
 
@@ -212,7 +212,7 @@ export default function YatraMap({ locations, highlightedId }: YatraMapProps) {
                         icon={createNumberedMarker(loc.sequence, loc.status, loc.id === highlightedId, loc.pinColor)}
                         zIndexOffset={loc.id === highlightedId ? 2000 : 1000}
                     >
-                        <Tooltip direction="top" offset={[0, -20]} opacity={1}>
+                        <Tooltip direction="top" offset={[0, -26]} opacity={1}>
                             <span className="font-bold text-xs">{loc.name}</span>
                         </Tooltip>
                     </Marker>
