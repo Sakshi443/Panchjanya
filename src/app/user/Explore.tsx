@@ -13,7 +13,7 @@ import { useLanguage } from "@/shared/contexts/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
 import { cn } from "@/shared/lib/utils";
 import DataTableFilter from "@/shared/components/ui/data-table-filter";
-import { getSthanTypes, generateSthanPinSVG } from "@/shared/utils/sthanTypes";
+import { getSthanTypes, getSthanPinInfo } from "@/shared/utils/sthanTypes";
 import { SthanType } from "@/shared/types/sthanType";
 
 
@@ -281,12 +281,24 @@ const Explore = () => {
 
             // Generate icons for each sthan type
             types.forEach(st => {
-                sthanIconsMap[st.name] = new L.Icon({
-                    iconUrl: generateSthanPinSVG(st.color, st.pinType),
-                    iconSize: [52, 52],
-                    iconAnchor: [26, 52],
-                    popupAnchor: [0, -48],
-                });
+                const { src, filter, needsFilter } = getSthanPinInfo(st.color, st.pinType);
+                if (needsFilter) {
+                    // Icon-based PNG with color filter — use L.divIcon with inline img
+                    sthanIconsMap[st.name] = new L.DivIcon({
+                        html: `<img src="${src}" style="width:52px;height:52px;object-fit:contain;filter:${filter}" />`,
+                        className: '',
+                        iconSize: [52, 52],
+                        iconAnchor: [26, 52],
+                        popupAnchor: [0, -48],
+                    }) as unknown as L.Icon;
+                } else {
+                    sthanIconsMap[st.name] = new L.Icon({
+                        iconUrl: src,
+                        iconSize: [52, 52],
+                        iconAnchor: [26, 52],
+                        popupAnchor: [0, -48],
+                    });
+                }
             });
         };
         loadSthanTypes();
@@ -644,16 +656,20 @@ const Explore = () => {
                 <div className="bg-background/95 backdrop-blur-md border border-border rounded-xl p-4 shadow-lg">
                     <h3 className="font-heading font-bold text-sm text-foreground mb-3">Sthan Types</h3>
                     <div className="space-y-2">
-                        {sthanTypes.map(st => (
-                            <div key={st.id} className="flex items-center gap-2">
-                                <img
-                                    src={generateSthanPinSVG(st.color, st.pinType)}
-                                    alt={st.name}
-                                    className="w-6 h-6 object-contain flex-shrink-0"
-                                />
-                                <span className="text-xs text-muted-foreground">{st.name}</span>
-                            </div>
-                        ))}
+                        {sthanTypes.map(st => {
+                            const { src, filter, needsFilter } = getSthanPinInfo(st.color, st.pinType);
+                            return (
+                                <div key={st.id} className="flex items-center gap-2">
+                                    <img
+                                        src={src}
+                                        alt={st.name}
+                                        style={needsFilter ? { filter } : undefined}
+                                        className="w-6 h-6 object-contain flex-shrink-0"
+                                    />
+                                    <span className="text-xs text-muted-foreground">{st.name}</span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

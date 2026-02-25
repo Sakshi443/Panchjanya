@@ -5,46 +5,47 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Plus, Trash2, Pencil, GripVertical } from 'lucide-react';
-import { getSthanTypes, createSthanType, updateSthanType, deleteSthanType, generateSthanPinSVG, updateSthanTypesOrder } from '@/shared/utils/sthanTypes';
+import { getSthanTypes, createSthanType, updateSthanType, deleteSthanType, generateColoredPinSVG, getSthanPinInfo, updateSthanTypesOrder } from '@/shared/utils/sthanTypes';
 import { SthanType, PinType } from '@/shared/types/sthanType';
 import { useToast } from '@/shared/hooks/use-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
-const PIN_OPTIONS: { value: PinType; label: string; previewSrc: string }[] = [
-    {
-        value: 'default',
-        label: 'Default Pin',
-        previewSrc: '', // generated dynamically
+const COLOR_SETS = [
+    { value: '#0e3c6f', label: 'Blue', series: 'blue' },
+    { value: '#d4af37', label: 'Golden', series: 'gold' },
+] as const;
+
+type IconKey = 'empty' | 'temple' | 'shikhara' | 'mandir' | 'asan' | 'dot';
+
+const PIN_MAP: Record<typeof COLOR_SETS[number]['series'], Record<IconKey, PinType>> = {
+    blue: {
+        empty: 'pin_empty',
+        temple: 'pin_temple1',
+        shikhara: 'pin_shikhara',
+        mandir: 'pin_mandir',
+        asan: 'pin_aasan',
+        dot: 'pin_dot'
     },
-    {
-        value: 'aasan_sthan',
-        label: 'Aasan Sthan Pin',
-        previewSrc: '/icons/Aasan Sthan pin.svg',
-    },
-    {
-        value: 'mahasthan',
-        label: 'Mahasthan Pin',
-        previewSrc: '/icons/mahasthan pin.png',
-    },
-    {
-        value: 'mandalik',
-        label: 'Mandalik Pin',
-        previewSrc: '/icons/Mandalik_Sthan.svg',
-    },
-    {
-        value: 'avasthan',
-        label: 'Avasthan Pin',
-        previewSrc: '/icons/Blue_temple_icon.svg',
-    },
+    gold: {
+        empty: 'pin_empty_gold',
+        temple: 'pin_1_1',
+        shikhara: 'pin_1_2',
+        mandir: 'pin_1_3',
+        asan: 'pin_1_4',
+        dot: 'pin_1_5'
+    }
+};
+
+const ICON_OPTIONS: { key: IconKey; label: string }[] = [
+    { key: 'temple', label: 'Temple' },
+    { key: 'shikhara', label: 'Shikhara' },
+    { key: 'mandir', label: 'Mandir' },
+    { key: 'asan', label: 'Aasan' },
+    { key: 'dot', label: 'Dot' },
+    { key: 'empty', label: 'Empty' },
 ];
 
-const PRESET_COLORS = [
-    '#0e3c6f', // Navy Blue
-    '#d4af37', // Gold
-    '#6a0dad', // Purple
-    '#228b22', // Forest Green
-    '#ff0000', // Red
-];
+
 
 export function SthanTypeManager() {
     const [open, setOpen] = useState(false);
@@ -54,8 +55,8 @@ export function SthanTypeManager() {
 
     // Form state
     const [name, setName] = useState('');
-    const [color, setColor] = useState('#000000');
-    const [pinType, setPinType] = useState<PinType>('default');
+    const [color, setColor] = useState('#d4af37'); // Default to Golden
+    const [pinType, setPinType] = useState<PinType>('pin_1_1'); // Default to Golden Temple
 
     const { toast } = useToast();
 
@@ -127,7 +128,7 @@ export function SthanTypeManager() {
         setEditingId(type.id);
         setName(type.name);
         setColor(type.color);
-        setPinType(type.pinType || 'default');
+        setPinType(type.pinType || 'pin_empty');
     };
 
     const handleDelete = async (id: string) => {
@@ -188,8 +189,8 @@ export function SthanTypeManager() {
     const resetForm = () => {
         setEditingId(null);
         setName('');
-        setColor('#000000');
-        setPinType('default');
+        setColor('#d4af37');
+        setPinType('pin_1_1');
     };
 
     return (
@@ -223,95 +224,82 @@ export function SthanTypeManager() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="color">Color *</Label>
-                                <div className="space-y-3">
-                                    <div className="flex flex-wrap gap-2">
-                                        {PRESET_COLORS.map((preset) => (
-                                            <button
-                                                key={preset}
-                                                type="button"
-                                                onClick={() => setColor(preset)}
-                                                className={`w-8 h-8 rounded-full border-2 transition-all ${color === preset ? 'border-blue-500 scale-110 shadow-sm' : 'border-transparent hover:scale-105'
-                                                    }`}
-                                                style={{ backgroundColor: preset }}
-                                                title={preset}
+                                <Label htmlFor="color">Color Set *</Label>
+                                <div className="flex gap-3">
+                                    {COLOR_SETS.map((set) => (
+                                        <button
+                                            key={set.series}
+                                            type="button"
+                                            onClick={() => {
+                                                const currentIconKey = (Object.entries(PIN_MAP.blue).find(([_, v]) => v === pinType)?.[0] ||
+                                                    Object.entries(PIN_MAP.gold).find(([_, v]) => v === pinType)?.[0] ||
+                                                    'temple') as IconKey;
+                                                setColor(set.value);
+                                                setPinType(PIN_MAP[set.series][currentIconKey]);
+                                            }}
+                                            className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${color === set.value
+                                                ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                        >
+                                            <div
+                                                className="w-4 h-4 rounded-full border border-slate-300"
+                                                style={{ backgroundColor: set.value }}
                                             />
-                                        ))}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            id="color"
-                                            type="color"
-                                            value={color}
-                                            onChange={(e) => setColor(e.target.value)}
-                                            className="w-12 h-10 p-1 cursor-pointer"
-                                        />
-                                        <Input
-                                            type="text"
-                                            value={color}
-                                            onChange={(e) => setColor(e.target.value)}
-                                            placeholder="#000000"
-                                            className="flex-1 font-mono text-sm uppercase"
-                                        />
-                                    </div>
+                                            <span className="text-sm font-medium">{set.label}</span>
+                                            {color === set.value && (
+                                                <span className="text-[10px] font-bold text-blue-600 uppercase ml-auto">✓</span>
+                                            )}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Pin Type Selector */}
-                        <div className="space-y-2">
-                            <Label>Pin Type</Label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {PIN_OPTIONS.map((option) => {
-                                    const previewUrl = option.value === 'default'
-                                        ? generateSthanPinSVG(color, 'default')
-                                        : option.previewSrc;
-
-                                    // For custom images, we use them directly. For default/Aasan Sthan (SVG), we use the helper if needed or direct path.
-                                    // generateSthanPinSVG handles default and aasan_sthan (if we pass color).
-                                    // But here we want a static preview for selection? 
-                                    // Actually, let's use generateSthanPinSVG for all if possible, or fallback to option.previewSrc
-
-                                    let displaySrc = previewUrl;
-                                    if (option.value === 'aasan_sthan') {
-                                        // Use the colored version for preview
-                                        displaySrc = generateSthanPinSVG(color, 'aasan_sthan');
-                                    } else if (option.value === 'mahasthan') {
-                                        // Use the static PNG
-                                        displaySrc = option.previewSrc;
-                                    } else if (option.value === 'mandalik') {
-                                        // Use the generated Mandalik Pin
-                                        displaySrc = generateSthanPinSVG(color, 'mandalik');
-                                    }
-
+                        <div className="space-y-3">
+                            <Label>Pin Icon Type</Label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {ICON_OPTIONS.map((option) => {
+                                    const currentSeries = COLOR_SETS.find(s => s.value === color)?.series || 'gold';
+                                    const specificPinType = PIN_MAP[currentSeries][option.key];
                                     return (
                                         <button
-                                            key={option.value}
+                                            key={option.key}
                                             type="button"
-                                            onClick={() => setPinType(option.value)}
-                                            className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${pinType === option.value
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-slate-200 bg-white hover:border-slate-300'
+                                            onClick={() => setPinType(specificPinType)}
+                                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all ${pinType === specificPinType
+                                                ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                                                 }`}
                                         >
-                                            <img
-                                                src={displaySrc}
-                                                alt={option.label}
-                                                className="w-10 h-10 object-contain"
-                                            />
-                                            <span className="text-xs font-medium text-slate-700">
+                                            {(() => {
+                                                const { src } = getSthanPinInfo('original', specificPinType);
+                                                return (
+                                                    <div className="relative w-10 h-10">
+                                                        <div
+                                                            className="absolute inset-0 bg-white"
+                                                            style={{ clipPath: 'circle(40% at 50% 40%)' }}
+                                                        />
+                                                        <img
+                                                            src={src}
+                                                            alt={option.label}
+                                                            className="relative z-10 w-full h-full object-contain"
+                                                        />
+                                                    </div>
+                                                );
+                                            })()}
+                                            <span className="text-[11px] font-medium text-slate-600 text-center leading-tight">
                                                 {option.label}
                                             </span>
-                                            {pinType === option.value && (
-                                                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">
-                                                    Selected
-                                                </span>
+                                            {pinType === specificPinType && (
+                                                <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wide">✓ Selected</span>
                                             )}
                                         </button>
                                     );
                                 })}
                             </div>
                         </div>
+
 
                         <div className="flex gap-2">
                             <Button type="submit" disabled={loading}>
@@ -355,11 +343,23 @@ export function SthanTypeManager() {
                                                             <div {...provided.dragHandleProps} className="p-1 hover:bg-slate-100 rounded cursor-grab">
                                                                 <GripVertical className="w-4 h-4 text-slate-400" />
                                                             </div>
-                                                            <img
-                                                                src={generateSthanPinSVG(type.color, type.pinType)}
-                                                                alt={type.name}
-                                                                className="w-8 h-8 object-contain flex-shrink-0"
-                                                            />
+                                                            {(() => {
+                                                                const { src, filter } = getSthanPinInfo(type.color, type.pinType);
+                                                                return (
+                                                                    <div className="relative w-8 h-8 flex-shrink-0">
+                                                                        <div
+                                                                            className="absolute inset-0 bg-white"
+                                                                            style={{ clipPath: 'circle(40% at 50% 40%)' }}
+                                                                        />
+                                                                        <img
+                                                                            src={src}
+                                                                            style={filter ? { filter } : undefined}
+                                                                            alt={type.name}
+                                                                            className="relative z-10 w-full h-full object-contain"
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })()}
                                                             <div className="flex-1">
                                                                 <div className="font-medium text-sm">{type.name}</div>
                                                                 <div className="text-xs text-slate-500 flex items-center gap-1.5">
@@ -369,12 +369,14 @@ export function SthanTypeManager() {
                                                                     />
                                                                     {type.color}
                                                                     <span className="text-slate-300">·</span>
-                                                                    <span>
-                                                                        {type.pinType === 'aasan_sthan' ? 'Aasan Sthan' :
-                                                                            type.pinType === 'mahasthan' ? 'Mahasthan' :
-                                                                                type.pinType === 'mandalik' ? 'Mandalik' :
-                                                                                    type.pinType === 'avasthan' ? 'Avasthan' : 'Default'}
-                                                                    </span>
+                                                                    {(() => {
+                                                                        const iconKey = Object.entries(PIN_MAP.blue).find(([_, v]) => v === type.pinType)?.[0] ||
+                                                                            Object.entries(PIN_MAP.gold).find(([_, v]) => v === type.pinType)?.[0] ||
+                                                                            'custom';
+                                                                        const iconLabel = ICON_OPTIONS.find(o => o.key === iconKey)?.label || 'Custom';
+                                                                        const seriesLabel = COLOR_SETS.find(s => s.value === type.color)?.label || 'Custom';
+                                                                        return `${seriesLabel} - ${iconLabel}`;
+                                                                    })()}
                                                                 </div>
                                                             </div>
                                                             <div className="flex gap-1">
