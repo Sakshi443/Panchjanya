@@ -42,6 +42,7 @@ const CUSTOM_ICONS = [
     { name: "Temple Simple", path: "/icons/glance/temple_simple.svg" },
     { name: "Temple Solid", path: "/icons/glance/temple_solid.svg" },
     { name: "Route Path", path: "/icons/glance/route_path.svg" },
+    { name: "Parivaar", path: "/icons/glance/parivaar.svg" },
 ];
 
 export default function AbbreviationsManager() {
