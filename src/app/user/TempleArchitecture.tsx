@@ -264,7 +264,7 @@ export default function TempleArchitecture() {
               isScrolled ? "max-h-0 opacity-0 mt-0" : "max-h-32 opacity-100 mt-1"
             )}>
               <h2 className="text-base text-[#0f3c6e] font-serif">
-                <span className="font-bold">{temple.todaysName}</span> {temple.todaysName && "(Today's name)"}
+                <span className="font-bold">{temple.todaysName}</span> {temple.todaysName && `(${temple.todaysNameTitle || "Today's name"})`}
               </h2>
               <p className="text-sm font-bold text-amber-600 leading-tight">
                 {temple.address}

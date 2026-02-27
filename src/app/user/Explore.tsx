@@ -3,9 +3,14 @@ import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, query, where } 
 import { db } from "@/auth/firebase";
 import { Temple } from "@/types";
 import { useNavigate } from "react-router-dom";
-import { Search, Compass, MapPin, ChevronRight, Filter, X, Bookmark, CornerDownRight } from "lucide-react";
+import { Search, Compass, MapPin, ChevronRight, Filter, X, Bookmark, CornerDownRight, Info, Navigation } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/shared/components/ui/popover";
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -220,10 +225,9 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                         >
                             Details
                         </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 md:h-9 md:w-9 rounded-lg border-accent/20 bg-accent/10 text-accent-gold hover:bg-accent/20 flex-shrink-0"
+                        <button
+                            className="h-8 w-8 md:h-9 md:w-9 rounded-full border border-slate-200 bg-white transition-all duration-300 hover:bg-slate-50 text-blue-900 flex items-center justify-center shrink-0 shadow-sm"
+                            title="Navigate"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (temple.latitude && temple.longitude) {
@@ -231,20 +235,21 @@ function TempleMarker({ temple, onSelect }: { temple: Temple; onSelect: (temple:
                                 }
                             }}
                         >
-                            <div className="w-4 h-4 md:w-5 md:h-5 bg-accent-gold" style={{ WebkitMaskImage: "url(/direction_icon.png)", maskImage: "url(/direction_icon.png)", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat" }} />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
+                            <Navigation className="w-4 h-4 md:w-5 md:h-5" />
+                        </button>
+                        <button
                             onClick={toggleSave}
                             disabled={isSaving || !user}
                             className={cn(
-                                "h-8 w-8 md:h-9 md:w-9 rounded-lg border-border bg-card flex-shrink-0 transition-all shadow-sm",
-                                isSaved && "bg-accent/10 border-accent/20 text-accent-gold"
+                                "h-8 w-8 md:h-9 md:w-9 rounded-full border flex-shrink-0 transition-all duration-300 shadow-sm flex items-center justify-center",
+                                isSaved
+                                    ? "bg-blue-50 border-blue-200 text-blue-900"
+                                    : "bg-white border-slate-200 text-blue-900 hover:bg-slate-50"
                             )}
+                            title={isSaved ? "Unsave" : "Save"}
                         >
                             <Bookmark className={cn("w-4 h-4 md:w-5 md:h-5", isSaved && "fill-current")} />
-                        </Button>
+                        </button>
                     </div>
                 </div>
             </Popup>
@@ -508,8 +513,8 @@ const Explore = () => {
                 </div>
 
                 {/* Second Row: Search Bar - Responsive & Centered */}
-                <div className="pointer-events-auto w-full max-w-xs mx-auto px-4">
-                    <div className="relative rounded-full bg-background/95 backdrop-blur-md border border-border/40 flex items-center shadow-md">
+                <div className="pointer-events-auto w-full max-w-sm mx-auto px-4 flex items-center gap-2">
+                    <div className="relative flex-1 rounded-full bg-background/95 backdrop-blur-md border border-border/40 flex items-center shadow-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-3 h-3" />
                         <Input
                             placeholder="Explore Holy Legacy"
@@ -531,91 +536,131 @@ const Explore = () => {
                             </div>
                         </button>
                     </div>
+
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-9 w-9 rounded-full bg-background/95 backdrop-blur-md border-border/40 shadow-md text-landing-primary dark:text-primary hover:bg-accent/10 shrink-0"
+                                title="Sthan Types Information"
+                            >
+                                <Info className="w-5 h-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            side="bottom"
+                            align="end"
+                            sideOffset={8}
+                            className="w-52 rounded-[1.25rem] p-3.5 bg-[#FDFBF7] border-[#E8E2D5] shadow-xl"
+                        >
+                            <h3 className="text-lg font-heading font-black text-[#2D2D2D] mb-3 px-1 truncate">
+                                Sthan Types
+                            </h3>
+                            <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar">
+                                {sthanTypes.map(st => {
+                                    const { src, filter, needsFilter } = getSthanPinInfo(st.color, st.pinType);
+                                    return (
+                                        <div
+                                            key={st.id}
+                                            className="flex items-center gap-2.5 group cursor-default p-1 rounded-lg hover:bg-[#F5F1E8] transition-colors"
+                                        >
+                                            <div className="w-8 h-8 shrink-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                                                <img
+                                                    src={src}
+                                                    alt={st.name}
+                                                    style={needsFilter ? { filter } : undefined}
+                                                    className="w-7 h-7 object-contain drop-shadow-sm"
+                                                />
+                                            </div>
+                                            <span className="text-sm font-semibold text-[#6B6B6B] truncate leading-tight group-hover:text-[#2D2D2D] transition-colors">
+                                                {st.name}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 
-            {/* Filter Panel */}
             {showFilters && (
                 <div className="absolute top-36 left-4 right-4 z-[400] pointer-events-auto">
-                    <div className="bg-map-bg/95 backdrop-blur-sm rounded-2xl border border-border p-6 shadow-xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-heading font-bold text-lg text-landing-primary dark:text-primary">Filters</h3>
+                    <div className="bg-map-bg/95 backdrop-blur-md rounded-[2rem] border border-border p-5 shadow-xl">
+                        <div className="flex items-center justify-between mb-3 px-1">
+                            <h3 className="font-heading font-black text-xl text-landing-primary dark:text-primary">Filters</h3>
                             <button
                                 onClick={() => setShowFilters(false)}
-                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="space-y-6">
-                            {/* 1. Area wise */}
-                            <div className="space-y-4">
-                                {/* <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest">1. Area wise</h4> */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* District Filter */}
-                                    <div>
-                                        <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">District</label>
-                                        <DataTableFilter
-                                            label="All Districts"
-                                            options={districts}
-                                            selectedValues={pendingDistrict ? [pendingDistrict] : []}
-                                            onChange={(values) => {
-                                                setPendingDistrict(values[0] || "");
-                                                setPendingTaluka(""); // Reset taluka when district changes for cascading effect
-                                            }}
-                                            className="w-full bg-background border-border"
-                                        />
-                                    </div>
-
-                                    {/* Taluka Filter */}
-                                    <div>
-                                        <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">Taluka</label>
-                                        <DataTableFilter
-                                            label="All Talukas"
-                                            options={talukas}
-                                            selectedValues={pendingTaluka ? [pendingTaluka] : []}
-                                            onChange={(values) => setPendingTaluka(values[0] || "")}
-                                            className="w-full bg-background border-border"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 2. Sthana Wise */}
-                            <div className="space-y-4 pt-2">
-                                {/* <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest">2. Sthana Wise</h4> */}
+                        <div className="space-y-4">
+                            {/* Area Row */}
+                            <div className="grid grid-cols-2 gap-3">
+                                {/* District Filter */}
                                 <div>
-                                    <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">Sthana Category</label>
+                                    <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider px-1">District</label>
                                     <DataTableFilter
-                                        label="All Sthana Types"
-                                        options={sthanaOptions}
-                                        selectedValues={pendingSthanaType ? [pendingSthanaType] : []}
-                                        onChange={(values) => setPendingSthanaType(values[0] || "")}
-                                        className="w-full bg-white border-gray-200"
+                                        label="All Districts"
+                                        options={districts}
+                                        selectedValues={pendingDistrict ? [pendingDistrict] : []}
+                                        onChange={(values) => {
+                                            setPendingDistrict(values[0] || "");
+                                            setPendingTaluka("");
+                                        }}
+                                        className="w-full bg-background border-border h-9 text-xs"
+                                    />
+                                </div>
+
+                                {/* Taluka Filter */}
+                                <div>
+                                    <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider px-1">Taluka</label>
+                                    <DataTableFilter
+                                        label="All Talukas"
+                                        options={talukas}
+                                        selectedValues={pendingTaluka ? [pendingTaluka] : []}
+                                        onChange={(values) => setPendingTaluka(values[0] || "")}
+                                        className="w-full bg-background border-border h-9 text-xs"
                                     />
                                 </div>
                             </div>
 
+                            {/* Sthana Row */}
+                            <div className="pt-1">
+                                <label className="block text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider px-1">Sthana Category</label>
+                                <DataTableFilter
+                                    label="All Sthana Types"
+                                    options={sthanaOptions}
+                                    selectedValues={pendingSthanaType ? [pendingSthanaType] : []}
+                                    onChange={(values) => setPendingSthanaType(values[0] || "")}
+                                    className="w-full bg-white border-gray-200 h-9 text-xs"
+                                />
+                            </div>
+
                             {/* Action Buttons */}
-                            <div className="flex gap-3 pt-6 border-t mt-4">
+                            <div className="flex gap-3 pt-4 border-t border-border/10 mt-2">
                                 <Button
                                     onClick={clearFilters}
                                     variant="outline"
-                                    className="flex-1 border-border text-foreground hover:bg-accent/10 h-12 rounded-xl"
+                                    className="flex-1 border-border text-foreground hover:bg-accent/10 h-10 rounded-xl text-xs font-bold"
                                 >
                                     Clear All
                                 </Button>
                                 <Button
                                     onClick={handleApplyFilters}
-                                    className="flex-1 bg-landing-primary hover:bg-landing-primary/90 text-white h-12 rounded-xl shadow-md"
+                                    className="flex-1 bg-landing-primary hover:bg-landing-primary/90 text-white h-10 rounded-xl shadow-md text-xs font-bold"
                                 >
                                     Apply Filters
                                 </Button>
                             </div>
+
                             {/* Results Count */}
-                            <div className="text-center text-[11px] font-bold text-accent-gold uppercase tracking-widest pt-4 border-t mt-4">
-                                Showing {filteredTemples.length} of {temples.length} temples
+                            <div className="text-center text-[10px] font-black text-accent-gold uppercase tracking-[0.2em] pt-3">
+                                SHOWING {filteredTemples.length} OF {temples.length} TEMPLES
                             </div>
                         </div>
                     </div>
@@ -651,28 +696,6 @@ const Explore = () => {
                 </MapContainer>
             </div>
 
-            {/* Map Legend */}
-            <div className="absolute bottom-6 right-6 z-[400] pointer-events-auto">
-                <div className="bg-background/95 backdrop-blur-md border border-border rounded-xl p-4 shadow-lg">
-                    <h3 className="font-heading font-bold text-sm text-foreground mb-3">Sthan Types</h3>
-                    <div className="space-y-2">
-                        {sthanTypes.map(st => {
-                            const { src, filter, needsFilter } = getSthanPinInfo(st.color, st.pinType);
-                            return (
-                                <div key={st.id} className="flex items-center gap-2">
-                                    <img
-                                        src={src}
-                                        alt={st.name}
-                                        style={needsFilter ? { filter } : undefined}
-                                        className="w-6 h-6 object-contain flex-shrink-0"
-                                    />
-                                    <span className="text-xs text-muted-foreground">{st.name}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };

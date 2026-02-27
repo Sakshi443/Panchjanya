@@ -58,6 +58,7 @@ export interface Temple {
     id: string;
     name: string;
     todaysName?: string; // New: Today's name subtitle
+    todaysNameTitle?: string; // New: Dynamic label for today's name
     address?: string;
     locationLink?: string; // New: Direction link or coordinates
     contactName?: string;

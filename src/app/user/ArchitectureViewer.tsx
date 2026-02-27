@@ -16,6 +16,12 @@ import {
     DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    PopoverAnchor,
+} from "@/shared/components/ui/popover";
+import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -689,15 +695,13 @@ export default function ArchitectureViewer() {
 
                 {/* Content Section */}
                 <div className="space-y-4">
-                    {/* Sthan Pothi Dropdown */}
-                    <DropdownMenu modal={false} onOpenChange={(open) => {
+                    {/* Sthan Pothi Dropdown - Using Popover for Anchor support */}
+                    <Popover onOpenChange={(open) => {
                         setIsPothiOpen(open);
                         if (!open) {
-                            // Clear expanded states when closing dropdown, but keep selection
                             setExpandedHotspots({});
                         }
                         if (open) {
-                            // Auto-scroll to selected item if exists
                             setTimeout(() => {
                                 if (selectedHotspotId) {
                                     const selectedEl = document.getElementById(`pothi-item-${selectedHotspotId}`);
@@ -713,7 +717,7 @@ export default function ArchitectureViewer() {
                             }, 100);
                         }
                     }}>
-                        <DropdownMenuTrigger asChild>
+                        <PopoverAnchor asChild>
                             <div
                                 id="sthan-pothi-trigger"
                                 className="w-full h-12 md:h-14 bg-blue-900 text-white rounded-2xl shadow-md flex items-center justify-between p-0 border border-blue-800 group transition-all focus:outline-none overflow-hidden"
@@ -728,71 +732,75 @@ export default function ArchitectureViewer() {
                                     <BookOpen className="w-6 h-6 text-white" />
                                     <span className="font-heading font-bold tracking-wider text-base md:text-lg">Sthan Pothi</span>
                                 </div>
-                                <div className="h-full flex items-center justify-center px-6 border-l border-blue-800 hover:bg-blue-800 transition-colors cursor-pointer">
-                                    <ChevronDown className={`w-6 h-6 text-white opacity-80 group-hover:opacity-100 transition-all duration-300 ${isPothiOpen ? 'rotate-180' : ''}`} />
-                                </div>
+                                <PopoverTrigger asChild>
+                                    <div className="h-full flex items-center justify-center px-6 border-l border-blue-800 hover:bg-blue-800 transition-colors cursor-pointer">
+                                        <ChevronDown className={`w-6 h-6 text-white opacity-80 group-hover:opacity-100 transition-all duration-300 ${isPothiOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+                                </PopoverTrigger>
                             </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
+                        </PopoverAnchor>
+                        <PopoverContent
                             side="bottom"
                             align="center"
                             avoidCollisions={false}
                             sideOffset={8}
-                            className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[75vh] md:max-h-[80vh] overflow-y-auto rounded-2xl p-1 bg-white shadow-2xl border-blue-50 z-50 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                            className="w-[var(--radix-popover-trigger-width)] max-h-[75vh] md:max-h-[80vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border-blue-50 z-50 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                         >
-                            {unifiedHotspots.map((h) => {
-                                const isExpanded = expandedHotspots[h.id];
-                                // Selection in pothi only shows if it matches AND (pothi is open)
-                                // Highlight if it matches the selected hotspot
-                                const isSelectedInPothi = selectedHotspotId === h.id;
-                                return (
-                                    <div
-                                        key={h.id}
-                                        id={`pothi-item-${h.id}`}
-                                        className="border-b border-slate-50 last:border-0 transition-all"
-                                    >
+                            <div className="flex flex-col">
+                                {unifiedHotspots.map((h) => {
+                                    const isExpanded = expandedHotspots[h.id];
+                                    // Selection in pothi only shows if it matches AND (pothi is open)
+                                    // Highlight if it matches the selected hotspot
+                                    const isSelectedInPothi = selectedHotspotId === h.id;
+                                    return (
                                         <div
-                                            className={`h-12 md:h-14 flex items-center justify-between gap-3 px-0 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'bg-amber-50/50 shadow-sm' : 'hover:bg-amber-50/40'}`}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                // Minimal selection for map sync, without triggering pop-up/scroll
-                                                handleSelectHotspot(h.id, 'dropdown');
-                                                // Toggle detail description
-                                                toggleHotspot(h.id);
-                                            }}
-                                            onMouseEnter={() => setHoveredHotspotId(h.id)}
-                                            onMouseLeave={() => setHoveredHotspotId(null)}
+                                            key={h.id}
+                                            id={`pothi-item-${h.id}`}
+                                            className="border-b border-slate-50 last:border-0 transition-all"
                                         >
-                                            <div className="flex-1 min-w-0 px-1 py-2">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-1 h-6 bg-amber-600 shrink-0"></div>
-                                                    <h4 className={`font-heading font-bold text-xl tracking-wider transition-colors truncate ${isSelectedInPothi ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
+                                            <div
+                                                className={`h-12 md:h-14 flex items-center justify-between gap-3 px-0 py-1 rounded-xl group cursor-pointer transition-all duration-300 ${isSelectedInPothi ? 'bg-amber-50/50 shadow-sm' : 'hover:bg-amber-50/40'}`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    // Minimal selection for map sync, without triggering pop-up/scroll
+                                                    handleSelectHotspot(h.id, 'dropdown');
+                                                    // Toggle detail description
+                                                    toggleHotspot(h.id);
+                                                }}
+                                                onMouseEnter={() => setHoveredHotspotId(h.id)}
+                                                onMouseLeave={() => setHoveredHotspotId(null)}
+                                            >
+                                                <div className="flex-1 min-w-0 px-1 py-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-1 h-6 bg-amber-600 shrink-0"></div>
+                                                        <h4 className={`font-heading font-bold text-xl tracking-wider transition-colors truncate ${isSelectedInPothi ? 'text-amber-700' : 'text-blue-900 group-hover:text-amber-700'}`}>{h.title}</h4>
+                                                    </div>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all bg-transparent border-none">
+                                                    <ChevronDown className={`w-4 h-4 text-amber-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                                                 </div>
                                             </div>
-                                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all bg-transparent border-none">
-                                                <ChevronDown className={`w-4 h-4 text-amber-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                                            </div>
+                                            {isExpanded && (
+                                                <div className="px-2 pb-3 pt-2">
+                                                    <p className="text-lg text-slate-600 font-serif leading-relaxed pl-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                        {h.description || "Historical records of this sacred site are being updated."}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
-                                        {isExpanded && (
-                                            <div className="px-2 pb-3 pt-2">
-                                                <p className="text-lg text-slate-600 font-serif leading-relaxed pl-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                    {h.description || "Historical records of this sacred site are being updated."}
-                                                </p>
-                                            </div>
-                                        )}
+                                    );
+                                })}
+                                {unifiedHotspots.length === 0 && (
+                                    <div className="p-8 text-center">
+                                        <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <BookOpen className="w-6 h-6 text-slate-300" />
+                                        </div>
+                                        <p className="text-lg text-slate-400 italic font-serif">Historical data not yet cataloged.</p>
                                     </div>
-                                );
-                            })}
-                            {unifiedHotspots.length === 0 && (
-                                <div className="p-8 text-center">
-                                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <BookOpen className="w-6 h-6 text-slate-300" />
-                                    </div>
-                                    <p className="text-lg text-slate-400 italic font-serif">Historical data not yet cataloged.</p>
-                                </div>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                )}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
 
                     {/* Sthans Overview & List - Combined Scrollable Area */}
                     <div className="space-y-4">
