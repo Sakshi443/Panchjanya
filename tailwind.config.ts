@@ -17,6 +17,7 @@ export default {
       fontFamily: {
         heading: ["Playfair Display", "serif"],
         body: ["Inter", "sans-serif"],
+        kokila: ["Kokila", "serif"],
         "noto-serif": ["Noto Serif", "serif"],
         "work-sans": ["Work Sans", "sans-serif"],
       },

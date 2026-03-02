@@ -6,12 +6,10 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Label } from "@/shared/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { ImageUpload } from "@/shared/components/admin/ImageUpload";
+import { Separator } from "@/shared/components/ui/separator";
 import { useToast } from "@/shared/hooks/use-toast";
-import { ArrowLeft, Save, Compass, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, ExternalLink } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
-import { Switch } from "@/shared/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { getSthanTypes } from "@/shared/utils/sthanTypes";
 import { SthanType } from "@/shared/types/sthanType";
@@ -27,96 +25,63 @@ export default function TempleForm({ templeId }: TempleFormProps) {
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!!templeId);
+    const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
 
-    // Form State
+    // ── Basic Information ──
     const [name, setName] = useState("");
+    const [todaysNameTitle, setTodaysNameTitle] = useState("Todays Name");
+    const [todaysName, setTodaysName] = useState("");
     const [address, setAddress] = useState("");
-    const [city, setCity] = useState("");
     const [taluka, setTaluka] = useState("");
     const [district, setDistrict] = useState("");
-    const [latitude, setLatitude] = useState("");
-    const [longitude, setLongitude] = useState("");
-
-    // New Fields
-    const [descriptionTitle, setDescriptionTitle] = useState("Sthan At Glance");
-    const [descriptionText, setDescriptionText] = useState("");
-
-    const [sthanaInfoTitle, setSthanaInfoTitle] = useState("Sthan Description");
-    const [sthanaInfoText, setSthanaInfoText] = useState("");
-
-    const [directionsTitle, setDirectionsTitle] = useState("Way to reach");
-    const [directionsText, setDirectionsText] = useState("");
-
-    const [leela, setLeela] = useState(""); // Keeping for legacy/compatibility
-    const [images, setImages] = useState<string[]>([]);
-    const [hasArchitecture, setHasArchitecture] = useState(false);
-    const [sthanTypes, setSthanTypes] = useState<SthanType[]>([]);
     const [sthan, setSthan] = useState("");
 
+    // ── Location ──
+    const [latitude, setLatitude] = useState("");
+    const [longitude, setLongitude] = useState("");
+    const [locationLink, setLocationLink] = useState("");
+
+    // Load sthan types
+    useEffect(() => {
+        getSthanTypes().then(setSthanTypes);
+    }, []);
+
+    // Pre-fill when editing an existing temple
     useEffect(() => {
         if (!templeId) return;
-
         const fetchTemple = async () => {
             try {
                 setFetching(true);
-                const res = await fetch(`/api/admin/data?collection=temples&id=${templeId}`);
-                const contentType = res.headers.get("content-type");
+                let data: any = null;
+                try {
+                    const token = await user?.getIdToken();
+                    const res = await fetch(`/api/admin/data?collection=temples&id=${templeId}`, {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    });
+                    if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+                        data = await res.json();
+                    }
+                } catch (_) { /* fall through */ }
 
-                if (res.ok && contentType?.includes("application/json")) {
-                    const data = await res.json();
+                if (!data) {
+                    const snap = await getDoc(doc(db, "temples", templeId));
+                    if (snap.exists()) data = snap.data();
+                }
+
+                if (data) {
                     setName(data.name || "");
+                    setTodaysNameTitle(data.todaysNameTitle || "Todays Name");
+                    setTodaysName(data.todaysName || "");
                     setAddress(data.address || "");
-                    setCity(data.city || "");
                     setTaluka(data.taluka || "");
                     setDistrict(data.district || "");
+                    setSthan(data.sthan || "");
                     setLatitude(String(data.latitude ?? data.location?.lat ?? ""));
                     setLongitude(String(data.longitude ?? data.location?.lng ?? ""));
-
-                    setDescriptionTitle(data.description_title || "Sthan At Glance");
-                    setDescriptionText(data.description_text || data.description || "");
-
-                    setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
-                    setSthanaInfoText(data.sthana_info_text || data.sthana || "");
-
-                    setDirectionsTitle(data.directions_title || "Way to reach");
-                    setDirectionsText(data.directions_text || "");
-
-                    setLeela(data.leela || "");
-                    setImages(data.images || []);
-                    setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
-                    setSthan(data.sthan || "");
+                    setLocationLink(data.locationLink || "");
                 } else {
-                    console.warn("Temple API not active locally. Using Client SDK.");
-                    const docRef = doc(db, "temples", templeId);
-                    const snap = await getDoc(docRef);
-
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        setName(data.name || "");
-                        setAddress(data.address || "");
-                        setCity(data.city || "");
-                        setTaluka(data.taluka || "");
-                        setDistrict(data.district || "");
-                        setLatitude(String(data.latitude ?? data.location?.lat ?? ""));
-                        setLongitude(String(data.longitude ?? data.location?.lng ?? ""));
-
-                        setDescriptionTitle(data.description_title || "Sthan At Glance");
-                        setDescriptionText(data.description_text || data.description || "");
-
-                        setSthanaInfoTitle(data.sthana_info_title || "Sthan Description");
-                        setSthanaInfoText(data.sthana_info_text || data.sthana || "");
-
-                        setDirectionsTitle(data.directions_title || "Way to reach");
-                        setDirectionsText(data.directions_text || "");
-
-                        setLeela(data.leela || "");
-                        setImages(data.images || []);
-                        setHasArchitecture(!!data.architectureImage || (data.hotspots && data.hotspots.length > 0));
-                        setSthan(data.sthan || "");
-                    } else {
-                        toast({ title: "Error", description: "Temple not found", variant: "destructive" });
-                        navigate("/admin/dashboard");
-                    }
+                    toast({ title: "Error", description: "Temple not found", variant: "destructive" });
+                    navigate("/admin/dashboard");
                 }
             } catch (error) {
                 console.error("Error fetching temple:", error);
@@ -125,95 +90,85 @@ export default function TempleForm({ templeId }: TempleFormProps) {
                 setFetching(false);
             }
         };
-
         fetchTemple();
-    }, [templeId, navigate, toast]);
-
-    useEffect(() => {
-        const loadSthanTypes = async () => {
-            const types = await getSthanTypes();
-            setSthanTypes(types);
-        };
-        loadSthanTypes();
-    }, []);
+    }, [templeId, navigate, toast, user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
-
         setLoading(true);
 
         try {
             const latNum = parseFloat(latitude);
             const lngNum = parseFloat(longitude);
 
-            if (isNaN(latNum) || isNaN(lngNum) || (latNum === 0 && lngNum === 0)) {
-                toast({ title: "Invalid Coordinates", description: "Please enter valid Latitude and Longitude values.", variant: "destructive" });
+            if (isNaN(latNum) || isNaN(lngNum)) {
+                toast({ title: "Invalid Coordinates", description: "Please enter valid Latitude and Longitude.", variant: "destructive" });
                 setLoading(false);
                 return;
             }
 
             const templeData = {
                 name,
+                todaysName,
+                todaysNameTitle,
                 address,
-                city,
                 taluka,
                 district,
-                description_title: descriptionTitle,
-                description_text: descriptionText,
-                description: descriptionText,
-                sthana_info_title: sthanaInfoTitle,
-                sthana_info_text: sthanaInfoText,
-                sthana: sthanaInfoText,
-                directions_title: directionsTitle,
-                directions_text: directionsText,
-                leela,
-                images,
+                sthan,
                 latitude: latNum,
                 longitude: lngNum,
                 location: { lat: latNum, lng: lngNum },
-                sthan,
+                locationLink,
                 updatedAt: new Date().toISOString(),
                 updatedBy: user.uid,
             };
 
-            const method = templeId ? 'PUT' : 'POST';
-            const url = templeId ? `/api/admin/data?collection=temples&id=${templeId}` : `/api/admin/data?collection=temples`;
+            const method = templeId ? "PUT" : "POST";
+            const apiUrl = templeId
+                ? `/api/admin/data?collection=temples&id=${templeId}`
+                : `/api/admin/data?collection=temples`;
 
-            const res = await fetch(url, {
+            const token = await user.getIdToken();
+            const res = await fetch(apiUrl, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(templeId ? templeData : { ...templeData, createdAt: new Date().toISOString(), createdBy: user.uid })
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(
+                    templeId
+                        ? templeData
+                        : { ...templeData, createdAt: new Date().toISOString(), createdBy: user.uid }
+                ),
             });
 
             if (res.ok) {
                 const responseData = await res.json();
-                toast({ title: "Success", description: templeId ? "Temple updated successfully" : "Temple created successfully" });
                 const finalId = templeId || responseData.id;
-                if (hasArchitecture) {
-                    navigate(`/admin/architecture/${finalId}`);
-                } else {
-                    navigate("/admin/dashboard");
-                }
+                toast({ title: "Temple Saved", description: "Redirecting to full configuration..." });
+                navigate(`/admin/architecture/${finalId}`);
             } else {
-                console.warn("API write failed, using fallback.");
+                console.warn("API write failed, falling back to Client SDK.");
                 if (templeId) {
                     await updateDoc(doc(db, "temples", templeId), { ...templeData, updatedAt: Timestamp.now() });
+                    toast({ title: "Temple Updated" });
+                    navigate(`/admin/architecture/${templeId}`);
                 } else {
-                    const newDoc = await addDoc(collection(db, "temples"), { ...templeData, createdAt: Timestamp.now(), createdBy: user.uid });
-                    if (hasArchitecture) {
-                        navigate(`/admin/architecture/${newDoc.id}`);
-                        return;
-                    }
+                    const newDoc = await addDoc(collection(db, "temples"), {
+                        ...templeData,
+                        createdAt: Timestamp.now(),
+                        createdBy: user.uid,
+                    });
+                    toast({ title: "Temple Created", description: "Redirecting to full configuration..." });
+                    navigate(`/admin/architecture/${newDoc.id}`);
                 }
-                toast({ title: "Success (Fallback)", description: "Saved via Client SDK" });
-                navigate("/admin/dashboard");
             }
         } catch (error: any) {
             console.error("Error saving temple:", error);
             toast({
                 title: "Error",
-                description: error.message || "Failed to save temple data. Please check permissions.",
+                description: error.message || "Failed to save temple data.",
                 variant: "destructive",
             });
         } finally {
@@ -221,319 +176,238 @@ export default function TempleForm({ templeId }: TempleFormProps) {
         }
     };
 
-    const handleImageUpload = (url: string) => {
-        setImages((prev) => [...prev, url]);
-    };
-
-    const removeImage = (index: number) => {
-        setImages((prev) => prev.filter((_, i) => i !== index));
-    };
-
     if (fetching) {
-        return <div className="p-8 text-center">Loading temple data...</div>;
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4" />
+                    <p className="text-lg">Loading...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={() => navigate("/admin/dashboard")}>
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back
-                    </Button>
-                    <h1 className="text-3xl font-bold">{templeId ? "Edit Temple" : "Add New Temple"}</h1>
-                </div>
-                {templeId && (
-                    <Button
-                        variant="outline"
-                        onClick={() => navigate(`/admin/architecture/${templeId}`)}
-                        className="gap-2"
-                    >
-                        <Compass className="w-4 h-4" />
-                        Manage Architecture
-                    </Button>
-                )}
-            </div>
+        <div className="min-h-screen bg-[#F9F6F0] pb-20">
+            <div className="max-w-7xl mx-auto px-6 pt-8 space-y-8">
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Basic Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Temple Name *</Label>
-                                <Input
-                                    id="name"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    required
-                                    placeholder="e.g. Brihadeeswarar Temple"
-                                />
+                {/* ── Top Navigation ── */}
+                <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between z-10 transition-all duration-300">
+                    <div className="flex items-center gap-4">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate("/admin/sthana-directory")}
+                            className="rounded-xl hover:bg-slate-50 text-slate-500 font-bold"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Directory
+                        </Button>
+                        <div className="w-px h-8 bg-slate-100" />
+                        <span className="text-sm font-black uppercase tracking-widest text-slate-500">
+                            Add New Sthana
+                        </span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-3 pr-2">
+                        <div className="w-1.5 h-6 bg-slate-200 rounded-full" />
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+                            Basic Info &amp; Location
+                        </span>
+                    </div>
+                </div>
+
+                {/* ── Page Header ── */}
+                <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-serif font-bold text-primary tracking-tight">Add New Sthana</h1>
+                        <p className="text-sm text-slate-500 font-medium">
+                            Fill in the primary identity and location. You'll configure images, descriptions, and hotspots on the next page.
+                        </p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-12">
+
+                    {/* ── 1. Primary Identity ── */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900">Primary Identity</h2>
+                            <p className="mt-2 text-sm leading-relaxed text-slate-500 font-medium">
+                                This information appears in the main header and site-wide navigation.
+                            </p>
+                        </div>
+                        <div className="lg:col-span-2 space-y-6">
+                            {/* Sthan Name + Today's Name */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold text-slate-700">Sthan Name *</Label>
+                                    <Input
+                                        id="name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        required
+                                        placeholder="e.g. Shri Panchasara Parshvanath"
+                                        className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            value={todaysNameTitle}
+                                            onChange={(e) => setTodaysNameTitle(e.target.value)}
+                                            className="h-8 p-0 px-2 w-fit min-w-[120px] text-sm font-semibold text-slate-700 border-transparent hover:border-slate-200 focus:border-blue-500 rounded-md transition-all"
+                                            placeholder="Label Name"
+                                        />
+                                        <span className="text-slate-400 font-normal text-sm">(Optional)</span>
+                                    </div>
+                                    <Input
+                                        id="todaysName"
+                                        value={todaysName}
+                                        onChange={(e) => setTodaysName(e.target.value)}
+                                        placeholder="e.g. Patan, Gujarat"
+                                        className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
                             </div>
+
+                            {/* Address */}
                             <div className="space-y-2">
-                                <Label htmlFor="city">City/Town *</Label>
-                                <Input
-                                    id="city"
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                    required
-                                    placeholder="e.g. Thanjavur"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="taluka">Taluka</Label>
-                                <Input
-                                    id="taluka"
-                                    value={taluka}
-                                    onChange={(e) => setTaluka(e.target.value)}
-                                    placeholder="e.g. Thanjavur"
-                                />
-                            </div>
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Input
+                                <Label className="text-sm font-semibold text-slate-700">Address</Label>
+                                <Textarea
                                     id="address"
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Full address of the temple"
+                                    placeholder="Enter the complete address..."
+                                    rows={3}
+                                    className="rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="district">District</Label>
-                                <Input
-                                    id="district"
-                                    value={district}
-                                    onChange={(e) => setDistrict(e.target.value)}
-                                    placeholder="e.g. Thanjavur"
-                                />
+
+                            {/* Taluka + District */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold text-slate-700">Taluka</Label>
+                                    <Input
+                                        id="taluka"
+                                        value={taluka}
+                                        onChange={(e) => setTaluka(e.target.value)}
+                                        placeholder="e.g. Sidhpur"
+                                        className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold text-slate-700">District</Label>
+                                    <Input
+                                        id="district"
+                                        value={district}
+                                        onChange={(e) => setDistrict(e.target.value)}
+                                        placeholder="e.g. Patan"
+                                        className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
                             </div>
+
+                            {/* Sthan Type */}
                             <div className="space-y-2">
-                                <Label htmlFor="sthan">Sthan Type *</Label>
+                                <Label className="text-sm font-semibold text-slate-700">Sthan Type *</Label>
                                 <Select value={sthan} onValueChange={setSthan} required>
-                                    <SelectTrigger id="sthan">
+                                    <SelectTrigger className="h-12 rounded-xl border-slate-200">
                                         <SelectValue placeholder="Select Sthan Type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {sthanTypes.map(st => (
-                                            <SelectItem key={st.id} value={st.name}>{st.name}</SelectItem>
+                                        {sthanTypes.map((st) => (
+                                            <SelectItem key={st.id} value={st.name}>
+                                                {st.name}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
 
-                {/* 1. General Description Section */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Sthan At Glance Section</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="descTitle">Section Title</Label>
-                            <Input
-                                id="descTitle"
-                                value={descriptionTitle}
-                                onChange={(e) => setDescriptionTitle(e.target.value)}
-                                placeholder="e.g. Sthan At Glance"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Content</Label>
-                            <Textarea
-                                id="description"
-                                value={descriptionText}
-                                onChange={(e) => setDescriptionText(e.target.value)}
-                                rows={4}
-                                placeholder="General description of the temple..."
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+                    <Separator className="bg-slate-200/60" />
 
-                {/* 2. Sthana Info Section */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Sthan Description Section</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="sthanaTitle">Section Title</Label>
-                            <Input
-                                id="sthanaTitle"
-                                value={sthanaInfoTitle}
-                                onChange={(e) => setSthanaInfoTitle(e.target.value)}
-                                placeholder="e.g. Sthan Description"
-                            />
+                    {/* ── 2. Navigation & Access ── */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900">Navigation &amp; Access</h2>
+                            <p className="mt-2 text-sm leading-relaxed text-slate-500 font-medium">
+                                Help pilgrims find their way to this sacred site.
+                            </p>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="sthanaInfo">Content</Label>
-                            <Textarea
-                                id="sthanaInfo"
-                                value={sthanaInfoText}
-                                onChange={(e) => setSthanaInfoText(e.target.value)}
-                                rows={4}
-                                placeholder="Details about the Sthana..."
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 3. Directions Section */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Directions Section</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="dirTitle">Section Title</Label>
-                            <Input
-                                id="dirTitle"
-                                value={directionsTitle}
-                                onChange={(e) => setDirectionsTitle(e.target.value)}
-                                placeholder="e.g. Way to reach"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="dirText">Content</Label>
-                            <Textarea
-                                id="dirText"
-                                value={directionsText}
-                                onChange={(e) => setDirectionsText(e.target.value)}
-                                rows={4}
-                                placeholder="Instructions on how to reach..."
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Location Coordinates</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="latitude">Latitude *</Label>
-                                <Input
-                                    id="latitude"
-                                    value={latitude}
-                                    onChange={(e) => setLatitude(e.target.value)}
-                                    required
-                                    placeholder="e.g. 10.7828"
-                                    type="number"
-                                    step="any"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="longitude">Longitude *</Label>
-                                <Input
-                                    id="longitude"
-                                    value={longitude}
-                                    onChange={(e) => setLongitude(e.target.value)}
-                                    required
-                                    placeholder="e.g. 79.1318"
-                                    type="number"
-                                    step="any"
-                                />
-                            </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            You can get coordinates from Google Maps (Right click &gt; First option).
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Images</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {images.map((url, idx) => (
-                                <div key={idx} className="relative group aspect-square">
-                                    <img
-                                        src={url}
-                                        alt={`Temple ${idx + 1}`}
-                                        className="w-full h-full object-cover rounded-lg border"
+                        <div className="lg:col-span-2 space-y-6">
+                            {/* Lat/Lng */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold text-slate-700">Latitude *</Label>
+                                    <Input
+                                        id="latitude"
+                                        value={latitude}
+                                        onChange={(e) => setLatitude(e.target.value)}
+                                        required
+                                        placeholder="e.g. 23.8506"
+                                        type="number"
+                                        step="any"
+                                        className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeImage(idx)}
-                                        className="absolute top-2 right-2 bg-destructive text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
                                 </div>
-                            ))}
-                            <div className="aspect-square flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/50">
-                                <div className="text-center p-4">
-                                    <ImageUpload
-                                        folderPath={`temples/${templeId || 'new'}`}
-                                        onUpload={handleImageUpload}
-                                        label="Add Image"
-                                        className="w-full"
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold text-slate-700">Longitude *</Label>
+                                    <Input
+                                        id="longitude"
+                                        value={longitude}
+                                        onChange={(e) => setLongitude(e.target.value)}
+                                        required
+                                        placeholder="e.g. 72.1154"
+                                        type="number"
+                                        step="any"
+                                        className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                            <p className="text-xs text-slate-400 font-medium -mt-2">
+                                Right-click on Google Maps → first option to copy coordinates.
+                            </p>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Architecture & Sub-temples</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                            <Switch
-                                id="architecture"
-                                checked={hasArchitecture}
-                                onCheckedChange={setHasArchitecture}
-                            />
-                            <Label htmlFor="architecture">Enable Architecture / Sub-temple View</Label>
-                        </div>
-
-                        {hasArchitecture && (
-                            <div className="bg-muted p-4 rounded-lg">
-                                <p className="text-sm text-muted-foreground mb-4">
-                                    Architecture view allows you to upload a floor plan or main image and mark interactive hotspots (sub-temples, shrines, etc.).
-                                </p>
-                                {templeId ? (
-                                    <Button
-                                        type="button"
-                                        onClick={() => navigate(`/admin/architecture/${templeId}`)}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        <Compass className="w-4 h-4 mr-2" />
-                                        Configure Architecture & Hotspots
-                                    </Button>
-                                ) : (
-                                    <p className="text-sm text-yellow-600">
-                                        Save the temple first to configure architecture details.
-                                    </p>
-                                )}
+                            {/* Google Maps URL */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-slate-700">Google Maps Integration (URL)</Label>
+                                <div className="relative group">
+                                    <Input
+                                        id="locationLink"
+                                        value={locationLink}
+                                        onChange={(e) => setLocationLink(e.target.value)}
+                                        placeholder="https://goo.gl/maps/..."
+                                        className="h-12 pl-10 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <ExternalLink className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                </div>
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
+                        </div>
+                    </div>
 
-                <div className="flex justify-end gap-4">
-                    <Button type="button" variant="outline" onClick={() => navigate("/admin/dashboard")}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" disabled={loading} className="min-w-[120px]">
-                        {loading ? "Saving..." : (
-                            <span className="flex items-center">
-                                <Save className="w-4 h-4 mr-2" /> Save Temple
-                            </span>
-                        )}
-                    </Button>
-                </div>
-            </form>
+                    {/* ── Bottom Action Row ── */}
+                    <div className="flex justify-end gap-4 pt-6 border-t border-slate-200/60">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => navigate("/admin/sthana-directory")}
+                            className="rounded-xl h-12 px-8 font-bold border-slate-200"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={loading}
+                            className="bg-blue-900 text-white hover:bg-blue-800 rounded-xl px-8 h-12 shadow-lg shadow-blue-900/20 font-bold min-w-[180px]"
+                        >
+                            <Save className="w-4 h-4 mr-2" />
+                            {loading ? "Saving..." : "Save & Configure"}
+                        </Button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

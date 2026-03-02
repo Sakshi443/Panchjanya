@@ -68,7 +68,7 @@ const Saved = () => {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-[#F9F6F0] font-sans pb-24 flex items-center justify-center">
+            <div className="min-h-screen bg-[#F9F6F0] font-sans flex items-center justify-center">
                 <div className="text-center">
                     <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-gray-700 mb-2">Please Log In</h2>
@@ -79,7 +79,7 @@ const Saved = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white font-sans pb-24">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white font-sans">
             {/* Header */}
             {/* Header */}
             <div className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100">

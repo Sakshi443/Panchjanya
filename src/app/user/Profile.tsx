@@ -50,7 +50,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white font-sans pb-24">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-white font-sans">
             {/* Header */}
             {/* Header */}
             <div className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100">

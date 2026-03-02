@@ -1,0 +1,19 @@
+[
+    {
+        "origin": [
+            "https://panchjanya-4a344.web.app",
+            "https://panchjanya-4a344.firebaseapp.com"
+        ],
+        "method": [
+            "GET",
+            "HEAD"
+        ],
+        "maxAgeSeconds": 3600,
+        "responseHeader": [
+            "Content-Type",
+            "Content-Length",
+            "Content-Encoding",
+            "Cache-Control"
+        ]
+    }
+]

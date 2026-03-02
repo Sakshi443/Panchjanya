@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "@/auth/firebase";
-import { uploadToCloudinary } from "@/shared/lib/cloudinary";
+import { uploadFile } from "@/shared/lib/storage";
+import type { MediaDocument } from "@/shared/lib/storage";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Progress } from "@/shared/components/ui/progress";
@@ -13,11 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 interface ImageUploadProps {
     onUpload: (url: string) => void;
     folderPath: string;
+    mediaType?: MediaDocument['type'];
     label?: string;
     className?: string;
 }
 
-export function ImageUpload({ onUpload, folderPath, label = "Upload Image", className }: ImageUploadProps) {
+export function ImageUpload({ onUpload, folderPath, mediaType = "post-image", label = "Upload Image", className }: ImageUploadProps) {
     const [progress, setProgress] = useState(0);
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(null);
@@ -28,44 +28,28 @@ export function ImageUpload({ onUpload, folderPath, label = "Upload Image", clas
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Create preview
+        // Create local preview immediately for responsive UI
         const objectUrl = URL.createObjectURL(file);
         setPreview(objectUrl);
-
-        // Start upload
         setUploading(true);
         setProgress(0);
 
         try {
-            const formData = new FormData();
-            formData.append("file", file);
+            const result = await uploadFile({
+                file,
+                folder: folderPath,
+                type: mediaType,
+                onProgress: setProgress,
+            });
 
-            // Use the "unsigned" upload preset if available, or signed upload via backend.
-            // Since we don't have a backend, we'll use the unsigned upload preset 'unsigned_preset' 
-            // OR we can try to use the signed upload with the signature generation we have in `cloudinary.ts`
-            // BUT `cloudinary.ts` is for *fetching* images (Admin/Search API). Uploading is different.
-
-            // The user wants to upload to Cloudinary.
-            // Let's assume there is an unsigned upload preset named 'ml_default' (common default) or we need to ask the user.
-            // However, the user provided API Key/Secret, so we can do a signed upload!
-
-            // We need to generate a signature for upload.
-            // Let's import the signature generation logic or move it to a shared utility.
-            // For now, let's duplicate the logic here or create a new helper in `cloudinary.ts` for uploading.
-
-            // Actually, let's use the `uploadToCloudinary` function we will create in `src/lib/cloudinary.ts`.
-
-            const url = await uploadToCloudinary(file, folderPath);
-
-            onUpload(url);
+            onUpload(result.downloadUrl);
             setUploading(false);
             toast({
                 title: "Success",
                 description: "Image uploaded successfully",
             });
-
         } catch (error: any) {
-            console.error("Error uploading:", error);
+            console.error("Upload failed:", error);
             setUploading(false);
             toast({
                 title: "Upload Failed",

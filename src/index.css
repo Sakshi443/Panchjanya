@@ -110,6 +110,11 @@ All colors MUST be HSL.
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
   }
+
+  .font-kokila,
+  .font-kokila *:not(svg, svg *, [class*="icon"], [class*="lucide"], .lucide) {
+    font-family: 'Kokila', serif !important;
+  }
 }
 
 @layer utilities {
@@ -119,5 +124,10 @@ All colors MUST be HSL.
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Global buffer for fixed bottom navigation (Senior fix) */
+  .pb-main-mobile {
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 }

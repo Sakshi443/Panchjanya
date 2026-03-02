@@ -19,7 +19,7 @@ const Dashboard = () => {
 
     return (
         <div className="w-full min-h-screen bg-[#F9F6F0]">
-            <div className="max-w-md mx-auto lg:max-w-4xl px-4 lg:px-6 pb-24 space-y-8 animate-in fade-in duration-500">
+            <div className="max-w-md mx-auto lg:max-w-4xl px-4 lg:px-6 space-y-8 animate-in fade-in duration-500">
 
                 {/* Top Bar */}
                 <div className="relative flex items-center justify-center py-4">

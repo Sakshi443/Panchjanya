@@ -1,0 +1,159 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ═══════════════════════════════════════════════════════════════
+    //  HELPER FUNCTIONS
+    //  All authorization is path-based using request.auth.uid.
+    //  No client metadata (request.resource.metadata) is trusted for
+    //  access control — it can be forged by any client.
+    // ═══════════════════════════════════════════════════════════════
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token != null
+        && request.auth.token.role == 'admin';
+    }
+
+    // Validates image uploads: WebP/JPEG/PNG/GIF, max 5 MB
+    function isValidImage() {
+      let allowedTypes = ['image/webp', 'image/jpeg', 'image/png', 'image/gif', 'image/avif'];
+      return request.resource.contentType in allowedTypes
+          && request.resource.size <= 5 * 1024 * 1024;
+    }
+
+    // Validates PDF uploads, max 20 MB
+    function isValidPdf() {
+      return request.resource.contentType == 'application/pdf'
+          && request.resource.size <= 20 * 1024 * 1024;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DENY ALL BY DEFAULT
+    //  Explicit deny before any matching rules run.
+    //  Any path not covered below is locked.
+    // ═══════════════════════════════════════════════════════════════
+
+    match /{everything=**} {
+      allow read, write: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  USER PROFILE IMAGES
+    //  Path: users/{uid}/profile/{fileName}
+    //
+    //  Read:   Any authenticated user (for avatar display in comments etc.)
+    //  Write:  Only the owner of the UID in the path
+    //  Delete: Owner or Admin
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{uid}/profile/{fileName} {
+      allow read:   if isSignedIn();
+      allow create,
+            update: if isOwner(uid) && isValidImage();
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  USER DOCUMENTS
+    //  Path: users/{uid}/documents/{fileName}
+    //
+    //  Read:   Owner or Admin only (private docs)
+    //  Write:  Owner only
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{uid}/documents/{fileName} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow create,
+            update: if isOwner(uid) && isValidPdf();
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  POST IMAGES
+    //  Path: posts/{postId}/images/{fileName}
+    //
+    //  Read:   Public (posts are public content)
+    //  Write:  Any authenticated user (post author uploads their own images)
+    //  Delete: Admin only (moderation)
+    //
+    //  Note: Post authorship is enforced at the Firestore level, not here.
+    //        Storage only enforces: is the user signed in + is the file valid.
+    // ═══════════════════════════════════════════════════════════════
+
+    match /posts/{postId}/images/{fileName} {
+      allow read:   if true;
+      allow create,
+            update: if isSignedIn() && isValidImage();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  TEMPLE ASSETS (Hero, Gallery, Documents)
+    //  Path: temples/{templeId}/hero/{file}
+    //        temples/{templeId}/gallery/{file}
+    //        temples/{templeId}/documents/{file}
+    //
+    //  Read:   Public
+    //  Write:  Admin only
+    //  Delete: Admin only
+    // ═══════════════════════════════════════════════════════════════
+
+    match /temples/{templeId}/hero/{fileName} {
+      allow read: if true;
+      allow create,
+            update: if isAdmin() && isValidImage();
+      allow delete: if isAdmin();
+    }
+
+    match /temples/{templeId}/gallery/{fileName} {
+      allow read: if true;
+      allow create,
+            update: if isAdmin() && isValidImage();
+      allow delete: if isAdmin();
+    }
+
+    match /temples/{templeId}/documents/{fileName} {
+      allow read: if true;
+      allow create,
+            update: if isAdmin() && isValidPdf();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ADMIN UPLOADS (unrestricted asset types)
+    //  Path: admin/{allPaths}
+    //
+    //  Read:   Admin only
+    //  Write:  Admin only
+    // ═══════════════════════════════════════════════════════════════
+
+    match /admin/{allPaths=**} {
+      allow read, write, delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  TEMPORARY STAGING
+    //  Path: _tmp/{uid}/{fileName}
+    //
+    //  Auto-deleted after 24h via GCS lifecycle rule.
+    //  Used for in-progress multi-step uploads before finalization.
+    // ═══════════════════════════════════════════════════════════════
+
+    match /_tmp/{uid}/{fileName} {
+      allow read:   if isOwner(uid);
+      allow create,
+            update: if isOwner(uid) && isValidImage();
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+  }
+}

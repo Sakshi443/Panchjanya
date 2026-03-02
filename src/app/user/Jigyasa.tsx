@@ -120,7 +120,7 @@ export default function Jigyasa() {
     const displaySpheres = knowledgeSpheres.length > 0 ? knowledgeSpheres : defaultSpheres;
 
     return (
-        <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0] pb-20">
+        <div className="min-h-screen bg-[#F9F6F0] lg:bg-[#F9F6F0]">
             {/* Header */}
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between bg-[#F9F6F0]/95 lg:bg-[#F9F6F0]/95 backdrop-blur-sm">

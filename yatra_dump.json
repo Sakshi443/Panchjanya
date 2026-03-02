@@ -1,0 +1,64 @@
+[
+  {
+    "nameEn": "Limbgao (Gopalchavadi)",
+    "mapLink": "https://maps.app.goo.gl/FZBjhgVVLrQuHv65A",
+    "name": "लिंबगाव ( गोपालचावडी)",
+    "status": "visited",
+    "sequence": 3,
+    "longitude": 77.17799531534288,
+    "latitude": 19.16822324846665,
+    "description": "यात्रा का स्थान\n"
+  },
+  {
+    "latitude": 18.89571406923787,
+    "description": "यात्रा का स्थान\n",
+    "longitude": 77.67342012883573,
+    "sequence": 6,
+    "status": "stayed",
+    "name": "राहेर ",
+    "nameEn": "Raher",
+    "mapLink": "https://maps.app.goo.gl/E8LCovnkaMdrVRsu5"
+  },
+  {
+    "nameEn": "Gopalchondhi",
+    "mapLink": "https://maps.app.goo.gl/y8T2ktELFzxTun5N8",
+    "status": "visited",
+    "name": "गोपाळचोंढी",
+    "sequence": 5,
+    "description": "यात्रा का स्थान\n",
+    "latitude": 19.098504180912858,
+    "longitude": 77.32961168650715
+  },
+  {
+    "description": "यात्रा का स्थान\n",
+    "latitude": 19.148666245368023,
+    "longitude": 77.34174145767143,
+    "status": "visited",
+    "nameEn": "Dwij gorakshan",
+    "sequence": 2,
+    "id": "VSXf0tpl9HpkBgvSSosw",
+    "name": "द्विजगोरक्षण ",
+    "mapLink": "https://maps.app.goo.gl/7FyLxRRSvkpM3fBa7"
+  },
+  {
+    "sequence": 4,
+    "longitude": 77.19365401534289,
+    "latitude": 19.15912199536226,
+    "description": "यात्रा का स्थान\n",
+    "nameEn": "Naleshwar",
+    "mapLink": "https://maps.app.goo.gl/kyYQbiy9c42yjL2J6",
+    "name": "नाळेश्वर ",
+    "status": "visited"
+  },
+  {
+    "sequence": 1,
+    "mapLink": "https://maps.app.goo.gl/s3sorNo56LgeB8TQA",
+    "id": "tohfkdn1fiwqVQUxgA2K",
+    "name": "भावेश्वर",
+    "description": "यात्रा का प्रारंभ स्थान\n",
+    "latitude": 19.14666038367945,
+    "longitude": 77.3371020846571,
+    "nameEn": "Bhaveshwar",
+    "status": "stayed"
+  }
+]

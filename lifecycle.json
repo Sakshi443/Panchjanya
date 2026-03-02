@@ -1,0 +1,43 @@
+{
+    "lifecycle": {
+        "rule": [
+            {
+                "action": {
+                    "type": "Delete"
+                },
+                "condition": {
+                    "age": 1,
+                    "matchesPrefix": [
+                        "_tmp/"
+                    ]
+                }
+            },
+            {
+                "action": {
+                    "type": "SetStorageClass",
+                    "storageClass": "NEARLINE"
+                },
+                "condition": {
+                    "age": 365,
+                    "matchesPrefix": [
+                        "posts/",
+                        "users/"
+                    ]
+                }
+            },
+            {
+                "action": {
+                    "type": "SetStorageClass",
+                    "storageClass": "COLDLINE"
+                },
+                "condition": {
+                    "age": 730,
+                    "matchesPrefix": [
+                        "posts/",
+                        "users/"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -19,11 +19,16 @@ import { useAuth } from "@/auth/AuthContext";
 
 const CUSTOM_ICONS = [
     { name: "Temple", path: "/icons/Blue_temple_icon-removebg.png" },
+    { name: "Sthan Pin", path: "/icons/Sthan_pin.svg" },
+    { name: "Asan Sthan Pin", path: "/icons/Sthan_pin_Asan.svg" },
+    { name: "Avasthan Pin", path: "/icons/Sthan_pin_Avasthan.svg" },
+    { name: "Mandalik Pin", path: "/icons/Sthan_pin_Mandalik.svg" },
+    { name: "Vasti Pin", path: "/icons/Sthan_pin_Vasti.svg" },
+    { name: "Mahasthan Pin", path: "/icons/mahasthan pin.svg" },
     { name: "Explore", path: "/icons/explore_safari.png" },
     { name: "Direction", path: "/icons/left-arrow.png" },
     { name: "Route", path: "/icons/route-arrow.png" },
     { name: "Signpost", path: "/icons/signpost.png" },
-    { name: "Sthaan", path: "/icons/sthaan.png" },
 
     // Glance Icons
     { name: "Blue Temple", path: "/icons/glance/Blue_temple_icon.svg" },
@@ -43,6 +48,8 @@ const CUSTOM_ICONS = [
     { name: "Temple Solid", path: "/icons/glance/temple_solid.svg" },
     { name: "Route Path", path: "/icons/glance/route_path.svg" },
     { name: "Parivaar", path: "/icons/glance/parivaar.svg" },
+    { name: "Aasan Sthan", path: "/icons/glance/Aasan Sthan.svg" },
+    { name: "Sthaan", path: "/icons/glance/sthaan.svg" },
 ];
 
 export default function AbbreviationsManager() {

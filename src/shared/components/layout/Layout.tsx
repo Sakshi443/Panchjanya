@@ -9,7 +9,7 @@ function LayoutContent() {
       {/* Main content */}
       <main
         className={cn(
-          "flex-1 overflow-y-auto pb-20 lg:pb-0 transition-all duration-300 ease-in-out scrollbar-hide"
+          "flex-1 overflow-y-auto pb-main-mobile lg:pb-0 transition-all duration-300 ease-in-out scrollbar-hide"
         )}
       >
         <Outlet />  {/* Renders nested routes */}

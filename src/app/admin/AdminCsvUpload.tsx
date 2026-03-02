@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { addDoc, collection, Timestamp, doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "@/auth/firebase";
 import { useAuth } from "@/auth/AuthContext";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
-import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle, Loader2, ArrowLeft, Save } from "lucide-react";
 import { getSthanTypes } from "@/shared/utils/sthanTypes";
 import { SthanType } from "@/shared/types/sthanType";
 import { useToast } from "@/shared/hooks/use-toast";
+import { Separator } from "@/shared/components/ui/separator";
 
 interface LogEntry {
   row: number;
@@ -48,18 +48,13 @@ const AdminCsvUpload = () => {
 
   const downloadTemplate = () => {
     const headers = [
-      "name", "city", "taluka", "district", "state", "country", "address",
-      "sthana", "leela", "latitude", "longitude", "description_title",
-      "description_text", "sthana_info_title", "sthana_info_text",
-      "directions_title", "directions_text", "images", "sub_temples_json"
+      "name", "todaysName", "todaysNameTitle", "address", "taluka", "district",
+      "sthan", "latitude", "longitude", "locationLink"
     ];
     const data = [
       [
-        "Example Temple", "Thanjavur", "Thanjavur", "Thanjavur", "Tamil Nadu", "India",
-        "123 Temple St", "Avasthan", "Leela text here", "10.7828", "79.1318",
-        "Sthan At Glance", "General description...", "Sthan Description", "Detailed info...",
-        "Way to reach", "Bus route X...", "https://example.com/img1.jpg;https://example.com/img2.jpg",
-        JSON.stringify([{ name: "Sub Shrine", description: "Desc", image: "url", location: { lat: 10.7, lng: 79.1 } }])
+        "Example Sthana", "Patan, Gujarat", "Todays Name", "123 Temple St", "Sidhpur", "Patan",
+        "Avasthan", "23.8506", "72.1154", "https://goo.gl/maps/..."
       ]
     ];
 
@@ -68,22 +63,21 @@ const AdminCsvUpload = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "temple_upload_template.csv");
+    link.setAttribute("download", "sthana_upload_template.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const validateRow = (row: any, rowIndex: number): string | null => {
+  const validateRow = (row: any): string | null => {
     if (!row.name) return "Missing 'name'";
-    if (!row.city) return "Missing 'city'";
 
     // Validate Sthan Type
-    if (row.sthana) {
-      const isValid = sthanTypes.some(t => t.name.toLowerCase() === row.sthana.toLowerCase());
-      if (!isValid) return `Invalid sthana type: '${row.sthana}'. Valid types: ${sthanTypes.map(t => t.name).join(", ")}`;
+    if (row.sthan) {
+      const isValid = sthanTypes.some(t => t.name.toLowerCase() === row.sthan.toLowerCase());
+      if (!isValid) return `Invalid sthan type: '${row.sthan}'.`;
     } else {
-      return "Missing 'sthana' type";
+      return "Missing 'sthan' type";
     }
 
     // Validate Coordinates
@@ -111,15 +105,11 @@ const AdminCsvUpload = () => {
 
         for (let i = 0; i < rows.length; i++) {
           const row = rows[i];
-          const rowNum = i + 2; // +1 for 0-index, +1 for header
+          const rowNum = i + 2;
 
-          if (!row.name && !row.city && !row.sthana) {
-            // Empty row parsing artifact
-            continue;
-          }
+          if (!row.name && !row.sthan) continue;
 
-          // Validation
-          const errorMsg = validateRow(row, rowNum);
+          const errorMsg = validateRow(row);
           if (errorMsg) {
             newLogs.push({ row: rowNum, name: row.name || "Unknown", status: "error", message: errorMsg });
             setProgress(prev => ({ ...prev, current: prev.current + 1 }));
@@ -127,73 +117,33 @@ const AdminCsvUpload = () => {
           }
 
           try {
-            // Prepare Data
             const latitude = parseFloat(row.latitude);
             const longitude = parseFloat(row.longitude);
-
-            // Normalize Sthan Type Case
-            const sthanMatch = sthanTypes.find(t => t.name.toLowerCase() === (row.sthana || "").toLowerCase());
-            const sthanName = sthanMatch ? sthanMatch.name : row.sthana;
-
-            // Parse Images
-            const images = row.images
-              ? row.images.split(";").map((url: string) => url.trim()).filter((url: string) => url.length > 0)
-              : [];
-
-            // Parse Sub-temples
-            let subTemples = [];
-            if (row.sub_temples_json) {
-              try {
-                subTemples = JSON.parse(row.sub_temples_json);
-              } catch (e) {
-                console.warn(`Row ${rowNum}: Invalid JSON for sub_temples`);
-                newLogs.push({ row: rowNum, name: row.name, status: "error", message: "Invalid sub_temples JSON" });
-                setProgress(prev => ({ ...prev, current: prev.current + 1 }));
-                continue;
-              }
-            }
+            const sthanMatch = sthanTypes.find(t => t.name.toLowerCase() === (row.sthan || "").toLowerCase());
+            const sthanName = sthanMatch ? sthanMatch.name : row.sthan;
 
             const templeId = doc(collection(db, "temples")).id;
             const templeData = {
               name: row.name,
-              city: row.city,
+              todaysName: row.todaysName || "",
+              todaysNameTitle: row.todaysNameTitle || "Todays Name",
+              address: row.address || "",
               taluka: row.taluka || "",
               district: row.district || "",
-              state: row.state || "",
-              country: row.country || "",
-              address: row.address || "",
-
-              sthana: sthanName,
-              leela: row.leela || "",
-
-              description_title: row.description_title || "Sthan At Glance",
-              description_text: row.description_text || "",
-              description: row.description_text || "", // Legacy
-
-              sthana_info_title: row.sthana_info_title || "Sthan Description",
-              sthana_info_text: row.sthana_info_text || "",
-
-              directions_title: row.directions_title || "Way to reach",
-              directions_text: row.directions_text || "",
-
+              sthan: sthanName,
               latitude,
               longitude,
               location: { lat: latitude, lng: longitude },
-
-              images,
-              sub_temples: subTemples,
-
+              locationLink: row.locationLink || "",
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
-              createdBy: user.uid
+              createdBy: user.uid,
+              updatedBy: user.uid,
             };
 
-            // Write to Firestore
-            // We use direct Firestore access here for bulk speed and simplicity, 
-            // verifying it works with the client SDK as per the user's environment
             await setDoc(doc(db, "temples", templeId), templeData);
 
-            newLogs.push({ row: rowNum, name: row.name, status: "success", message: "Imported" });
+            newLogs.push({ row: rowNum, name: row.name, status: "success", message: "Imported successfully" });
             successCount++;
 
           } catch (err: any) {
@@ -202,17 +152,16 @@ const AdminCsvUpload = () => {
           }
 
           setProgress(prev => ({ ...prev, current: prev.current + 1 }));
-          // Update logs in chunks to avoid too many renders if needed, but here reasonable
           if (i % 5 === 0) setLogs([...newLogs]);
         }
 
         setLogs(newLogs);
         setUploading(false);
-        setCsvFile(null); // Clear file to prevent double upload
+        setCsvFile(null);
 
         toast({
           title: "Batch Upload Complete",
-          description: `Successfully imported ${successCount} out of ${rows.length} temples.`,
+          description: `Successfully imported ${successCount} out of ${rows.length} sthanas.`,
           variant: successCount === rows.length ? "default" : "destructive",
         });
       },
@@ -225,101 +174,152 @@ const AdminCsvUpload = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Import Temples from CSV</CardTitle>
-          <CardDescription>
-            Upload a standard CSV file to add multiple temples.
-            Ensure your CSV matches the required format.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 space-y-8">
 
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-muted/50 p-4 rounded-lg">
+      {/* ── Top Navigation ── */}
+      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between z-10 transition-all duration-300">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm bg-amber-900 text-white shadow-lg">
+            <FileText className="w-4 h-4" />
+            Bulk CSV Import
+          </div>
+        </div>
+        <div className="hidden md:flex items-center gap-3 pr-2">
+          <div className="w-1.5 h-6 bg-amber-200 rounded-full" />
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+            Batch Registry
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-serif font-bold text-primary tracking-tight">Bulk Import Sthanas</h1>
+          <p className="text-sm text-slate-500 font-medium">Upload multiple heritage sites using a standard CSV file.</p>
+        </div>
+        <Button
+          onClick={handleUpload}
+          disabled={!csvFile || uploading}
+          className="bg-amber-600 text-white hover:bg-amber-700 rounded-xl px-8 h-12 shadow-lg shadow-amber-900/20 font-bold"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Processing {progress.current}/{progress.total}
+            </>
+          ) : (
+            <>
+              <Upload className="w-4 h-4 mr-2" /> Start Import
+            </>
+          )}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Import Configuration</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500 font-medium">
+            Download our standard template, populate it with your data, and upload it here.
+          </p>
+
+          <div className="mt-8 p-6 bg-amber-50/50 rounded-3xl border border-amber-100 shadow-sm space-y-4">
             <div className="space-y-1">
-              <h3 className="font-medium flex items-center gap-2">
-                <FileText className="w-4 h-4" /> CSV Template
+              <h3 className="font-bold text-amber-900 flex items-center gap-2">
+                <Download className="w-5 h-5" /> CSV Template
               </h3>
-              <p className="text-sm text-muted-foreground">
-                Download the template to ensure correct column headers.
+              <p className="text-xs text-amber-700/70 font-medium">
+                Ensure headers match precisely for successful data mapping.
               </p>
             </div>
-            <Button variant="outline" onClick={downloadTemplate} className="shrink-0">
-              <Download className="w-4 h-4 mr-2" /> Download Template
+            <Button variant="outline" onClick={downloadTemplate} className="w-full h-11 rounded-xl border-amber-200 bg-white text-amber-700 hover:bg-amber-50 font-bold">
+              Download Template
             </Button>
           </div>
+        </div>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Input
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              disabled={uploading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Max 5MB. Valid Sthan Types: {sthanTypes.map(t => t.name).join(", ")}.
-            </p>
-          </div>
+        <div className="lg:col-span-2 space-y-8">
+          <Card className="rounded-3xl border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+              <CardTitle className="text-lg font-bold">Upload File</CardTitle>
+              <CardDescription>Select your populated .csv file to begin processing.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8">
+              <div className="grid w-full items-center gap-4">
+                <div className="relative group">
+                  <Input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileChange}
+                    disabled={uploading}
+                    className="h-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-center cursor-pointer hover:bg-white hover:border-blue-400 transition-all p-4"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-slate-400 group-hover:text-blue-500">
+                    {csvFile ? (
+                      <span className="font-bold">{csvFile.name}</span>
+                    ) : (
+                      <span className="font-medium">Drag & drop or click to select CSV file</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-2">
+                  <AlertCircle className="w-4 h-4 text-slate-400" />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Max 5MB. Valid Types: {sthanTypes.slice(0, 5).map(t => t.name).join(", ")}...
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="flex justify-end">
-            <Button
-              onClick={handleUpload}
-              disabled={!csvFile || uploading}
-              className="min-w-[140px]"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processing {progress.current}/{progress.total}
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" /> Start Import
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          {logs.length > 0 && (
+            <div className="space-y-4 animate-in fade-in duration-500">
+              <div className="flex items-center gap-4">
+                <Separator className="flex-1 opacity-50" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Import Results Log</span>
+                <Separator className="flex-1 opacity-50" />
+              </div>
 
-      {logs.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Import Results</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px] w-full rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">Row</TableHead>
-                    <TableHead>Temple Name</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead>Message</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>{log.row}</TableCell>
-                      <TableCell className="font-medium">{log.name}</TableCell>
-                      <TableCell>
-                        {log.status === "success" && <span className="flex items-center text-green-600"><CheckCircle className="w-4 h-4 mr-1" /> Success</span>}
-                        {log.status === "error" && <span className="flex items-center text-red-600"><XCircle className="w-4 h-4 mr-1" /> Error</span>}
-                        {log.status === "skipped" && <span className="flex items-center text-orange-500"><AlertCircle className="w-4 h-4 mr-1" /> Skipped</span>}
-                      </TableCell>
-                      <TableCell className={log.status === 'error' ? 'text-red-500' : 'text-muted-foreground'}>
-                        {log.message}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
+              <Card className="rounded-3xl border-slate-200 shadow-md overflow-hidden bg-white">
+                <ScrollArea className="h-[400px] w-full">
+                  <Table>
+                    <TableHeader className="bg-slate-50">
+                      <TableRow className="border-slate-100">
+                        <TableHead className="w-[80px] font-black uppercase tracking-widest text-[10px]">Row</TableHead>
+                        <TableHead className="font-black uppercase tracking-widest text-[10px]">Sthana Name</TableHead>
+                        <TableHead className="w-[120px] font-black uppercase tracking-widest text-[10px]">Status</TableHead>
+                        <TableHead className="font-black uppercase tracking-widest text-[10px]">Message</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {logs.map((log, idx) => (
+                        <TableRow key={idx} className="border-slate-50 hover:bg-slate-50/50 transition-colors">
+                          <TableCell className="font-medium text-slate-500">{log.row}</TableCell>
+                          <TableCell className="font-bold text-slate-900">{log.name}</TableCell>
+                          <TableCell>
+                            {log.status === "success" && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold bg-green-50 text-green-700 border border-green-100">
+                                <CheckCircle className="w-3 h-3 mr-1" /> SUCCESS
+                              </span>
+                            )}
+                            {log.status === "error" && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-100">
+                                <XCircle className="w-3 h-3 mr-1" /> ERROR
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className={`text-xs font-medium ${log.status === 'error' ? 'text-red-500' : 'text-slate-500'}`}>
+                            {log.message}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </Card>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

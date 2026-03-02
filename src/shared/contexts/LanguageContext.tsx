@@ -150,6 +150,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         localStorage.setItem("language", language);
+        // Apply Kokila font if language is Marathi
+        if (language === "marathi") {
+            document.body.classList.add("font-kokila");
+        } else {
+            document.body.classList.remove("font-kokila");
+        }
     }, [language]);
 
     const setLanguage = (lang: Language) => {

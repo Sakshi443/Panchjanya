@@ -7,9 +7,10 @@ import { Loader2 } from "lucide-react";
 
 interface Props {
   children: React.ReactNode;
+  hideTopbar?: boolean;
 }
 
-export default function AdminLayout({ children }: Props) {
+export default function AdminLayout({ children, hideTopbar = false }: Props) {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -36,7 +37,7 @@ export default function AdminLayout({ children }: Props) {
     <div className="flex h-screen overflow-hidden bg-white font-[Manrope]">
       <AdminSidebar />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <AdminTopbar />
+        {!hideTopbar && <AdminTopbar />}
         <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar">
           {children}
         </div>

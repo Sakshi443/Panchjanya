@@ -140,7 +140,7 @@ const SthanaVandan = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-background pb-8 lg:pb-0 font-sans animate-in fade-in duration-500 space-y-10">
+        <div className="min-h-screen bg-background lg:bg-white font-sans animate-in fade-in duration-500 space-y-10">
             {/* Header */}
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between">

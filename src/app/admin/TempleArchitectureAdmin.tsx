@@ -38,11 +38,16 @@ import { ImageUpload } from "@/shared/components/admin/ImageUpload";
 
 const CUSTOM_ICONS = [
   { name: "Temple", path: "/icons/Blue_temple_icon-removebg.png" },
+  { name: "Sthan Pin", path: "/icons/Sthan_pin.svg" },
+  { name: "Asan Sthan Pin", path: "/icons/Sthan_pin_Asan.svg" },
+  { name: "Avasthan Pin", path: "/icons/Sthan_pin_Avasthan.svg" },
+  { name: "Mandalik Pin", path: "/icons/Sthan_pin_Mandalik.svg" },
+  { name: "Vasti Pin", path: "/icons/Sthan_pin_Vasti.svg" },
+  { name: "Mahasthan Pin", path: "/icons/mahasthan pin.svg" },
   { name: "Explore", path: "/icons/explore_safari.png" },
   { name: "Direction", path: "/icons/left-arrow.png" },
   { name: "Route", path: "/icons/route-arrow.png" },
   { name: "Signpost", path: "/icons/signpost.png" },
-  { name: "Sthaan", path: "/icons/sthaan.png" },
 
   // Glance Icons
   { name: "Blue Temple", path: "/icons/glance/Blue_temple_icon.svg" },
@@ -61,6 +66,9 @@ const CUSTOM_ICONS = [
   { name: "Temple Simple", path: "/icons/glance/temple_simple.svg" },
   { name: "Temple Solid", path: "/icons/glance/temple_solid.svg" },
   { name: "Route Path", path: "/icons/glance/route_path.svg" },
+  { name: "Parivaar", path: "/icons/glance/parivaar.svg" },
+  { name: "Aasan Sthan", path: "/icons/glance/Aasan Sthan.svg" },
+  { name: "Sthaan", path: "/icons/glance/sthaan.svg" },
 ];
 
 interface HotspotMarkerProps {
@@ -946,7 +954,7 @@ export default function TempleArchitectureAdmin() {
       <div className="max-w-7xl mx-auto px-6 pt-8 space-y-8">
 
         {/* Step Navigation Header */}
-        <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between sticky top-4 z-50 overflow-x-auto">
+        <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between z-10 overflow-x-auto">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
